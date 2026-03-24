@@ -6,6 +6,7 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "tsx watch src/main.ts",
+    "dev:docker": "docker compose up -d --wait && tsx watch src/main.ts",
     "build": "tsup",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
