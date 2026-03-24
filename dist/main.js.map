@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/main.ts"],"sourcesContent":["import 'dotenv/config'\n\nconsole.log('rf-studio app service — starting')\n"],"mappings":";AAAA,OAAO;AAEP,QAAQ,IAAI,uCAAkC;","names":[]}
