@@ -1,0 +1,5 @@
+- Camada que representa o "Domain Service".
+- Services dependem apenas da camada de "Domain" e podem ser chamados pelos useCases
+- Os Domain Services são criados quando não temos nenhum aggregate/entity onde os colocar
+  - Por exemplo, se lidarem com mais de uma entidade mas não existir nenhum aggregate/entidade preparado para isso
+- O nome dos serviços geralmente refletem ações ou processos do domínio, como “ProcessarPagamento” ou “CalcularDesconto”.
