@@ -9,14 +9,8 @@ export default tseslint.config(
   prettier,
   {
     plugins: { import: importPlugin },
-    settings: {
-      'import/resolver': {
-        typescript: true,
-        node: true,
-      },
-    },
     rules: {
-      'import/no-unresolved': 'error',
+      'import/no-duplicates': 'error',
     },
   },
 )
