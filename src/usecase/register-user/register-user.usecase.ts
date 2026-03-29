@@ -1,4 +1,5 @@
 import { ConflictError } from '../../domain/@shared/errors/conflictError.js';
+import { EntityNotFoundError } from '../../domain/@shared/errors/entityNotFoundError.js';
 import { UserFactory } from '../../domain/entity/user/factory/user.factory.js';
 import { IUserRepository } from '../../domain/repository/user-repository.interface.js';
 import { IHashAdapter } from '../interfaces/hash-adapter.interface.js';
@@ -10,18 +11,15 @@ export class RegisterUserUseCase {
   private readonly userRepository: IUserRepository;
   private readonly hashAdapter: IHashAdapter;
   private readonly validationAdapter: IValidationAdapter;
-  private readonly clientRoleId: string;
 
   constructor(
     userRepository: IUserRepository,
     hashAdapter: IHashAdapter,
     validationAdapter: IValidationAdapter,
-    clientRoleId: string,
   ) {
     this.userRepository = userRepository;
     this.hashAdapter = hashAdapter;
     this.validationAdapter = validationAdapter;
-    this.clientRoleId = clientRoleId;
   }
 
   async execute(inputDto: RegisterUserInputDto): Promise<RegisterUserOutputDto> {
@@ -34,10 +32,13 @@ export class RegisterUserUseCase {
     if (userAlreadyExist)
       throw new ConflictError(`Email already registered: ${validatedData.email}`);
 
+    const clientRoleId = await this.userRepository.findRoleIdByName('client');
+    if (!clientRoleId) throw new EntityNotFoundError("Role 'client' not found");
+
     const passwordHash = await this.hashAdapter.hash(validatedData.password);
 
     const user = UserFactory.create({
-      roleId: this.clientRoleId,
+      roleId: clientRoleId,
       name: validatedData.name,
       email: validatedData.email,
       passwordHash,

@@ -4,6 +4,7 @@ import { User } from '../../domain/entity/user/user.entity.js';
 import { users } from '../db/schema/users.schema.js';
 import { eq } from 'drizzle-orm';
 import { UserFactory } from '../../domain/entity/user/factory/user.factory.js';
+import { roles } from '../db/schema/roles.schema.js';
 
 export class UserRepository implements IUserRepository {
   private readonly db: NodePgDatabase;
@@ -30,6 +31,16 @@ export class UserRepository implements IUserRepository {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
+  }
+
+  async findRoleIdByName(name: string): Promise<string | null> {
+    const rows = await this.db.select().from(roles).where(eq(roles.name, name)).limit(1);
+
+    if (rows.length === 0) return null;
+
+    const { id } = rows[0];
+
+    return id;
   }
 
   async save(user: User): Promise<void> {
