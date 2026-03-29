@@ -1,3 +1,7 @@
-import 'dotenv/config'
+import 'dotenv/config';
+import { startServer } from './infrastructure/api/config/server.js';
 
-console.log('rf-studio app service — starting')
+startServer().catch((error) => {
+  console.log('[Error starting server]: ', error);
+  process.exit(1);
+});
