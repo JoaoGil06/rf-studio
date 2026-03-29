@@ -8,6 +8,7 @@ import { User } from '../../domain/entity/user/user.entity.js';
 
 const mockRepo: IUserRepository = {
   findByEmail: vi.fn(),
+  findRoleIdByName: vi.fn().mockResolvedValue('client-role-uuid'),
   save: vi.fn(),
 };
 
@@ -34,8 +35,9 @@ describe('RegisterUserUseCase', () => {
 
   it('registers a new user and returns output DTO', async () => {
     vi.mocked(mockRepo.findByEmail).mockResolvedValue(null);
+    vi.mocked(mockRepo.findRoleIdByName).mockResolvedValue('client-role-uuid');
 
-    const usecase = new RegisterUserUseCase(mockRepo, mockHash, mockValidation, 'client-role-uuid');
+    const usecase = new RegisterUserUseCase(mockRepo, mockHash, mockValidation);
     const result = await usecase.execute(input);
 
     expect(result.email).toBe(email);
@@ -46,7 +48,7 @@ describe('RegisterUserUseCase', () => {
   it('throws ConflictError when email already exists', async () => {
     const fakeUser = { id: 'existing' } as User;
     vi.mocked(mockRepo.findByEmail).mockResolvedValue(fakeUser);
-    const usecase = new RegisterUserUseCase(mockRepo, mockHash, mockValidation, 'client-role-uuid');
+    const usecase = new RegisterUserUseCase(mockRepo, mockHash, mockValidation);
 
     await expect(usecase.execute(input)).rejects.toThrow(ConflictError);
   });
