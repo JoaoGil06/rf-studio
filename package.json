@@ -5,7 +5,8 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "docker compose up -d --wait && tsx watch src/main.ts",
+    "start:dev": "docker compose up --build",
+    "dev:watch": "tsx watch src/main.ts",
     "build": "tsup",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
