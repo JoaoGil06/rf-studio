@@ -1,4 +1,25 @@
+name: rf_studio_backend
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: rf_studio_app
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./src:/app/src
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres:5432/rf_studio
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   postgres:
     image: postgres:16-alpine
     container_name: rf_studio_postgres
@@ -7,11 +28,11 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: rf_studio
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d rf_studio"]
+      test: ['CMD-SHELL', 'pg_isready -U user -d rf_studio']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,11 +41,11 @@ services:
     image: redis:7-alpine
     container_name: rf_studio_redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
