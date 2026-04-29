@@ -1,15 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RegisterUserUseCase } from './register-user.usecase.js';
-import type { IUserRepository } from '../../domain/repository/user-repository.interface.js';
-import type { IHashAdapter } from '../interfaces/hash-adapter.interface.js';
-import type { IValidationAdapter } from '../interfaces/validation-adapter.interface.js';
-import { ConflictError } from '../../domain/@shared/errors/conflictError.js';
-import { User } from '../../domain/entity/user/user.entity.js';
+import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
+import { IHashAdapter } from '../../interfaces/hash-adapter.interface.js';
+import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
+import { User } from '../../../domain/entity/user/user.entity.js';
+import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
 
 const mockRepo: IUserRepository = {
   findByEmail: vi.fn(),
   findRoleIdByName: vi.fn().mockResolvedValue('client-role-uuid'),
   save: vi.fn(),
+  findById: vi.fn(),
+  findAll: vi.fn(),
 };
 
 const mockHash: IHashAdapter = {

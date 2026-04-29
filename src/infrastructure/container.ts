@@ -4,7 +4,12 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { UserRepository } from './repository/user.repository.js';
 import { BcryptAdapter } from './adapters/bcrypt.adapter.js';
 import { ZodAdapter } from './adapters/zod.adapter.js';
-import { RegisterUserUseCase } from '../usecase/register-user/register-user.usecase.js';
+import { RegisterUserUseCase } from '../usecase/users/register-user/register-user.usecase.js';
+import { GetUsersUseCase } from '../usecase/users/get-users/get-users.usecase.js';
+import DataLoader from 'dataloader';
+import { RoleDto } from './graphql/dataloaders/role/role.dataloader.dto.js';
+import { createRoleDataLoader } from './graphql/dataloaders/role/role.dataloader.js';
+import { GetUserUseCase } from '../usecase/users/get-user/get-user.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -21,4 +26,26 @@ export const buildRegisterUserUseCase = (): RegisterUserUseCase => {
   );
 
   return registerUserUseCase;
+};
+
+export const buildGetUsersUseCase = (): GetUsersUseCase => {
+  const userRepository = new UserRepository(db);
+
+  const getUsersUseCase = new GetUsersUseCase(userRepository);
+
+  return getUsersUseCase;
+};
+
+export const buildGetUserUseCase = (): GetUserUseCase => {
+  const userRepository = new UserRepository(db);
+
+  const getUserUseCase = new GetUserUseCase(userRepository);
+
+  return getUserUseCase;
+};
+
+export const buildRoleDataLoader = (): DataLoader<string, RoleDto | null> => {
+  const roleDataLoader = createRoleDataLoader(db);
+
+  return roleDataLoader;
 };

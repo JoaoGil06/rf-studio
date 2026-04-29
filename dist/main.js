@@ -10,21 +10,54 @@ import express from "express";
 // src/infrastructure/graphql/schema/error.graphql.ts
 var errorTypeDefs = `#graphql
   type UserAlreadyExistsError {
-    message: string
+    message: String
   }
 `;
 
 // src/infrastructure/graphql/schema/user.graphql.ts
 var userTypeDefs = `#graphql
+    type Query {
+        users(first: Int, after: String): UserConnection! 
+        user(id: ID!): User! 
+    }
+
+    type Mutation {
+        registerUser(input: RegisterUserInput!): RegisterUserPayload!
+    }
+
+     type PageInfo {
+        hasNextPage: Boolean!
+        hasPreviousPage: Boolean!
+        startCursor: String
+        endCursor: String
+    }
+
+    type Role {
+        id: ID!
+        name: String!
+    }
+
     type User {
         id: ID!
         name: String!
         email: String!
         phoneNumber: String!
+        role: Role!
         birthDate: String
         createdAt: String!
     }
 
+    type UserEdge {
+        node: User!
+        cursor: String!
+    }
+
+    type UserConnection {
+        edges: [UserEdge!]!
+        pageInfo: PageInfo!
+    }
+    # N\xE3o \xE9 necess\xE1rio Role aqui porque criamos sempre com "Cliente" por default 
+    # Conseguimos ver isto no register-user useCase
     input RegisterUserInput {
         name: String!
         email: String!
@@ -38,10 +71,8 @@ var userTypeDefs = `#graphql
     }
 
     union RegisterUserPayload = RegisterUserSuccess | UserAlreadyExistsError
-
-    type Mutation {
-        registerUser(input: RegisterUserInput!): RegisterUserPayload!
-    }
+    
+  
 `;
 
 // src/infrastructure/graphql/schema/schema.ts
@@ -92,15 +123,37 @@ var userMutations = {
   }
 };
 
+// src/infrastructure/graphql/resolvers/queries/user.queries.ts
+var userQueries = {
+  Query: {
+    users: async (_, args, context) => {
+      const users2 = await context.useCases.getUsers.execute(args);
+      return users2;
+    },
+    user: async (_, args, context) => {
+      const user = await context.useCases.getUser.execute(args);
+      return user;
+    }
+  },
+  User: {
+    role: async (parent, _, context) => {
+      const role = await context.dataLoaders.role.load(parent.roleId);
+      return role;
+    }
+  }
+};
+
 // src/infrastructure/graphql/resolvers/index.ts
 var resolvers = {
+  ...userQueries,
   ...userMutations
 };
 
 // src/infrastructure/graphql/buildContext.ts
-function buildContext(useCases) {
+function buildContext(useCases, dataLoaders) {
   return async ({ req }) => ({
-    useCases
+    useCases,
+    dataLoaders
   });
 }
 
@@ -148,7 +201,7 @@ var users = pgTable2("users", {
 });
 
 // src/infrastructure/repository/user.repository.ts
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 // src/domain/entity/user/factory/user.factory.ts
 import { randomUUID } from "crypto";
@@ -288,6 +341,22 @@ var UserRepository = class {
   constructor(db2) {
     this.db = db2;
   }
+  async findById(id) {
+    const rows = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return UserFactory.reconstitute({
+      id: row.id,
+      roleId: row.role_id,
+      name: row.name,
+      email: row.email,
+      passwordHash: row.password,
+      phoneNumber: row.phone_number,
+      birthDate: row.birth_date ? new Date(row.birth_date) : null,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    });
+  }
   async findByEmail(email) {
     const rows = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
     if (rows.length === 0) return null;
@@ -303,6 +372,23 @@ var UserRepository = class {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
     });
+  }
+  async findAll(params) {
+    const rows = await this.db.select().from(users).orderBy(asc(users.createdAt), asc(users.id)).limit(params.limit).offset(params.offset);
+    const rowsForResponse = rows.map(
+      (row) => UserFactory.reconstitute({
+        id: row.id,
+        roleId: row.role_id,
+        name: row.name,
+        email: row.email,
+        passwordHash: row.password,
+        phoneNumber: row.phone_number,
+        birthDate: row.birth_date ? new Date(row.birth_date) : null,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt
+      })
+    );
+    return rowsForResponse;
   }
   async findRoleIdByName(name) {
     const rows = await this.db.select().from(roles).where(eq(roles.name, name)).limit(1);
@@ -353,7 +439,7 @@ var EntityNotFoundError = class extends Error {
   }
 };
 
-// src/usecase/register-user/register-user.schema-validator.ts
+// src/usecase/users/register-user/register-user.schema-validator.ts
 import { z } from "zod";
 var registerUserSchema = z.object({
   name: z.string().min(1),
@@ -363,7 +449,7 @@ var registerUserSchema = z.object({
   birthDate: z.string().nullable().optional()
 });
 
-// src/usecase/register-user/register-user.usecase.ts
+// src/usecase/users/register-user/register-user.usecase.ts
 var RegisterUserUseCase = class {
   userRepository;
   hashAdapter;
@@ -404,6 +490,96 @@ var RegisterUserUseCase = class {
   }
 };
 
+// src/usecase/shared/cursor.ts
+var PREFIX = "cursor:";
+function encodeCursor(offset) {
+  return Buffer.from(`${PREFIX}${offset}`).toString("base64");
+}
+function decodeCursor(cursor) {
+  const decoded = Buffer.from(cursor, "base64").toString("utf-8");
+  if (!decoded.startsWith(PREFIX)) {
+    throw new InvalidValueError(`Invalid cursor: ${cursor}`);
+  }
+  const offset = Number(decoded.slice(PREFIX.length));
+  if (!Number.isInteger(offset) || offset < 0) {
+    throw new InvalidValueError(`Invalid cursor offset: ${cursor}`);
+  }
+  return offset;
+}
+
+// src/usecase/users/get-users/get-users.usecase.ts
+var DEFAULT_PAGE_SIZE = 20;
+var MAX_PAGE_SIZE = 100;
+var GetUsersUseCase = class {
+  userRepository;
+  constructor(userRepository) {
+    this.userRepository = userRepository;
+  }
+  async execute(input) {
+    const first = Math.min(input.first ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+    const offset = input.after ? decodeCursor(input.after) + 1 : 0;
+    const rows = await this.userRepository.findAll({ limit: first + 1, offset });
+    const hasNextPage = rows.length > first;
+    const items = hasNextPage ? rows.slice(0, first) : rows;
+    const edges = items.map((user, index) => {
+      const node = {
+        id: user.id,
+        roleId: user.roleId,
+        name: user.name,
+        email: user.email.value,
+        phoneNumber: user.phone.value,
+        birthDate: user.birthDate ? user.birthDate.toISOString().split("T")[0] : null,
+        createdAt: user.createdAt.toISOString()
+      };
+      return { node, cursor: encodeCursor(offset + index) };
+    });
+    return {
+      edges,
+      pageInfo: {
+        hasNextPage,
+        hasPreviousPage: offset > 0,
+        startCursor: edges.length > 0 ? edges[0].cursor : null,
+        endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null
+      }
+    };
+  }
+};
+
+// src/infrastructure/graphql/dataloaders/role/role.dataloader.ts
+import DataLoader from "dataloader";
+import { inArray } from "drizzle-orm";
+function createRoleDataLoader(db2) {
+  return new DataLoader(async (ids) => {
+    const rows = await db2.select({ id: roles.id, name: roles.name }).from(roles).where(inArray(roles.id, [...ids]));
+    const hashMap = new Map(rows.map((row) => [row.id, row]));
+    console.log("[Hash Map]: ", hashMap);
+    return ids.map((id) => hashMap.get(id) ?? null);
+  });
+}
+
+// src/usecase/users/get-user/get-user.usecase.ts
+var GetUserUseCase = class {
+  userRepository;
+  constructor(userRepository) {
+    this.userRepository = userRepository;
+  }
+  async execute(input) {
+    const user = await this.userRepository.findById(input.id);
+    if (!user) {
+      throw new EntityNotFoundError(`User with id ${input.id} not found`);
+    }
+    return {
+      id: user.id,
+      roleId: user.roleId,
+      name: user.name,
+      email: user.email.value,
+      phoneNumber: user.phone.value,
+      birthDate: user.birthDate ? user.birthDate.toISOString().split("T")[0] : null,
+      createdAt: user.createdAt.toISOString()
+    };
+  }
+};
+
 // src/infrastructure/container.ts
 var pool = new Pool({ connectionString: DATABASE_URL });
 var db = drizzle(pool);
@@ -418,6 +594,20 @@ var buildRegisterUserUseCase = () => {
   );
   return registerUserUseCase;
 };
+var buildGetUsersUseCase = () => {
+  const userRepository = new UserRepository(db);
+  const getUsersUseCase = new GetUsersUseCase(userRepository);
+  return getUsersUseCase;
+};
+var buildGetUserUseCase = () => {
+  const userRepository = new UserRepository(db);
+  const getUserUseCase = new GetUserUseCase(userRepository);
+  return getUserUseCase;
+};
+var buildRoleDataLoader = () => {
+  const roleDataLoader = createRoleDataLoader(db);
+  return roleDataLoader;
+};
 
 // src/infrastructure/api/config/server.ts
 async function startServer() {
@@ -429,7 +619,16 @@ async function startServer() {
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      context: buildContext({ registerUser: buildRegisterUserUseCase() })
+      context: buildContext(
+        {
+          registerUser: buildRegisterUserUseCase(),
+          getUsers: buildGetUsersUseCase(),
+          getUser: buildGetUserUseCase()
+        },
+        {
+          role: buildRoleDataLoader()
+        }
+      )
     })
   );
   app.listen(PORT, () => {

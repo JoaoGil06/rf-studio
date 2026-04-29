@@ -2,7 +2,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { IUserRepository } from '../../domain/repository/user-repository.interface.js';
 import { User } from '../../domain/entity/user/user.entity.js';
 import { users } from '../db/schema/users.schema.js';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { UserFactory } from '../../domain/entity/user/factory/user.factory.js';
 import { roles } from '../db/schema/roles.schema.js';
 
@@ -11,6 +11,26 @@ export class UserRepository implements IUserRepository {
 
   constructor(db: NodePgDatabase) {
     this.db = db;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    const rows = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
+
+    if (rows.length === 0) return null;
+
+    const row = rows[0];
+
+    return UserFactory.reconstitute({
+      id: row.id,
+      roleId: row.role_id,
+      name: row.name,
+      email: row.email,
+      passwordHash: row.password,
+      phoneNumber: row.phone_number,
+      birthDate: row.birth_date ? new Date(row.birth_date) : null,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -31,6 +51,31 @@ export class UserRepository implements IUserRepository {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
+  }
+
+  async findAll(params: { limit: number; offset: number }): Promise<User[]> {
+    const rows = await this.db
+      .select()
+      .from(users)
+      .orderBy(asc(users.createdAt), asc(users.id))
+      .limit(params.limit)
+      .offset(params.offset);
+
+    const rowsForResponse = rows.map((row) =>
+      UserFactory.reconstitute({
+        id: row.id,
+        roleId: row.role_id,
+        name: row.name,
+        email: row.email,
+        passwordHash: row.password,
+        phoneNumber: row.phone_number,
+        birthDate: row.birth_date ? new Date(row.birth_date) : null,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      }),
+    );
+
+    return rowsForResponse;
   }
 
   async findRoleIdByName(name: string): Promise<string | null> {

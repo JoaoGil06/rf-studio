@@ -7,7 +7,12 @@ import type { AppContext } from '../../graphql/context.js';
 import { typeDefs } from '../../graphql/schema/schema.js';
 import { resolvers } from '../../graphql/resolvers/index.js';
 import { buildContext } from '../../graphql/buildContext.js';
-import { buildRegisterUserUseCase } from '../../container.js';
+import {
+  buildGetUsersUseCase,
+  buildGetUserUseCase,
+  buildRegisterUserUseCase,
+  buildRoleDataLoader,
+} from '../../container.js';
 import { PORT } from '../../constants/env.js';
 
 export async function startServer() {
@@ -20,7 +25,16 @@ export async function startServer() {
   app.use(
     '/graphql',
     expressMiddleware(server, {
-      context: buildContext({ registerUser: buildRegisterUserUseCase() }),
+      context: buildContext(
+        {
+          registerUser: buildRegisterUserUseCase(),
+          getUsers: buildGetUsersUseCase(),
+          getUser: buildGetUserUseCase(),
+        },
+        {
+          role: buildRoleDataLoader(),
+        },
+      ),
     }),
   );
 

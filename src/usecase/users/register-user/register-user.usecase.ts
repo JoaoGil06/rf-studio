@@ -1,9 +1,9 @@
-import { ConflictError } from '../../domain/@shared/errors/conflictError.js';
-import { EntityNotFoundError } from '../../domain/@shared/errors/entityNotFoundError.js';
-import { UserFactory } from '../../domain/entity/user/factory/user.factory.js';
-import { IUserRepository } from '../../domain/repository/user-repository.interface.js';
-import { IHashAdapter } from '../interfaces/hash-adapter.interface.js';
-import { IValidationAdapter } from '../interfaces/validation-adapter.interface.js';
+import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
+import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
+import { UserFactory } from '../../../domain/entity/user/factory/user.factory.js';
+import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
+import { IHashAdapter } from '../../interfaces/hash-adapter.interface.js';
+import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { RegisterUserInputDto, RegisterUserOutputDto } from './register-user.dto.js';
 import { registerUserSchema } from './register-user.schema-validator.js';
 
