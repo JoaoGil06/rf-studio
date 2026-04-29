@@ -6,6 +6,7 @@ export const userTypeDefs = `#graphql
 
     type Mutation {
         registerUser(input: RegisterUserInput!): RegisterUserPayload!
+        login(input: LoginInput!): LoginPayload!
     }
 
      type PageInfo {
@@ -39,6 +40,7 @@ export const userTypeDefs = `#graphql
         edges: [UserEdge!]!
         pageInfo: PageInfo!
     }
+
     # Não é necessário Role aqui porque criamos sempre com "Cliente" por default 
     # Conseguimos ver isto no register-user useCase
     input RegisterUserInput {
@@ -55,5 +57,17 @@ export const userTypeDefs = `#graphql
 
     union RegisterUserPayload = RegisterUserSuccess | UserAlreadyExistsError
     
-  
+    input LoginInput {
+        email: String!
+        password: String!
+    }
+
+    type LoginSuccess {
+        token: String!
+        user: User!
+    }
+
+    union LoginPayload = LoginSuccess | InvalidCredentialsError
+
+
 `;

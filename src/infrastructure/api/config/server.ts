@@ -10,6 +10,7 @@ import { buildContext } from '../../graphql/buildContext.js';
 import {
   buildGetUsersUseCase,
   buildGetUserUseCase,
+  buildLoginUseCase,
   buildRegisterUserUseCase,
   buildRoleDataLoader,
 } from '../../container.js';
@@ -27,6 +28,7 @@ export async function startServer() {
     expressMiddleware(server, {
       context: buildContext(
         {
+          login: buildLoginUseCase(),
           registerUser: buildRegisterUserUseCase(),
           getUsers: buildGetUsersUseCase(),
           getUser: buildGetUserUseCase(),
