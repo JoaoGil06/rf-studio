@@ -11,9 +11,6 @@ importers:
       '@apollo/server':
         specifier: ^5.5.0
         version: 5.5.0(graphql@16.13.2)
-      '@apollo/subgraph':
-        specifier: ^2.13.3
-        version: 2.13.3(graphql@16.13.2)
       '@as-integrations/express5':
         specifier: ^1.1.2
         version: 1.1.2(@apollo/server@5.5.0(graphql@16.13.2))(express@5.2.1)
@@ -137,12 +134,6 @@ packages:
     peerDependencies:
       graphql: 14.x || 15.x || 16.x
 
-  '@apollo/federation-internals@2.13.3':
-    resolution: {integrity: sha512-4zHgqznZza5Qx2CZy1qlrh83BB/3Yd8BqD/dmhGzLCvHJQ1LBTyZbWN7xwKs5z5FbxdSPkL5TvPoLm5Rek8/4g==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      graphql: ^16.5.0
-
   '@apollo/protobufjs@1.2.7':
     resolution: {integrity: sha512-Lahx5zntHPZia35myYDBRuF58tlwPskwHc5CWBZC/4bMKB6siTBWwtMrkqXcsNwQiFSzSx5hKdRPUmemrEp3Gg==}
     hasBin: true
@@ -157,12 +148,6 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       graphql: ^16.11.0
-
-  '@apollo/subgraph@2.13.3':
-    resolution: {integrity: sha512-nmdACpdTe+kgmNF0Yow3MoDkE0SMfvK6tTsEs3h3M9GLYCgBWZWBoDWQfNdr7kWRW6aan2SylU0K0ktF643h3g==}
-    engines: {node: '>=14.15.0'}
-    peerDependencies:
-      graphql: ^16.5.0
 
   '@apollo/usage-reporting-protobuf@4.1.1':
     resolution: {integrity: sha512-u40dIUePHaSKVshcedO7Wp+mPiZsaU6xjv9J+VyxpoU/zL6Jle+9zWeG98tr/+SZ0nZ4OXhrbb8SNr0rAPpIDA==}
@@ -1657,9 +1642,6 @@ packages:
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
 
-  '@types/uuid@9.0.8':
-    resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
-
   '@typescript-eslint/eslint-plugin@8.57.2':
     resolution: {integrity: sha512-NZZgp0Fm2IkD+La5PR81sd+g+8oS6JwJje+aRWsDocxHkjyRw0J5L5ZTlN3LI1LlOcGL7ph3eaIUmTXMIjLk0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1973,10 +1955,6 @@ packages:
   chai@6.2.2:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
     engines: {node: '>=18'}
-
-  chalk@4.1.2:
-    resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
-    engines: {node: '>=10'}
 
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
@@ -2592,10 +2570,6 @@ packages:
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
-
-  js-levenshtein@1.1.6:
-    resolution: {integrity: sha512-X2BB11YZtrRqY4EnQcLX5Rh373zbK4alC1FW7D7MBhL2gtcC17cTnr6DmfHZeS0s2rTHjUTMMHfG7gO8SSdw+g==}
-    engines: {node: '>=0.10.0'}
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
@@ -3339,10 +3313,6 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
-  uuid@9.0.1:
-    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
-    hasBin: true
-
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
@@ -3492,14 +3462,6 @@ snapshots:
     dependencies:
       graphql: 16.13.2
 
-  '@apollo/federation-internals@2.13.3(graphql@16.13.2)':
-    dependencies:
-      '@types/uuid': 9.0.8
-      chalk: 4.1.2
-      graphql: 16.13.2
-      js-levenshtein: 1.1.6
-      uuid: 9.0.1
-
   '@apollo/protobufjs@1.2.7':
     dependencies:
       '@protobufjs/aspromise': 1.1.2
@@ -3549,12 +3511,6 @@ snapshots:
       whatwg-mimetype: 4.0.0
     transitivePeerDependencies:
       - supports-color
-
-  '@apollo/subgraph@2.13.3(graphql@16.13.2)':
-    dependencies:
-      '@apollo/cache-control-types': 1.0.3(graphql@16.13.2)
-      '@apollo/federation-internals': 2.13.3(graphql@16.13.2)
-      graphql: 16.13.2
 
   '@apollo/usage-reporting-protobuf@4.1.1':
     dependencies:
@@ -4942,8 +4898,6 @@ snapshots:
     dependencies:
       '@types/node': 22.19.15
 
-  '@types/uuid@9.0.8': {}
-
   '@typescript-eslint/eslint-plugin@8.57.2(@typescript-eslint/parser@8.57.2(eslint@10.1.0)(typescript@5.8.3))(eslint@10.1.0)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -5258,11 +5212,6 @@ snapshots:
       get-intrinsic: 1.3.0
 
   chai@6.2.2: {}
-
-  chalk@4.1.2:
-    dependencies:
-      ansi-styles: 4.3.0
-      supports-color: 7.2.0
 
   chokidar@4.0.3:
     dependencies:
@@ -5868,8 +5817,6 @@ snapshots:
       istanbul-lib-report: 3.0.1
 
   joycon@3.1.1: {}
-
-  js-levenshtein@1.1.6: {}
 
   js-tokens@10.0.0: {}
 
@@ -6644,8 +6591,6 @@ snapshots:
       punycode: 2.3.1
 
   uuid@11.1.0: {}
-
-  uuid@9.0.1: {}
 
   vary@1.1.2: {}
 
