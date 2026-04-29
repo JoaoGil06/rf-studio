@@ -11,3 +11,4 @@ export const PORT = Number(getEnv('PORT', '8000'));
 export const DATABASE_URL = getEnv('DATABASE_URL');
 export const REDIS_URL = getEnv('REDIS_URL');
 export const JWT_SECRET = getEnv('JWT_SECRET');
+export const JWT_EXPIRES_IN = getEnv('JWT_EXPIRES_IN');

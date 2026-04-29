@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { DATABASE_URL } from './constants/env.js';
+import { DATABASE_URL, JWT_SECRET } from './constants/env.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { UserRepository } from './repository/user.repository.js';
 import { BcryptAdapter } from './adapters/bcrypt.adapter.js';
@@ -10,6 +10,8 @@ import DataLoader from 'dataloader';
 import { RoleDto } from './graphql/dataloaders/role/role.dataloader.dto.js';
 import { createRoleDataLoader } from './graphql/dataloaders/role/role.dataloader.js';
 import { GetUserUseCase } from '../usecase/users/get-user/get-user.usecase.js';
+import { LoginUseCase } from '../usecase/auth/login/login.usecase.js';
+import { JwtAdapter } from './adapters/jwt.adapter.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -48,4 +50,15 @@ export const buildRoleDataLoader = (): DataLoader<string, RoleDto | null> => {
   const roleDataLoader = createRoleDataLoader(db);
 
   return roleDataLoader;
+};
+
+export const buildLoginUseCase = (): LoginUseCase => {
+  const userRepository = new UserRepository(db);
+  const hashAdapter = new BcryptAdapter();
+  const jwtAdapter = new JwtAdapter(JWT_SECRET);
+  const validationAdapter = new ZodAdapter();
+
+  const loginUseCase = new LoginUseCase(userRepository, hashAdapter, jwtAdapter, validationAdapter);
+
+  return loginUseCase;
 };
