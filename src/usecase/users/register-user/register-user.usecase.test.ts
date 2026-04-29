@@ -16,6 +16,7 @@ const mockRepo: IUserRepository = {
 
 const mockHash: IHashAdapter = {
   hash: vi.fn().mockResolvedValue('hashed-password'),
+  compare: vi.fn(),
 };
 
 const mockValidation: IValidationAdapter = {

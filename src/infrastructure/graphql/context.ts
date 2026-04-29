@@ -3,9 +3,11 @@ import { RoleDto } from './dataloaders/role/role.dataloader.dto.js';
 import { RegisterUserUseCase } from '../../usecase/users/register-user/register-user.usecase.js';
 import { GetUsersUseCase } from '../../usecase/users/get-users/get-users.usecase.js';
 import { GetUserUseCase } from '../../usecase/users/get-user/get-user.usecase.js';
+import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
 
 export interface AppContext {
   useCases: {
+    login: LoginUseCase;
     registerUser: RegisterUserUseCase;
     getUsers: GetUsersUseCase;
     getUser: GetUserUseCase;

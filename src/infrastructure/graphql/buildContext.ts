@@ -5,8 +5,10 @@ import { GetUsersUseCase } from '../../usecase/users/get-users/get-users.usecase
 import DataLoader from 'dataloader';
 import { RoleDto } from './dataloaders/role/role.dataloader.dto.js';
 import { GetUserUseCase } from '../../usecase/users/get-user/get-user.usecase.js';
+import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
 
 interface AppUseCases {
+  login: LoginUseCase;
   registerUser: RegisterUserUseCase;
   getUsers: GetUsersUseCase;
   getUser: GetUserUseCase;
