@@ -6,6 +6,7 @@ import { GetUserUseCase } from '../../usecase/users/get-user/get-user.usecase.js
 import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
 import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
 import { JwtPayload } from 'jsonwebtoken';
+import { UpdateUserUseCase } from '../../usecase/users/update-user/update-user.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -15,6 +16,7 @@ export interface AppContext {
     registerUser: RegisterUserUseCase;
     getUsers: GetUsersUseCase;
     getUser: GetUserUseCase;
+    updateUser: UpdateUserUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;

@@ -8,6 +8,7 @@ export const userTypeDefs = `#graphql
         registerUser(input: RegisterUserInput!): RegisterUserPayload!
         login(input: LoginInput!): LoginPayload!
         logout: LogoutSuccess!
+        updateUser(input: UpdateUserInput!): UpdateUserPayload!
     }
 
      type PageInfo {
@@ -73,5 +74,19 @@ export const userTypeDefs = `#graphql
     type LogoutSuccess {
         success: Boolean!
     }
+
+    input UpdateUserInput {
+    id: ID!
+    name: String
+    email: String
+    phoneNumber: String
+    birthDate: String
+    }
+
+    type UpdateUserSuccess {
+        user: User!
+    }
+
+    union UpdateUserPayload = UpdateUserSuccess | UserNotFoundError | UserAlreadyExistsError
 
 `;

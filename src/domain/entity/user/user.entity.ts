@@ -1,15 +1,15 @@
 import { Entity } from '../../@shared/entity/entity.abstract.js';
 import { Email } from '../../@shared/value-object/email/email.vo.js';
 import { Phone } from '../../@shared/value-object/phone/phone.vo.js';
-import { UserProps } from './user.entity.types.js';
+import { UpdateProfileProps, UserProps } from './user.entity.types.js';
 
 export class User extends Entity<UserProps> {
   private readonly _roleId: string;
-  private readonly _name: string;
-  private readonly _email: Email;
+  private _name: string;
+  private _email: Email;
   private readonly _passwordHash: string;
-  private readonly _phone: Phone;
-  private readonly _birthDate: Date | null;
+  private _phone: Phone;
+  private _birthDate: Date | null;
 
   private constructor(props: UserProps) {
     super(props.id, props.createdAt, props.updatedAt);
@@ -42,5 +42,15 @@ export class User extends Entity<UserProps> {
   }
   public get birthDate(): Date | null {
     return this._birthDate;
+  }
+
+  public updateUserProfile(props: UpdateProfileProps): void {
+    if (props.name !== undefined) this._name = props.name;
+    if (props.email !== undefined) this._email = new Email(props.email);
+    if (props.phoneNumber !== undefined) this._phone = new Phone(props.phoneNumber);
+    if (props.birthDate !== undefined) {
+      this._birthDate = props.birthDate ? new Date(props.birthDate) : null;
+    }
+    this._updatedAt = new Date();
   }
 }

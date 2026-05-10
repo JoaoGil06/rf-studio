@@ -12,3 +12,11 @@ export interface UserProps {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Aqui é Profile porque os outros campos não são para atualizar
+export interface UpdateProfileProps {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  birthDate?: string | null;
+}
