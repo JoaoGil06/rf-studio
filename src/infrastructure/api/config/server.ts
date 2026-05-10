@@ -11,6 +11,7 @@ import {
   buildGetUsersUseCase,
   buildGetUserUseCase,
   buildLoginUseCase,
+  buildLogoutUseCase,
   buildRegisterUserUseCase,
   buildRoleDataLoader,
 } from '../../container.js';
@@ -29,6 +30,7 @@ export async function startServer() {
       context: buildContext(
         {
           login: buildLoginUseCase(),
+          logout: buildLogoutUseCase(),
           registerUser: buildRegisterUserUseCase(),
           getUsers: buildGetUsersUseCase(),
           getUser: buildGetUserUseCase(),

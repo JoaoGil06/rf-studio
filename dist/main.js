@@ -12,6 +12,10 @@ var errorTypeDefs = `#graphql
   type UserAlreadyExistsError {
     message: String
   }
+
+  type InvalidCredentialsError {
+    message: String!
+  }
 `;
 
 // src/infrastructure/graphql/schema/user.graphql.ts
@@ -23,6 +27,7 @@ var userTypeDefs = `#graphql
 
     type Mutation {
         registerUser(input: RegisterUserInput!): RegisterUserPayload!
+        login(input: LoginInput!): LoginPayload!
     }
 
      type PageInfo {
@@ -56,6 +61,7 @@ var userTypeDefs = `#graphql
         edges: [UserEdge!]!
         pageInfo: PageInfo!
     }
+
     # N\xE3o \xE9 necess\xE1rio Role aqui porque criamos sempre com "Cliente" por default 
     # Conseguimos ver isto no register-user useCase
     input RegisterUserInput {
@@ -72,7 +78,22 @@ var userTypeDefs = `#graphql
 
     union RegisterUserPayload = RegisterUserSuccess | UserAlreadyExistsError
     
-  
+    input LoginInput {
+        email: String!
+        password: String!
+    }
+
+    type LoginSuccess {
+        token: String!
+        user: User!
+    }
+
+    union LoginPayload = LoginSuccess | InvalidCredentialsError
+
+    type LogoutSuccess {
+        success: Boolean!
+    }
+
 `;
 
 // src/infrastructure/graphql/schema/schema.ts
@@ -97,12 +118,26 @@ var InvalidValueError = class extends Error {
   }
 };
 
+// src/domain/@shared/errors/unathorizedError.ts
+var UnathorizedError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnathorizedError";
+  }
+};
+
 // src/infrastructure/graphql/resolvers/mutations/user.mutation.ts
 var userMutations = {
   RegisterUserPayload: {
     __resolveType(obj) {
       if ("user" in obj) return "RegisterUserSuccess";
       return "UserAlreadyExistsError";
+    }
+  },
+  LoginPayload: {
+    __resolveType(obj) {
+      if ("token" in obj) return "LoginSuccess";
+      return "InvalidCredentialsError";
     }
   },
   Mutation: {
@@ -116,6 +151,31 @@ var userMutations = {
         }
         if (error instanceof InvalidValueError) {
           throw new GraphQLError(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    },
+    login: async (_, { input }, context) => {
+      try {
+        const result = await context.useCases.login.execute(input);
+        return result;
+      } catch (error) {
+        if (error instanceof UnathorizedError) {
+          return { message: error.message };
+        }
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    },
+    logout: async (_, __, context) => {
+      const token = context.token;
+      try {
+        return await context.useCases.logout.execute(token);
+      } catch (error) {
+        if (error instanceof UnathorizedError) {
+          throw new GraphQLError(error.message, { extensions: { code: "UNAUTHENTICATED" } });
         }
         throw error;
       }
@@ -149,12 +209,24 @@ var resolvers = {
   ...userMutations
 };
 
+// src/infrastructure/graphql/helpers/extract-berarer-token.ts
+function extractBearerToken(authorizationHeader) {
+  if (!authorizationHeader) return null;
+  const [scheme, token] = authorizationHeader.split(" ");
+  if (scheme !== "Berarer" || !token) return null;
+  return token;
+}
+
 // src/infrastructure/graphql/buildContext.ts
 function buildContext(useCases, dataLoaders) {
-  return async ({ req }) => ({
-    useCases,
-    dataLoaders
-  });
+  return async ({ req }) => {
+    const authorizationHeader = req.headers.authorization;
+    return {
+      token: extractBearerToken(authorizationHeader),
+      useCases,
+      dataLoaders
+    };
+  };
 }
 
 // src/infrastructure/container.ts
@@ -171,6 +243,7 @@ var PORT = Number(getEnv("PORT", "8000"));
 var DATABASE_URL = getEnv("DATABASE_URL");
 var REDIS_URL = getEnv("REDIS_URL");
 var JWT_SECRET = getEnv("JWT_SECRET");
+var JWT_EXPIRES_IN = getEnv("JWT_EXPIRES_IN");
 
 // src/infrastructure/container.ts
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -418,6 +491,9 @@ var BcryptAdapter = class {
   async hash(plain) {
     return bcrypt.hash(plain, this.saltRounds);
   }
+  async compare(plain, hash) {
+    return bcrypt.compare(plain, hash);
+  }
 };
 
 // src/infrastructure/adapters/zod.adapter.ts
@@ -580,6 +656,92 @@ var GetUserUseCase = class {
   }
 };
 
+// src/usecase/auth/login/login.schema-validator.ts
+import { z as z2 } from "zod";
+var loginUserSchema = z2.object({
+  email: z2.string().email("Invalid email format"),
+  password: z2.string().min(1, "Password is required")
+});
+
+// src/usecase/auth/login/login.usecase.ts
+var LoginUseCase = class {
+  userRepository;
+  hashAdapter;
+  jwtAdapter;
+  validationAdapter;
+  constructor(userRepository, hashAdapter, jwtAdapter, validationAdapter) {
+    this.userRepository = userRepository;
+    this.hashAdapter = hashAdapter;
+    this.jwtAdapter = jwtAdapter;
+    this.validationAdapter = validationAdapter;
+  }
+  async execute(inputDto) {
+    const inputValid = this.validationAdapter.validate(
+      loginUserSchema,
+      inputDto
+    );
+    const normalizedEmail = inputValid.email.toLowerCase().trim();
+    const user = await this.userRepository.findByEmail(normalizedEmail);
+    if (!user) throw new UnathorizedError("Invalid Credentials");
+    const isPasswordMatch = await this.hashAdapter.compare(inputValid.password, user.passwordHash);
+    if (!isPasswordMatch) throw new UnathorizedError("Invalid Credentials");
+    const token = this.jwtAdapter.sign({
+      sub: user.id,
+      roleId: user.roleId,
+      email: user.email.value
+    });
+    return {
+      token,
+      user: {
+        id: user.id,
+        roleId: user.roleId,
+        name: user.name,
+        email: user.email.value,
+        phoneNumber: user.phone.value,
+        birthDate: user.birthDate ? user.birthDate.toISOString().split("T")[0] : null,
+        createdAt: user.createdAt.toISOString()
+      }
+    };
+  }
+};
+
+// src/infrastructure/adapters/jwt.adapter.ts
+import jwt from "jsonwebtoken";
+var JwtAdapter = class {
+  secret;
+  constructor(secret) {
+    this.secret = secret;
+  }
+  sign(payload) {
+    const jwtExpiresIn = JWT_EXPIRES_IN ?? "7d";
+    return jwt.sign(payload, this.secret, {
+      expiresIn: jwtExpiresIn
+    });
+  }
+  verify(token) {
+    try {
+      return jwt.verify(token, this.secret);
+    } catch {
+      throw new UnathorizedError("Invalid or expired token");
+    }
+  }
+};
+
+// src/usecase/auth/logout/logout.usecase.ts
+var LogoutUseCase = class {
+  jwtAdapter;
+  constructor(jwtAdapter) {
+    this.jwtAdapter = jwtAdapter;
+  }
+  async execute(token) {
+    if (!token) throw new UnathorizedError("Missing authentication token");
+    this.jwtAdapter.verify(token);
+    return {
+      success: true
+    };
+  }
+};
+
 // src/infrastructure/container.ts
 var pool = new Pool({ connectionString: DATABASE_URL });
 var db = drizzle(pool);
@@ -608,6 +770,19 @@ var buildRoleDataLoader = () => {
   const roleDataLoader = createRoleDataLoader(db);
   return roleDataLoader;
 };
+var buildLoginUseCase = () => {
+  const userRepository = new UserRepository(db);
+  const hashAdapter = new BcryptAdapter();
+  const jwtAdapter = new JwtAdapter(JWT_SECRET);
+  const validationAdapter = new ZodAdapter();
+  const loginUseCase = new LoginUseCase(userRepository, hashAdapter, jwtAdapter, validationAdapter);
+  return loginUseCase;
+};
+var buildLogoutUseCase = () => {
+  const jwtAdapter = new JwtAdapter(JWT_SECRET);
+  const logoutUseCase = new LogoutUseCase(jwtAdapter);
+  return logoutUseCase;
+};
 
 // src/infrastructure/api/config/server.ts
 async function startServer() {
@@ -621,6 +796,8 @@ async function startServer() {
     expressMiddleware(server, {
       context: buildContext(
         {
+          login: buildLoginUseCase(),
+          logout: buildLogoutUseCase(),
           registerUser: buildRegisterUserUseCase(),
           getUsers: buildGetUsersUseCase(),
           getUser: buildGetUserUseCase()

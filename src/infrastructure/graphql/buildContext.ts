@@ -6,9 +6,12 @@ import DataLoader from 'dataloader';
 import { RoleDto } from './dataloaders/role/role.dataloader.dto.js';
 import { GetUserUseCase } from '../../usecase/users/get-user/get-user.usecase.js';
 import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
+import { extractBearerToken } from './helpers/extract-berarer-token.js';
+import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
 
 interface AppUseCases {
   login: LoginUseCase;
+  logout: LogoutUseCase;
   registerUser: RegisterUserUseCase;
   getUsers: GetUsersUseCase;
   getUser: GetUserUseCase;
@@ -19,9 +22,13 @@ interface AppDataLoaders {
 }
 
 export function buildContext(useCases: AppUseCases, dataLoaders: AppDataLoaders) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return async ({ req }: { req: Request }): Promise<AppContext> => ({
-    useCases,
-    dataLoaders,
-  });
+  return async ({ req }: { req: Request }): Promise<AppContext> => {
+    const authorizationHeader = req.headers.authorization;
+
+    return {
+      token: extractBearerToken(authorizationHeader),
+      useCases,
+      dataLoaders,
+    };
+  };
 }

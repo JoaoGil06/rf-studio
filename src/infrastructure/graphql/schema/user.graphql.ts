@@ -7,6 +7,7 @@ export const userTypeDefs = `#graphql
     type Mutation {
         registerUser(input: RegisterUserInput!): RegisterUserPayload!
         login(input: LoginInput!): LoginPayload!
+        logout: LogoutSuccess!
     }
 
      type PageInfo {
@@ -69,5 +70,8 @@ export const userTypeDefs = `#graphql
 
     union LoginPayload = LoginSuccess | InvalidCredentialsError
 
+    type LogoutSuccess {
+        success: Boolean!
+    }
 
 `;

@@ -4,10 +4,13 @@ import { RegisterUserUseCase } from '../../usecase/users/register-user/register-
 import { GetUsersUseCase } from '../../usecase/users/get-users/get-users.usecase.js';
 import { GetUserUseCase } from '../../usecase/users/get-user/get-user.usecase.js';
 import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
+import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
 
 export interface AppContext {
+  token: string | null;
   useCases: {
     login: LoginUseCase;
+    logout: LogoutUseCase;
     registerUser: RegisterUserUseCase;
     getUsers: GetUsersUseCase;
     getUser: GetUserUseCase;

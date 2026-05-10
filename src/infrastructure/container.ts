@@ -12,6 +12,7 @@ import { createRoleDataLoader } from './graphql/dataloaders/role/role.dataloader
 import { GetUserUseCase } from '../usecase/users/get-user/get-user.usecase.js';
 import { LoginUseCase } from '../usecase/auth/login/login.usecase.js';
 import { JwtAdapter } from './adapters/jwt.adapter.js';
+import { LogoutUseCase } from '../usecase/auth/logout/logout.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -61,4 +62,12 @@ export const buildLoginUseCase = (): LoginUseCase => {
   const loginUseCase = new LoginUseCase(userRepository, hashAdapter, jwtAdapter, validationAdapter);
 
   return loginUseCase;
+};
+
+export const buildLogoutUseCase = (): LogoutUseCase => {
+  const jwtAdapter = new JwtAdapter(JWT_SECRET);
+
+  const logoutUseCase = new LogoutUseCase(jwtAdapter);
+
+  return logoutUseCase;
 };
