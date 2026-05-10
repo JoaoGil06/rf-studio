@@ -53,6 +53,10 @@ export const buildRoleDataLoader = (): DataLoader<string, RoleDto | null> => {
   return roleDataLoader;
 };
 
+export const buildJwtAdapter = (): JwtAdapter => {
+  return new JwtAdapter(JWT_SECRET);
+};
+
 export const buildLoginUseCase = (): LoginUseCase => {
   const userRepository = new UserRepository(db);
   const hashAdapter = new BcryptAdapter();
@@ -65,9 +69,7 @@ export const buildLoginUseCase = (): LoginUseCase => {
 };
 
 export const buildLogoutUseCase = (): LogoutUseCase => {
-  const jwtAdapter = new JwtAdapter(JWT_SECRET);
-
-  const logoutUseCase = new LogoutUseCase(jwtAdapter);
+  const logoutUseCase = new LogoutUseCase();
 
   return logoutUseCase;
 };

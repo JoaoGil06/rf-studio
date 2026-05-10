@@ -10,15 +10,23 @@ import { buildContext } from '../../graphql/buildContext.js';
 import {
   buildGetUsersUseCase,
   buildGetUserUseCase,
+  buildJwtAdapter,
   buildLoginUseCase,
   buildLogoutUseCase,
   buildRegisterUserUseCase,
   buildRoleDataLoader,
 } from '../../container.js';
 import { PORT } from '../../constants/env.js';
+import { requireAuthPlugin } from '../../graphql/plugins/require-auth/require-auth.plugin.js';
 
 export async function startServer() {
-  const server = new ApolloServer<AppContext>({ typeDefs, resolvers });
+  const jwtAdapter = buildJwtAdapter();
+
+  const server = new ApolloServer<AppContext>({
+    typeDefs,
+    resolvers,
+    plugins: [requireAuthPlugin()],
+  });
   await server.start();
 
   const app = express();
@@ -38,6 +46,7 @@ export async function startServer() {
         {
           role: buildRoleDataLoader(),
         },
+        jwtAdapter,
       ),
     }),
   );

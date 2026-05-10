@@ -5,9 +5,10 @@ import { GetUsersUseCase } from '../../usecase/users/get-users/get-users.usecase
 import { GetUserUseCase } from '../../usecase/users/get-user/get-user.usecase.js';
 import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
 import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
+import { JwtPayload } from 'jsonwebtoken';
 
 export interface AppContext {
-  token: string | null;
+  currentUser: JwtPayload | null;
   useCases: {
     login: LoginUseCase;
     logout: LogoutUseCase;
