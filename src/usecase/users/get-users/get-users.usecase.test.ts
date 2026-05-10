@@ -23,6 +23,7 @@ const mockRepo: IUserRepository = {
   save: vi.fn(),
   findById: vi.fn(),
   findAll: vi.fn(),
+  update: vi.fn(),
 };
 
 describe('GetUsersUseCase', () => {

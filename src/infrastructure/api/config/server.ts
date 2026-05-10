@@ -15,6 +15,7 @@ import {
   buildLogoutUseCase,
   buildRegisterUserUseCase,
   buildRoleDataLoader,
+  buildUpdateUserUseCase,
 } from '../../container.js';
 import { PORT } from '../../constants/env.js';
 import { requireAuthPlugin } from '../../graphql/plugins/require-auth/require-auth.plugin.js';
@@ -42,6 +43,7 @@ export async function startServer() {
           registerUser: buildRegisterUserUseCase(),
           getUsers: buildGetUsersUseCase(),
           getUser: buildGetUserUseCase(),
+          updateUser: buildUpdateUserUseCase(),
         },
         {
           role: buildRoleDataLoader(),

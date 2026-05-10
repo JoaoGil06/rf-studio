@@ -101,4 +101,17 @@ export class UserRepository implements IUserRepository {
       updatedAt: user.updatedAt,
     });
   }
+
+  async update(user: User): Promise<void> {
+    await this.db
+      .update(users)
+      .set({
+        name: user.name,
+        email: user.email.value,
+        phone_number: user.phone.value,
+        birth_date: user.birthDate ? user.birthDate.toISOString().split('T')[0] : null,
+        updatedAt: user.updatedAt,
+      })
+      .where(eq(users.id, user.id));
+  }
 }

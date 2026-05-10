@@ -1,7 +1,7 @@
 export abstract class Entity<T> {
   protected readonly _id: string;
   protected readonly _createdAt: Date;
-  protected readonly _updatedAt: Date;
+  protected _updatedAt: Date;
 
   constructor(id: string, createdAt: Date, updatedAt: Date) {
     this._id = id;

@@ -10,6 +10,7 @@ import { extractBearerToken } from './helpers/extract-berarer-token.js';
 import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
 import { JwtPayload } from 'jsonwebtoken';
 import { IJwtAdapter } from '../../usecase/interfaces/jwt-adapter.interface.js';
+import { UpdateUserUseCase } from '../../usecase/users/update-user/update-user.usecase.js';
 
 interface AppUseCases {
   login: LoginUseCase;
@@ -17,6 +18,7 @@ interface AppUseCases {
   registerUser: RegisterUserUseCase;
   getUsers: GetUsersUseCase;
   getUser: GetUserUseCase;
+  updateUser: UpdateUserUseCase;
 }
 
 interface AppDataLoaders {

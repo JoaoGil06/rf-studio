@@ -13,6 +13,7 @@ import { GetUserUseCase } from '../usecase/users/get-user/get-user.usecase.js';
 import { LoginUseCase } from '../usecase/auth/login/login.usecase.js';
 import { JwtAdapter } from './adapters/jwt.adapter.js';
 import { LogoutUseCase } from '../usecase/auth/logout/logout.usecase.js';
+import { UpdateUserUseCase } from '../usecase/users/update-user/update-user.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -72,4 +73,13 @@ export const buildLogoutUseCase = (): LogoutUseCase => {
   const logoutUseCase = new LogoutUseCase();
 
   return logoutUseCase;
+};
+
+export const buildUpdateUserUseCase = (): UpdateUserUseCase => {
+  const userRepository = new UserRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  const updateUserUseCase = new UpdateUserUseCase(userRepository, validationAdapter);
+
+  return updateUserUseCase;
 };
