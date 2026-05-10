@@ -66,15 +66,7 @@ export const userMutations = {
       }
     },
     logout: async (_: unknown, __: unknown, context: AppContext) => {
-      const token = context.token;
-      try {
-        return await context.useCases.logout.execute(token);
-      } catch (error) {
-        if (error instanceof UnathorizedError) {
-          throw new GraphQLError(error.message, { extensions: { code: 'UNAUTHENTICATED' } });
-        }
-        throw error;
-      }
+      return await context.useCases.logout.execute();
     },
   },
 };
