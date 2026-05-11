@@ -1,5 +1,5 @@
 import { UserNodeDto } from '../../../../usecase/users/get-users/get-users.dto.js';
-import type { AppContext } from '../../context.js';
+import type { AppContext } from '../../context.types.js';
 
 export interface GetUsersArgs {
   first?: number | null;

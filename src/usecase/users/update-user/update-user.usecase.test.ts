@@ -26,6 +26,7 @@ const mockRepo: IUserRepository = {
   findById: vi.fn(),
   findAll: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 };
 
 const mockValidation: IValidationAdapter = {

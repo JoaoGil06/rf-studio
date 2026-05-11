@@ -9,6 +9,7 @@ export const userTypeDefs = `#graphql
         login(input: LoginInput!): LoginPayload!
         logout: LogoutSuccess!
         updateUser(input: UpdateUserInput!): UpdateUserPayload!
+        deleteUser(input: DeleteUserInput!): DeleteUserPayload!
     }
 
      type PageInfo {
@@ -76,11 +77,11 @@ export const userTypeDefs = `#graphql
     }
 
     input UpdateUserInput {
-    id: ID!
-    name: String
-    email: String
-    phoneNumber: String
-    birthDate: String
+        id: ID!
+        name: String
+        email: String
+        phoneNumber: String
+        birthDate: String
     }
 
     type UpdateUserSuccess {
@@ -88,5 +89,15 @@ export const userTypeDefs = `#graphql
     }
 
     union UpdateUserPayload = UpdateUserSuccess | UserNotFoundError | UserAlreadyExistsError
+
+    input DeleteUserInput {
+        id: ID!
+    }
+
+    type DeleteUserSuccess {
+        id: ID!
+    }
+
+    union DeleteUserPayload = DeleteUserSuccess | UserNotFoundError
 
 `;

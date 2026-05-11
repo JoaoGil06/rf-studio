@@ -114,4 +114,8 @@ export class UserRepository implements IUserRepository {
       })
       .where(eq(users.id, user.id));
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(users).where(eq(users.id, id));
+  }
 }

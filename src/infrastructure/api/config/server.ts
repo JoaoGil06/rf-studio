@@ -3,11 +3,12 @@ import { expressMiddleware } from '@as-integrations/express5';
 import cors from 'cors';
 import express from 'express';
 
-import type { AppContext } from '../../graphql/context.js';
+import type { AppContext } from '../../graphql/context.types.js';
 import { typeDefs } from '../../graphql/schema/schema.js';
 import { resolvers } from '../../graphql/resolvers/index.js';
 import { buildContext } from '../../graphql/buildContext.js';
 import {
+  buildDeleteUserUseCase,
   buildGetUsersUseCase,
   buildGetUserUseCase,
   buildJwtAdapter,
@@ -44,6 +45,7 @@ export async function startServer() {
           getUsers: buildGetUsersUseCase(),
           getUser: buildGetUserUseCase(),
           updateUser: buildUpdateUserUseCase(),
+          deleteUser: buildDeleteUserUseCase(),
         },
         {
           role: buildRoleDataLoader(),
