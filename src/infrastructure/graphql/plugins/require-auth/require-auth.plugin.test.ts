@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { GraphQLError, parse } from 'graphql';
 import { requireAuthPlugin } from './require-auth.plugin.js';
-import type { AppContext } from '../../context.js';
+import type { AppContext } from '../../context.types.js';
 
 const makeContext = (overrides: Partial<AppContext> = {}): AppContext =>
   ({

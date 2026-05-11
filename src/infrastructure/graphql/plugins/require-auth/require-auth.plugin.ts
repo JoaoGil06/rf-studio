@@ -1,5 +1,5 @@
 import { ApolloServerPlugin, GraphQLRequestListener } from '@apollo/server';
-import type { AppContext } from '../../context.js';
+import type { AppContext } from '../../context.types.js';
 import { GraphQLError } from 'graphql';
 import type { FieldNode, OperationDefinitionNode } from 'graphql';
 import { PUBLIC_OPERATIONS } from '../public-operations.js';
