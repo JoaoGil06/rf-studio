@@ -7,7 +7,7 @@ import { LoginUseCase } from '../../usecase/auth/login/login.usecase.js';
 import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
 import { JwtPayload } from 'jsonwebtoken';
 import { UpdateUserUseCase } from '../../usecase/users/update-user/update-user.usecase.js';
-import DeleteUserUseCase from '../../usecase/users/delete-user/delete-user.usecase.js';
+import { DeleteUserUseCase } from '../../usecase/users/delete-user/delete-user.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;

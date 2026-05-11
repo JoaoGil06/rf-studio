@@ -4,7 +4,7 @@ import { IValidationAdapter } from '../../interfaces/validation-adapter.interfac
 import { DeleteUserInputDto, DeleteUserOutputDto } from './delete-user.dto.js';
 import { deleteUserSchema } from './delete-user.schema-validator.js';
 
-export default class DeleteUserUseCase {
+export class DeleteUserUseCase {
   private readonly userRepository: IUserRepository;
   private readonly validationAdapter: IValidationAdapter;
 

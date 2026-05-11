@@ -14,7 +14,7 @@ import { LoginUseCase } from '../usecase/auth/login/login.usecase.js';
 import { JwtAdapter } from './adapters/jwt.adapter.js';
 import { LogoutUseCase } from '../usecase/auth/logout/logout.usecase.js';
 import { UpdateUserUseCase } from '../usecase/users/update-user/update-user.usecase.js';
-import DeleteUserUseCase from '../usecase/users/delete-user/delete-user.usecase.js';
+import { DeleteUserUseCase } from '../usecase/users/delete-user/delete-user.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);

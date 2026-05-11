@@ -10,10 +10,14 @@ import express from "express";
 // src/infrastructure/graphql/schema/error.graphql.ts
 var errorTypeDefs = `#graphql
   type UserAlreadyExistsError {
-    message: String
+    message: String!
   }
 
   type InvalidCredentialsError {
+    message: String!
+  }
+
+  type UserNotFoundError {
     message: String!
   }
 `;
@@ -28,6 +32,9 @@ var userTypeDefs = `#graphql
     type Mutation {
         registerUser(input: RegisterUserInput!): RegisterUserPayload!
         login(input: LoginInput!): LoginPayload!
+        logout: LogoutSuccess!
+        updateUser(input: UpdateUserInput!): UpdateUserPayload!
+        deleteUser(input: DeleteUserInput!): DeleteUserPayload!
     }
 
      type PageInfo {
@@ -94,12 +101,75 @@ var userTypeDefs = `#graphql
         success: Boolean!
     }
 
+    input UpdateUserInput {
+        id: ID!
+        name: String
+        email: String
+        phoneNumber: String
+        birthDate: String
+    }
+
+    type UpdateUserSuccess {
+        user: User!
+    }
+
+    union UpdateUserPayload = UpdateUserSuccess | UserNotFoundError | UserAlreadyExistsError
+
+    input DeleteUserInput {
+        id: ID!
+    }
+
+    type DeleteUserSuccess {
+        id: ID!
+    }
+
+    union DeleteUserPayload = DeleteUserSuccess | UserNotFoundError
+
 `;
 
 // src/infrastructure/graphql/schema/schema.ts
 var typeDefs = [errorTypeDefs, userTypeDefs];
 
-// src/infrastructure/graphql/resolvers/mutations/user.mutation.ts
+// src/infrastructure/graphql/resolvers/index.ts
+import { mergeResolvers as mergeResolvers8 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/queries/index.ts
+import { mergeResolvers as mergeResolvers2 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/queries/user/index.ts
+import { mergeResolvers } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/queries/user/users.query.ts
+var resolvers = {
+  Query: {
+    users: async (_, args, context) => {
+      return context.useCases.getUsers.execute(args);
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/queries/user/user.query.ts
+var resolvers2 = {
+  Query: {
+    user: async (_, args, context) => {
+      return context.useCases.getUser.execute(args);
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/queries/user/index.ts
+var userQueryResolvers = mergeResolvers([resolvers, resolvers2]);
+
+// src/infrastructure/graphql/resolvers/queries/index.ts
+var queryResolvers = mergeResolvers2([userQueryResolvers]);
+
+// src/infrastructure/graphql/resolvers/mutations/index.ts
+import { mergeResolvers as mergeResolvers5 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/mutations/user/index.ts
+import { mergeResolvers as mergeResolvers3 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/mutations/user/registerUser.mutation.ts
 import { GraphQLError } from "graphql";
 
 // src/domain/@shared/errors/conflictError.ts
@@ -118,26 +188,12 @@ var InvalidValueError = class extends Error {
   }
 };
 
-// src/domain/@shared/errors/unathorizedError.ts
-var UnathorizedError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "UnathorizedError";
-  }
-};
-
-// src/infrastructure/graphql/resolvers/mutations/user.mutation.ts
-var userMutations = {
+// src/infrastructure/graphql/resolvers/mutations/user/registerUser.mutation.ts
+var resolvers3 = {
   RegisterUserPayload: {
     __resolveType(obj) {
       if ("user" in obj) return "RegisterUserSuccess";
       return "UserAlreadyExistsError";
-    }
-  },
-  LoginPayload: {
-    __resolveType(obj) {
-      if ("token" in obj) return "LoginSuccess";
-      return "InvalidCredentialsError";
     }
   },
   Mutation: {
@@ -154,28 +210,112 @@ var userMutations = {
         }
         throw error;
       }
-    },
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/user/updateUser.mutation.ts
+import { GraphQLError as GraphQLError2 } from "graphql";
+
+// src/domain/@shared/errors/entityNotFoundError.ts
+var EntityNotFoundError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "EntityNotFoundError";
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/user/updateUser.mutation.ts
+var resolvers4 = {
+  UpdateUserPayload: {
+    __resolveType(obj) {
+      if ("user" in obj) return "UpdateUserSuccess";
+      if (obj.__kind === "UserNotFoundError") return "UserNotFoundError";
+      return "UserAlreadyExistsError";
+    }
+  },
+  Mutation: {
+    updateUser: async (_, { input }, context) => {
+      try {
+        const user = await context.useCases.updateUser.execute(input);
+        return { user };
+      } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+          return { __kind: "UserNotFoundError", message: error.message };
+        }
+        if (error instanceof ConflictError) {
+          return { __kind: "UserAlreadyExistsError", message: error.message };
+        }
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError2(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/user/deleteUser.mutation.ts
+import { GraphQLError as GraphQLError3 } from "graphql";
+var resolvers5 = {
+  DeleteUserPayload: {
+    __resolveType(obj) {
+      if ("id" in obj) return "DeleteUserSuccess";
+      return "UserNotFoundError";
+    }
+  },
+  Mutation: {
+    deleteUser: async (_, { input }, context) => {
+      try {
+        return await context.useCases.deleteUser.execute(input);
+      } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+          return { message: error.message };
+        }
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError3(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/user/index.ts
+var userMutationResolvers = mergeResolvers3([resolvers3, resolvers4, resolvers5]);
+
+// src/infrastructure/graphql/resolvers/mutations/auth/index.ts
+import { mergeResolvers as mergeResolvers4 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/mutations/auth/login.mutation.ts
+import { GraphQLError as GraphQLError4 } from "graphql";
+
+// src/domain/@shared/errors/unathorizedError.ts
+var UnathorizedError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnathorizedError";
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/auth/login.mutation.ts
+var resolvers6 = {
+  LoginPayload: {
+    __resolveType(obj) {
+      if ("token" in obj) return "LoginSuccess";
+      return "InvalidCredentialsError";
+    }
+  },
+  Mutation: {
     login: async (_, { input }, context) => {
       try {
-        const result = await context.useCases.login.execute(input);
-        return result;
+        return await context.useCases.login.execute(input);
       } catch (error) {
         if (error instanceof UnathorizedError) {
           return { message: error.message };
         }
         if (error instanceof InvalidValueError) {
-          throw new GraphQLError(error.message, { extensions: { code: "BAD_USER_INPUT" } });
-        }
-        throw error;
-      }
-    },
-    logout: async (_, __, context) => {
-      const token = context.token;
-      try {
-        return await context.useCases.logout.execute(token);
-      } catch (error) {
-        if (error instanceof UnathorizedError) {
-          throw new GraphQLError(error.message, { extensions: { code: "UNAUTHENTICATED" } });
+          throw new GraphQLError4(error.message, { extensions: { code: "BAD_USER_INPUT" } });
         }
         throw error;
       }
@@ -183,46 +323,67 @@ var userMutations = {
   }
 };
 
-// src/infrastructure/graphql/resolvers/queries/user.queries.ts
-var userQueries = {
-  Query: {
-    users: async (_, args, context) => {
-      const users2 = await context.useCases.getUsers.execute(args);
-      return users2;
-    },
-    user: async (_, args, context) => {
-      const user = await context.useCases.getUser.execute(args);
-      return user;
+// src/infrastructure/graphql/resolvers/mutations/auth/logout.mutation.ts
+var resolvers7 = {
+  Mutation: {
+    logout: async (_, __, context) => {
+      return context.useCases.logout.execute();
     }
-  },
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/auth/index.ts
+var authMutationResolvers = mergeResolvers4([resolvers6, resolvers7]);
+
+// src/infrastructure/graphql/resolvers/mutations/index.ts
+var mutationResolvers = mergeResolvers5([userMutationResolvers, authMutationResolvers]);
+
+// src/infrastructure/graphql/resolvers/field_resolvers/index.ts
+import { mergeResolvers as mergeResolvers7 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
+import { mergeResolvers as mergeResolvers6 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/field_resolvers/user/User.fields.ts
+var resolvers8 = {
   User: {
     role: async (parent, _, context) => {
-      const role = await context.dataLoaders.role.load(parent.roleId);
-      return role;
+      return context.dataLoaders.role.load(parent.roleId);
     }
   }
 };
 
+// src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
+var userTypeResolvers = mergeResolvers6([resolvers8]);
+
+// src/infrastructure/graphql/resolvers/field_resolvers/index.ts
+var fieldResolvers = mergeResolvers7([userTypeResolvers]);
+
 // src/infrastructure/graphql/resolvers/index.ts
-var resolvers = {
-  ...userQueries,
-  ...userMutations
-};
+var resolvers9 = mergeResolvers8([queryResolvers, mutationResolvers, fieldResolvers]);
 
 // src/infrastructure/graphql/helpers/extract-berarer-token.ts
 function extractBearerToken(authorizationHeader) {
   if (!authorizationHeader) return null;
   const [scheme, token] = authorizationHeader.split(" ");
-  if (scheme !== "Berarer" || !token) return null;
+  if (scheme !== "Bearer" || !token) return null;
   return token;
 }
 
 // src/infrastructure/graphql/buildContext.ts
-function buildContext(useCases, dataLoaders) {
+function buildContext(useCases, dataLoaders, jwtAdapter) {
   return async ({ req }) => {
-    const authorizationHeader = req.headers.authorization;
+    const token = extractBearerToken(req.headers.authorization);
+    let currentUser = null;
+    if (token) {
+      try {
+        currentUser = jwtAdapter.verify(token);
+      } catch {
+        currentUser = null;
+      }
+    }
     return {
-      token: extractBearerToken(authorizationHeader),
+      currentUser,
       useCases,
       dataLoaders
     };
@@ -303,6 +464,40 @@ var Entity = class {
   }
 };
 
+// src/domain/@shared/value-object/value-object.abstract.ts
+var ValueObject = class {
+  _value;
+  constructor(value) {
+    this._value = value;
+  }
+  get value() {
+    return this._value;
+  }
+  equals(other) {
+    return JSON.stringify(this._value) === JSON.stringify(other._value);
+  }
+};
+
+// src/domain/@shared/value-object/email/email.vo.ts
+var Email = class extends ValueObject {
+  constructor(value) {
+    const lowerCaseValue = value.toLowerCase().trim();
+    if (!lowerCaseValue || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lowerCaseValue)) {
+      throw new InvalidValueError(`Invalid email: ${value}`);
+    }
+    super(lowerCaseValue);
+  }
+};
+
+// src/domain/@shared/value-object/phone/phone.vo.ts
+var Phone = class extends ValueObject {
+  constructor(value) {
+    const trimmed = value.trim();
+    if (!trimmed) throw new InvalidValueError(`Invalid phone: ${value}`);
+    super(trimmed);
+  }
+};
+
 // src/domain/entity/user/user.entity.ts
 var User = class _User extends Entity {
   _roleId;
@@ -341,39 +536,14 @@ var User = class _User extends Entity {
   get birthDate() {
     return this._birthDate;
   }
-};
-
-// src/domain/@shared/value-object/value-object.abstract.ts
-var ValueObject = class {
-  _value;
-  constructor(value) {
-    this._value = value;
-  }
-  get value() {
-    return this._value;
-  }
-  equals(other) {
-    return JSON.stringify(this._value) === JSON.stringify(other._value);
-  }
-};
-
-// src/domain/@shared/value-object/email/email.vo.ts
-var Email = class extends ValueObject {
-  constructor(value) {
-    const lowerCaseValue = value.toLowerCase().trim();
-    if (!lowerCaseValue || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lowerCaseValue)) {
-      throw new InvalidValueError(`Invalid email: ${value}`);
+  updateUserProfile(props) {
+    if (props.name !== void 0) this._name = props.name;
+    if (props.email !== void 0) this._email = new Email(props.email);
+    if (props.phoneNumber !== void 0) this._phone = new Phone(props.phoneNumber);
+    if (props.birthDate !== void 0) {
+      this._birthDate = props.birthDate ? new Date(props.birthDate) : null;
     }
-    super(lowerCaseValue);
-  }
-};
-
-// src/domain/@shared/value-object/phone/phone.vo.ts
-var Phone = class extends ValueObject {
-  constructor(value) {
-    const trimmed = value.trim();
-    if (!trimmed) throw new InvalidValueError(`Invalid phone: ${value}`);
-    super(trimmed);
+    this._updatedAt = /* @__PURE__ */ new Date();
   }
 };
 
@@ -482,6 +652,18 @@ var UserRepository = class {
       updatedAt: user.updatedAt
     });
   }
+  async update(user) {
+    await this.db.update(users).set({
+      name: user.name,
+      email: user.email.value,
+      phone_number: user.phone.value,
+      birth_date: user.birthDate ? user.birthDate.toISOString().split("T")[0] : null,
+      updatedAt: user.updatedAt
+    }).where(eq(users.id, user.id));
+  }
+  async delete(id) {
+    await this.db.delete(users).where(eq(users.id, id));
+  }
 };
 
 // src/infrastructure/adapters/bcrypt.adapter.ts
@@ -504,14 +686,6 @@ var ZodAdapter = class {
       throw new InvalidValueError(result.error.issues.map((error) => error.message).join(", "));
     }
     return result.data;
-  }
-};
-
-// src/domain/@shared/errors/entityNotFoundError.ts
-var EntityNotFoundError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "EntityNotFoundError";
   }
 };
 
@@ -729,15 +903,88 @@ var JwtAdapter = class {
 
 // src/usecase/auth/logout/logout.usecase.ts
 var LogoutUseCase = class {
-  jwtAdapter;
-  constructor(jwtAdapter) {
-    this.jwtAdapter = jwtAdapter;
-  }
-  async execute(token) {
-    if (!token) throw new UnathorizedError("Missing authentication token");
-    this.jwtAdapter.verify(token);
+  async execute() {
     return {
       success: true
+    };
+  }
+};
+
+// src/usecase/users/update-user/update-user.schema-validator.ts
+import { z as z3 } from "zod";
+var updateUserSchema = z3.object({
+  id: z3.string().uuid(),
+  name: z3.string().min(1).optional(),
+  email: z3.email().optional(),
+  phoneNumber: z3.string().min(9).optional(),
+  birthDate: z3.string().nullable().optional()
+});
+
+// src/usecase/users/update-user/update-user.usecase.ts
+var UpdateUserUseCase = class {
+  userRepository;
+  validationAdapter;
+  constructor(userRepository, validationAdapter) {
+    this.userRepository = userRepository;
+    this.validationAdapter = validationAdapter;
+  }
+  async execute(inputDto) {
+    const validated = this.validationAdapter.validate(
+      updateUserSchema,
+      inputDto
+    );
+    const user = await this.userRepository.findById(validated.id);
+    if (!user) {
+      throw new EntityNotFoundError(`User with id ${validated.id} not found`);
+    }
+    if (validated.email !== void 0 && validated.email !== user.email.value) {
+      const existing = await this.userRepository.findByEmail(validated.email);
+      if (existing) {
+        throw new ConflictError(`Email already registered: ${validated.email}`);
+      }
+    }
+    user.updateUserProfile({
+      name: validated.name,
+      email: validated.email,
+      phoneNumber: validated.phoneNumber,
+      birthDate: validated.birthDate
+    });
+    await this.userRepository.update(user);
+    return {
+      id: user.id,
+      roleId: user.roleId,
+      name: user.name,
+      email: user.email.value,
+      phoneNumber: user.phone.value,
+      birthDate: user.birthDate ? user.birthDate.toISOString().split("T")[0] : null,
+      createdAt: user.createdAt.toISOString()
+    };
+  }
+};
+
+// src/usecase/users/delete-user/delete-user.schema-validator.ts
+import { z as z4 } from "zod";
+var deleteUserSchema = z4.object({
+  id: z4.uuid()
+});
+
+// src/usecase/users/delete-user/delete-user.usecase.ts
+var DeleteUserUseCase = class {
+  userRepository;
+  validationAdapter;
+  constructor(userRepository, validationAdapter) {
+    this.userRepository = userRepository;
+    this.validationAdapter = validationAdapter;
+  }
+  async execute(input) {
+    const validated = this.validationAdapter.validate(deleteUserSchema, input);
+    const user = await this.userRepository.findById(validated.id);
+    if (!user) {
+      throw new EntityNotFoundError(`User with id ${validated.id} not found`);
+    }
+    await this.userRepository.delete(user.id);
+    return {
+      id: user.id
     };
   }
 };
@@ -770,6 +1017,9 @@ var buildRoleDataLoader = () => {
   const roleDataLoader = createRoleDataLoader(db);
   return roleDataLoader;
 };
+var buildJwtAdapter = () => {
+  return new JwtAdapter(JWT_SECRET);
+};
 var buildLoginUseCase = () => {
   const userRepository = new UserRepository(db);
   const hashAdapter = new BcryptAdapter();
@@ -779,14 +1029,66 @@ var buildLoginUseCase = () => {
   return loginUseCase;
 };
 var buildLogoutUseCase = () => {
-  const jwtAdapter = new JwtAdapter(JWT_SECRET);
-  const logoutUseCase = new LogoutUseCase(jwtAdapter);
+  const logoutUseCase = new LogoutUseCase();
   return logoutUseCase;
 };
+var buildUpdateUserUseCase = () => {
+  const userRepository = new UserRepository(db);
+  const validationAdapter = new ZodAdapter();
+  const updateUserUseCase = new UpdateUserUseCase(userRepository, validationAdapter);
+  return updateUserUseCase;
+};
+var buildDeleteUserUseCase = () => {
+  const userRepository = new UserRepository(db);
+  const validationAdapter = new ZodAdapter();
+  const deleteUserUseCase = new DeleteUserUseCase(userRepository, validationAdapter);
+  return deleteUserUseCase;
+};
+
+// src/infrastructure/graphql/plugins/require-auth/require-auth.plugin.ts
+import { GraphQLError as GraphQLError5 } from "graphql";
+
+// src/infrastructure/graphql/plugins/public-operations.ts
+var PUBLIC_OPERATIONS = /* @__PURE__ */ new Set([
+  "login",
+  "registerUser",
+  "__schema",
+  "__type",
+  "__typename"
+]);
+
+// src/infrastructure/graphql/plugins/require-auth/require-auth.plugin.ts
+function topLevelFieldNames(operation) {
+  return operation.selectionSet.selections.filter((selection) => selection.kind === "Field").map((field) => field.name.value);
+}
+function requiresAuth(operation) {
+  return topLevelFieldNames(operation).some((name) => !PUBLIC_OPERATIONS.has(name));
+}
+function requireAuthPlugin() {
+  return {
+    async requestDidStart() {
+      return {
+        async didResolveOperation({ operation, contextValue }) {
+          if (!operation) return;
+          if (!requiresAuth(operation)) return;
+          if (contextValue.currentUser) return;
+          throw new GraphQLError5("You must be authenticated to perform this operation", {
+            extensions: { code: "UNAUTHENTICATED" }
+          });
+        }
+      };
+    }
+  };
+}
 
 // src/infrastructure/api/config/server.ts
 async function startServer() {
-  const server = new ApolloServer({ typeDefs, resolvers });
+  const jwtAdapter = buildJwtAdapter();
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers: resolvers9,
+    plugins: [requireAuthPlugin()]
+  });
   await server.start();
   const app = express();
   app.use(cors());
@@ -800,11 +1102,14 @@ async function startServer() {
           logout: buildLogoutUseCase(),
           registerUser: buildRegisterUserUseCase(),
           getUsers: buildGetUsersUseCase(),
-          getUser: buildGetUserUseCase()
+          getUser: buildGetUserUseCase(),
+          updateUser: buildUpdateUserUseCase(),
+          deleteUser: buildDeleteUserUseCase()
         },
         {
           role: buildRoleDataLoader()
-        }
+        },
+        jwtAdapter
       )
     })
   );
