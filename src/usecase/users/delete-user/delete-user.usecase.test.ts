@@ -3,7 +3,7 @@ import type { IUserRepository } from '../../../domain/repository/user-repository
 import type { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { UserFactory } from '../../../domain/entity/user/factory/user.factory.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
-import DeleteUserUseCase from './delete-user.usecase.js';
+import { DeleteUserUseCase } from './delete-user.usecase.js';
 
 const USER_ID = '11111111-1111-1111-1111-111111111111';
 
