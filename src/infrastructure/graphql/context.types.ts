@@ -8,6 +8,7 @@ import { LogoutUseCase } from '../../usecase/auth/logout/logout.usecase.js';
 import { JwtPayload } from 'jsonwebtoken';
 import { UpdateUserUseCase } from '../../usecase/users/update-user/update-user.usecase.js';
 import { DeleteUserUseCase } from '../../usecase/users/delete-user/delete-user.usecase.js';
+import { RegisterServiceUseCase } from '../../usecase/services/register-service/register-service.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -19,6 +20,7 @@ export interface AppContext {
     getUser: GetUserUseCase;
     updateUser: UpdateUserUseCase;
     deleteUser: DeleteUserUseCase;
+    registerService: RegisterServiceUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -33,6 +35,7 @@ export interface AppUseCases {
   getUser: GetUserUseCase;
   updateUser: UpdateUserUseCase;
   deleteUser: DeleteUserUseCase;
+  registerService: RegisterServiceUseCase;
 }
 
 export interface AppDataLoaders {

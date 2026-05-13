@@ -8,6 +8,13 @@
       "when": 1774374976986,
       "tag": "0000_lazy_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778678359860,
+      "tag": "0001_sudden_zombie",
+      "breakpoints": true
     }
   ]
 }
