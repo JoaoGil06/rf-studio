@@ -1,4 +1,5 @@
-import { errorTypeDefs } from './error.graphql.js';
-import { userTypeDefs } from './user.graphql.js';
+import { errorTypeDefs } from './typedefs/error.graphql.js';
+import { serviceTypeDefs } from './typedefs/service.graphql.js';
+import { userTypeDefs } from './typedefs/user.graphql.js';
 
-export const typeDefs = [errorTypeDefs, userTypeDefs];
+export const typeDefs = [errorTypeDefs, userTypeDefs, serviceTypeDefs];

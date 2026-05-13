@@ -14,6 +14,7 @@ import {
   buildJwtAdapter,
   buildLoginUseCase,
   buildLogoutUseCase,
+  buildRegisterServiceUseCase,
   buildRegisterUserUseCase,
   buildRoleDataLoader,
   buildUpdateUserUseCase,
@@ -46,6 +47,7 @@ export async function startServer() {
           getUser: buildGetUserUseCase(),
           updateUser: buildUpdateUserUseCase(),
           deleteUser: buildDeleteUserUseCase(),
+          registerService: buildRegisterServiceUseCase(),
         },
         {
           role: buildRoleDataLoader(),

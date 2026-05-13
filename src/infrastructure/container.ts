@@ -15,6 +15,8 @@ import { JwtAdapter } from './adapters/jwt.adapter.js';
 import { LogoutUseCase } from '../usecase/auth/logout/logout.usecase.js';
 import { UpdateUserUseCase } from '../usecase/users/update-user/update-user.usecase.js';
 import { DeleteUserUseCase } from '../usecase/users/delete-user/delete-user.usecase.js';
+import { RegisterServiceUseCase } from '../usecase/services/register-service/register-service.usecase.js';
+import { ServiceRepository } from './repository/service.repository.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -92,4 +94,13 @@ export const buildDeleteUserUseCase = (): DeleteUserUseCase => {
   const deleteUserUseCase = new DeleteUserUseCase(userRepository, validationAdapter);
 
   return deleteUserUseCase;
+};
+
+export const buildRegisterServiceUseCase = (): RegisterServiceUseCase => {
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  const registerServiceUseCase = new RegisterServiceUseCase(serviceRepository, validationAdapter);
+
+  return registerServiceUseCase;
 };
