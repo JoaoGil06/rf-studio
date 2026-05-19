@@ -2,7 +2,7 @@ import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
 import { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
-import { InputUpdateServiceDto, OutputUpdateServiceDto } from './update-service.dto.js';
+import { UpdateServiceInputDto, UpdateServiceOutputDto } from './update-service.dto.js';
 import { updateServiceSchema } from './update-service.schema-validator.js';
 
 export class UpdateServiceUseCase {
@@ -14,8 +14,8 @@ export class UpdateServiceUseCase {
     this.validationAdapter = validationAdapter;
   }
 
-  async execute(input: InputUpdateServiceDto): Promise<OutputUpdateServiceDto> {
-    const validated = this.validationAdapter.validate<InputUpdateServiceDto>(
+  async execute(input: UpdateServiceInputDto): Promise<UpdateServiceOutputDto> {
+    const validated = this.validationAdapter.validate<UpdateServiceInputDto>(
       updateServiceSchema,
       input,
     );

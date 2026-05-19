@@ -8,6 +8,7 @@ import { typeDefs } from '../../graphql/schema/schema.js';
 import { resolvers } from '../../graphql/resolvers/index.js';
 import { buildContext } from '../../graphql/buildContext.js';
 import {
+  buildDeleteServiceUseCase,
   buildDeleteUserUseCase,
   buildGetServicesUseCase,
   buildGetServiceUseCase,
@@ -54,6 +55,7 @@ export async function startServer() {
           getService: buildGetServiceUseCase(),
           getServices: buildGetServicesUseCase(),
           updateService: buildUpdateServiceUseCase(),
+          deleteService: buildDeleteServiceUseCase(),
         },
         {
           role: buildRoleDataLoader(),

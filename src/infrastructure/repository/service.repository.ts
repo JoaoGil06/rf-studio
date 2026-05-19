@@ -97,4 +97,8 @@ export class ServiceRepository implements IServiceRepository {
       })
       .where(eq(services.id, service.id));
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(services).where(eq(services.id, id));
+  }
 }
