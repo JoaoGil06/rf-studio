@@ -7,7 +7,7 @@ export interface ServiceNodeDto {
   createdAt: string;
 }
 
-export interface InputUpdateServiceDto {
+export interface UpdateServiceInputDto {
   id: string;
   name?: string;
   category?: string;
@@ -15,4 +15,4 @@ export interface InputUpdateServiceDto {
   durationMinutes?: number;
 }
 
-export type OutputUpdateServiceDto = ServiceNodeDto;
+export type UpdateServiceOutputDto = ServiceNodeDto;

@@ -53,6 +53,7 @@ var serviceTypeDefs = `#graphql
     type Mutation {
         registerService(input: RegisterServiceInput!): RegisterServicePayload!
         updateService(input: UpdateServiceInput!): UpdateServicePayload!
+        deleteService(input: DeleteServiceInput!): DeleteServicePayload!
     }
 
     enum ServiceCategory {
@@ -105,6 +106,16 @@ var serviceTypeDefs = `#graphql
     }
 
     union UpdateServicePayload = UpdateServiceSuccess | ServiceNotFoundError | ServiceAlreadyExistsError
+
+    input DeleteServiceInput {
+        id: ID!
+    }
+
+    type DeleteServiceSuccess {
+        id: ID!
+    }
+
+    union DeleteServicePayload = DeleteServiceSuccess | ServiceNotFoundError
 `;
 
 // src/infrastructure/graphql/schema/typedefs/user.graphql.ts
@@ -516,8 +527,38 @@ var resolvers11 = {
   }
 };
 
+// src/infrastructure/graphql/resolvers/mutations/service/deleteService.mutation.ts
+import { GraphQLError as GraphQLError9 } from "graphql";
+var resolvers12 = {
+  DeleteServicePayload: {
+    __resolveType(obj) {
+      if ("id" in obj) return "DeleteServiceSuccess";
+      return "ServiceNotFoundError";
+    }
+  },
+  Mutation: {
+    deleteService: async (_, { input }, context) => {
+      try {
+        return await context.useCases.deleteService.execute(input);
+      } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+          return { message: error.message };
+        }
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError9(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
 // src/infrastructure/graphql/resolvers/mutations/service/index.ts
-var serviceMutationResolvers = mergeResolvers6([resolvers10, resolvers11]);
+var serviceMutationResolvers = mergeResolvers6([
+  resolvers10,
+  resolvers11,
+  resolvers12
+]);
 
 // src/infrastructure/graphql/resolvers/mutations/index.ts
 var mutationResolvers = mergeResolvers7([
@@ -533,7 +574,7 @@ import { mergeResolvers as mergeResolvers9 } from "@graphql-tools/merge";
 import { mergeResolvers as mergeResolvers8 } from "@graphql-tools/merge";
 
 // src/infrastructure/graphql/resolvers/field_resolvers/user/User.fields.ts
-var resolvers12 = {
+var resolvers13 = {
   User: {
     role: async (parent, _, context) => {
       return context.dataLoaders.role.load(parent.roleId);
@@ -542,13 +583,13 @@ var resolvers12 = {
 };
 
 // src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
-var userTypeResolvers = mergeResolvers8([resolvers12]);
+var userTypeResolvers = mergeResolvers8([resolvers13]);
 
 // src/infrastructure/graphql/resolvers/field_resolvers/index.ts
 var fieldResolvers = mergeResolvers9([userTypeResolvers]);
 
 // src/infrastructure/graphql/resolvers/index.ts
-var resolvers13 = mergeResolvers10([queryResolvers, mutationResolvers, fieldResolvers]);
+var resolvers14 = mergeResolvers10([queryResolvers, mutationResolvers, fieldResolvers]);
 
 // src/infrastructure/graphql/helpers/extract-berarer-token.ts
 function extractBearerToken(authorizationHeader) {
@@ -1413,6 +1454,9 @@ var ServiceRepository = class {
       updatedAt: service.updatedAt
     }).where(eq2(services.id, service.id));
   }
+  async delete(id) {
+    await this.db.delete(services).where(eq2(services.id, id));
+  }
 };
 
 // src/usecase/services/get-service/get-service.usecase.ts
@@ -1524,6 +1568,34 @@ var UpdateServiceUseCase = class {
   }
 };
 
+// src/usecase/services/delete-service/delete-service.schema-validator.ts
+import { z as z7 } from "zod";
+var deleteServiceSchema = z7.object({
+  id: z7.uuid()
+});
+
+// src/usecase/services/delete-service/delete-service.usecase.ts
+var DeleteServiceUseCase = class {
+  serviceRepository;
+  validationAdapter;
+  constructor(serviceRepository, validationAdapter) {
+    this.serviceRepository = serviceRepository;
+    this.validationAdapter = validationAdapter;
+  }
+  async execute(input) {
+    const validated = this.validationAdapter.validate(
+      deleteServiceSchema,
+      input
+    );
+    const service = await this.serviceRepository.findById(validated.id);
+    if (!service) {
+      throw new EntityNotFoundError(`Service with id ${validated.id} not found`);
+    }
+    await this.serviceRepository.delete(service.id);
+    return { id: service.id };
+  }
+};
+
 // src/infrastructure/container.ts
 var pool = new Pool({ connectionString: DATABASE_URL });
 var db = drizzle(pool);
@@ -1601,9 +1673,15 @@ var buildUpdateServiceUseCase = () => {
   const updateServiceUseCase = new UpdateServiceUseCase(serviceRepository, validationAdapter);
   return updateServiceUseCase;
 };
+var buildDeleteServiceUseCase = () => {
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+  const deleteServiceUseCase = new DeleteServiceUseCase(serviceRepository, validationAdapter);
+  return deleteServiceUseCase;
+};
 
 // src/infrastructure/graphql/plugins/require-auth/require-auth.plugin.ts
-import { GraphQLError as GraphQLError9 } from "graphql";
+import { GraphQLError as GraphQLError10 } from "graphql";
 
 // src/infrastructure/graphql/plugins/public-operations.ts
 var PUBLIC_OPERATIONS = /* @__PURE__ */ new Set([
@@ -1629,7 +1707,7 @@ function requireAuthPlugin() {
           if (!operation) return;
           if (!requiresAuth(operation)) return;
           if (contextValue.currentUser) return;
-          throw new GraphQLError9("You must be authenticated to perform this operation", {
+          throw new GraphQLError10("You must be authenticated to perform this operation", {
             extensions: { code: "UNAUTHENTICATED" }
           });
         }
@@ -1643,7 +1721,7 @@ async function startServer() {
   const jwtAdapter = buildJwtAdapter();
   const server = new ApolloServer({
     typeDefs,
-    resolvers: resolvers13,
+    resolvers: resolvers14,
     plugins: [requireAuthPlugin()]
   });
   await server.start();
@@ -1665,7 +1743,8 @@ async function startServer() {
           registerService: buildRegisterServiceUseCase(),
           getService: buildGetServiceUseCase(),
           getServices: buildGetServicesUseCase(),
-          updateService: buildUpdateServiceUseCase()
+          updateService: buildUpdateServiceUseCase(),
+          deleteService: buildDeleteServiceUseCase()
         },
         {
           role: buildRoleDataLoader()

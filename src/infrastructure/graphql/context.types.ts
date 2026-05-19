@@ -12,6 +12,7 @@ import { RegisterServiceUseCase } from '../../usecase/services/register-service/
 import { GetServiceUseCase } from '../../usecase/services/get-service/get-service.usecase.js';
 import { GetServicesUseCase } from '../../usecase/services/get-services/get-services.usecase.js';
 import { UpdateServiceUseCase } from '../../usecase/services/update-service/update-service.usecase.js';
+import { DeleteServiceUseCase } from '../../usecase/services/delete-service/delete-service.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -27,6 +28,7 @@ export interface AppContext {
     getService: GetServiceUseCase;
     getServices: GetServicesUseCase;
     updateService: UpdateServiceUseCase;
+    deleteService: DeleteServiceUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -45,6 +47,7 @@ export interface AppUseCases {
   getService: GetServiceUseCase;
   getServices: GetServicesUseCase;
   updateService: UpdateServiceUseCase;
+  deleteService: DeleteServiceUseCase;
 }
 
 export interface AppDataLoaders {

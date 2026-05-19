@@ -7,6 +7,7 @@ export const serviceTypeDefs = `#graphql
     type Mutation {
         registerService(input: RegisterServiceInput!): RegisterServicePayload!
         updateService(input: UpdateServiceInput!): UpdateServicePayload!
+        deleteService(input: DeleteServiceInput!): DeleteServicePayload!
     }
 
     enum ServiceCategory {
@@ -59,4 +60,14 @@ export const serviceTypeDefs = `#graphql
     }
 
     union UpdateServicePayload = UpdateServiceSuccess | ServiceNotFoundError | ServiceAlreadyExistsError
+
+    input DeleteServiceInput {
+        id: ID!
+    }
+
+    type DeleteServiceSuccess {
+        id: ID!
+    }
+
+    union DeleteServicePayload = DeleteServiceSuccess | ServiceNotFoundError
 `;
