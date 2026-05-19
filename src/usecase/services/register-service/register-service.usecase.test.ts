@@ -7,6 +7,8 @@ import type { IValidationAdapter } from '../../interfaces/validation-adapter.int
 const mockRepo: IServiceRepository = {
   findByNameAndCategory: vi.fn(),
   save: vi.fn(),
+  findById: vi.fn(),
+  findAll: vi.fn(),
 };
 
 const mockValidation: IValidationAdapter = {

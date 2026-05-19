@@ -1,6 +1,7 @@
 export const serviceTypeDefs = `#graphql
     type Query {
-        _serviceRoot: String
+        service(id: ID!): Service!
+        services(first: Int, after: String): ServiceConnection!
     }
 
     type Mutation {
@@ -19,6 +20,16 @@ export const serviceTypeDefs = `#graphql
         price: Float!
         durationMinutes: Int!
         createdAt: String!
+    }
+
+    type ServiceEdge {
+        node: Service!
+        cursor: String!
+    }
+
+    type ServiceConnection {
+        edges: [ServiceEdge!]!
+        pageInfo: PageInfo!
     }
 
     input RegisterServiceInput {

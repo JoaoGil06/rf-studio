@@ -9,6 +9,8 @@ import { resolvers } from '../../graphql/resolvers/index.js';
 import { buildContext } from '../../graphql/buildContext.js';
 import {
   buildDeleteUserUseCase,
+  buildGetServicesUseCase,
+  buildGetServiceUseCase,
   buildGetUsersUseCase,
   buildGetUserUseCase,
   buildJwtAdapter,
@@ -48,6 +50,8 @@ export async function startServer() {
           updateUser: buildUpdateUserUseCase(),
           deleteUser: buildDeleteUserUseCase(),
           registerService: buildRegisterServiceUseCase(),
+          getService: buildGetServiceUseCase(),
+          getServices: buildGetServicesUseCase(),
         },
         {
           role: buildRoleDataLoader(),
