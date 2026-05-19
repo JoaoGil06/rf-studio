@@ -7,22 +7,88 @@ import { expressMiddleware } from "@as-integrations/express5";
 import cors from "cors";
 import express from "express";
 
-// src/infrastructure/graphql/schema/error.graphql.ts
+// src/infrastructure/graphql/schema/typedefs/error.graphql.ts
 var errorTypeDefs = `#graphql
-  type UserAlreadyExistsError {
+  # Auth
+  type InvalidCredentialsError {
     message: String!
   }
 
-  type InvalidCredentialsError {
+  # Users
+  type UserAlreadyExistsError {
     message: String!
   }
 
   type UserNotFoundError {
     message: String!
   }
+
+  # Services
+  type ServiceAlreadyExistsError {
+    message: String!
+  }
 `;
 
-// src/infrastructure/graphql/schema/user.graphql.ts
+// src/infrastructure/graphql/schema/typedefs/pagination.graphql.ts
+var paginationTypeDefs = `#graphql
+    type PageInfo {
+        hasNextPage: Boolean!
+        hasPreviousPage: Boolean!
+        startCursor: String
+        endCursor: String
+    }
+`;
+
+// src/infrastructure/graphql/schema/typedefs/service.graphql.ts
+var serviceTypeDefs = `#graphql
+    type Query {
+        service(id: ID!): Service!
+        services(first: Int, after: String): ServiceConnection!
+    }
+
+    type Mutation {
+        registerService(input: RegisterServiceInput!): RegisterServicePayload!
+    }
+
+    enum ServiceCategory {
+        nails
+        eyebrows
+    }
+
+    type Service {
+        id: ID!
+        name: String!
+        category: ServiceCategory!
+        price: Float!
+        durationMinutes: Int!
+        createdAt: String!
+    }
+
+    type ServiceEdge {
+        node: Service!
+        cursor: String!
+    }
+
+    type ServiceConnection {
+        edges: [ServiceEdge!]!
+        pageInfo: PageInfo!
+    }
+
+    input RegisterServiceInput {
+        name: String!
+        category: ServiceCategory!
+        price: Float!
+        durationMinutes: Int!
+    }
+
+    type RegisterServiceSuccess {
+        service: Service!
+    }
+
+    union RegisterServicePayload = RegisterServiceSuccess | ServiceAlreadyExistsError
+`;
+
+// src/infrastructure/graphql/schema/typedefs/user.graphql.ts
 var userTypeDefs = `#graphql
     type Query {
         users(first: Int, after: String): UserConnection! 
@@ -35,13 +101,6 @@ var userTypeDefs = `#graphql
         logout: LogoutSuccess!
         updateUser(input: UpdateUserInput!): UpdateUserPayload!
         deleteUser(input: DeleteUserInput!): DeleteUserPayload!
-    }
-
-     type PageInfo {
-        hasNextPage: Boolean!
-        hasPreviousPage: Boolean!
-        startCursor: String
-        endCursor: String
     }
 
     type Role {
@@ -128,13 +187,13 @@ var userTypeDefs = `#graphql
 `;
 
 // src/infrastructure/graphql/schema/schema.ts
-var typeDefs = [errorTypeDefs, userTypeDefs];
+var typeDefs = [errorTypeDefs, paginationTypeDefs, userTypeDefs, serviceTypeDefs];
 
 // src/infrastructure/graphql/resolvers/index.ts
-import { mergeResolvers as mergeResolvers8 } from "@graphql-tools/merge";
+import { mergeResolvers as mergeResolvers10 } from "@graphql-tools/merge";
 
 // src/infrastructure/graphql/resolvers/queries/index.ts
-import { mergeResolvers as mergeResolvers2 } from "@graphql-tools/merge";
+import { mergeResolvers as mergeResolvers3 } from "@graphql-tools/merge";
 
 // src/infrastructure/graphql/resolvers/queries/user/index.ts
 import { mergeResolvers } from "@graphql-tools/merge";
@@ -160,25 +219,38 @@ var resolvers2 = {
 // src/infrastructure/graphql/resolvers/queries/user/index.ts
 var userQueryResolvers = mergeResolvers([resolvers, resolvers2]);
 
-// src/infrastructure/graphql/resolvers/queries/index.ts
-var queryResolvers = mergeResolvers2([userQueryResolvers]);
+// src/infrastructure/graphql/resolvers/queries/service/index.ts
+import { mergeResolvers as mergeResolvers2 } from "@graphql-tools/merge";
 
-// src/infrastructure/graphql/resolvers/mutations/index.ts
-import { mergeResolvers as mergeResolvers5 } from "@graphql-tools/merge";
-
-// src/infrastructure/graphql/resolvers/mutations/user/index.ts
-import { mergeResolvers as mergeResolvers3 } from "@graphql-tools/merge";
-
-// src/infrastructure/graphql/resolvers/mutations/user/registerUser.mutation.ts
+// src/infrastructure/graphql/resolvers/queries/service/service.query.ts
 import { GraphQLError } from "graphql";
 
-// src/domain/@shared/errors/conflictError.ts
-var ConflictError = class extends Error {
+// src/domain/@shared/errors/entityNotFoundError.ts
+var EntityNotFoundError = class extends Error {
   constructor(message) {
     super(message);
-    this.name = "ConflictError";
+    this.name = "EntityNotFoundError";
   }
 };
+
+// src/infrastructure/graphql/resolvers/queries/service/service.query.ts
+var resolvers3 = {
+  Query: {
+    service: async (_, args, context) => {
+      try {
+        return await context.useCases.getService.execute(args);
+      } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+          throw new GraphQLError(error.message, { extensions: { code: "NOT_FOUND" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/queries/service/services.query.ts
+import { GraphQLError as GraphQLError2 } from "graphql";
 
 // src/domain/@shared/errors/invalidValueError.ts
 var InvalidValueError = class extends Error {
@@ -188,8 +260,47 @@ var InvalidValueError = class extends Error {
   }
 };
 
+// src/infrastructure/graphql/resolvers/queries/service/services.query.ts
+var resolvers4 = {
+  Query: {
+    services: async (_, args, context) => {
+      try {
+        return await context.useCases.getServices.execute(args);
+      } catch (error) {
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError2(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/queries/service/index.ts
+var serviceQueryResolvers = mergeResolvers2([resolvers3, resolvers4]);
+
+// src/infrastructure/graphql/resolvers/queries/index.ts
+var queryResolvers = mergeResolvers3([userQueryResolvers, serviceQueryResolvers]);
+
+// src/infrastructure/graphql/resolvers/mutations/index.ts
+import { mergeResolvers as mergeResolvers7 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/mutations/user/index.ts
+import { mergeResolvers as mergeResolvers4 } from "@graphql-tools/merge";
+
 // src/infrastructure/graphql/resolvers/mutations/user/registerUser.mutation.ts
-var resolvers3 = {
+import { GraphQLError as GraphQLError3 } from "graphql";
+
+// src/domain/@shared/errors/conflictError.ts
+var ConflictError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ConflictError";
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/user/registerUser.mutation.ts
+var resolvers5 = {
   RegisterUserPayload: {
     __resolveType(obj) {
       if ("user" in obj) return "RegisterUserSuccess";
@@ -206,7 +317,7 @@ var resolvers3 = {
           return { message: error.message };
         }
         if (error instanceof InvalidValueError) {
-          throw new GraphQLError(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+          throw new GraphQLError3(error.message, { extensions: { code: "BAD_USER_INPUT" } });
         }
         throw error;
       }
@@ -215,18 +326,8 @@ var resolvers3 = {
 };
 
 // src/infrastructure/graphql/resolvers/mutations/user/updateUser.mutation.ts
-import { GraphQLError as GraphQLError2 } from "graphql";
-
-// src/domain/@shared/errors/entityNotFoundError.ts
-var EntityNotFoundError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "EntityNotFoundError";
-  }
-};
-
-// src/infrastructure/graphql/resolvers/mutations/user/updateUser.mutation.ts
-var resolvers4 = {
+import { GraphQLError as GraphQLError4 } from "graphql";
+var resolvers6 = {
   UpdateUserPayload: {
     __resolveType(obj) {
       if ("user" in obj) return "UpdateUserSuccess";
@@ -247,7 +348,7 @@ var resolvers4 = {
           return { __kind: "UserAlreadyExistsError", message: error.message };
         }
         if (error instanceof InvalidValueError) {
-          throw new GraphQLError2(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+          throw new GraphQLError4(error.message, { extensions: { code: "BAD_USER_INPUT" } });
         }
         throw error;
       }
@@ -256,8 +357,8 @@ var resolvers4 = {
 };
 
 // src/infrastructure/graphql/resolvers/mutations/user/deleteUser.mutation.ts
-import { GraphQLError as GraphQLError3 } from "graphql";
-var resolvers5 = {
+import { GraphQLError as GraphQLError5 } from "graphql";
+var resolvers7 = {
   DeleteUserPayload: {
     __resolveType(obj) {
       if ("id" in obj) return "DeleteUserSuccess";
@@ -273,7 +374,7 @@ var resolvers5 = {
           return { message: error.message };
         }
         if (error instanceof InvalidValueError) {
-          throw new GraphQLError3(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+          throw new GraphQLError5(error.message, { extensions: { code: "BAD_USER_INPUT" } });
         }
         throw error;
       }
@@ -282,13 +383,13 @@ var resolvers5 = {
 };
 
 // src/infrastructure/graphql/resolvers/mutations/user/index.ts
-var userMutationResolvers = mergeResolvers3([resolvers3, resolvers4, resolvers5]);
+var userMutationResolvers = mergeResolvers4([resolvers5, resolvers6, resolvers7]);
 
 // src/infrastructure/graphql/resolvers/mutations/auth/index.ts
-import { mergeResolvers as mergeResolvers4 } from "@graphql-tools/merge";
+import { mergeResolvers as mergeResolvers5 } from "@graphql-tools/merge";
 
 // src/infrastructure/graphql/resolvers/mutations/auth/login.mutation.ts
-import { GraphQLError as GraphQLError4 } from "graphql";
+import { GraphQLError as GraphQLError6 } from "graphql";
 
 // src/domain/@shared/errors/unathorizedError.ts
 var UnathorizedError = class extends Error {
@@ -299,7 +400,7 @@ var UnathorizedError = class extends Error {
 };
 
 // src/infrastructure/graphql/resolvers/mutations/auth/login.mutation.ts
-var resolvers6 = {
+var resolvers8 = {
   LoginPayload: {
     __resolveType(obj) {
       if ("token" in obj) return "LoginSuccess";
@@ -315,7 +416,7 @@ var resolvers6 = {
           return { message: error.message };
         }
         if (error instanceof InvalidValueError) {
-          throw new GraphQLError4(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+          throw new GraphQLError6(error.message, { extensions: { code: "BAD_USER_INPUT" } });
         }
         throw error;
       }
@@ -324,7 +425,7 @@ var resolvers6 = {
 };
 
 // src/infrastructure/graphql/resolvers/mutations/auth/logout.mutation.ts
-var resolvers7 = {
+var resolvers9 = {
   Mutation: {
     logout: async (_, __, context) => {
       return context.useCases.logout.execute();
@@ -333,19 +434,56 @@ var resolvers7 = {
 };
 
 // src/infrastructure/graphql/resolvers/mutations/auth/index.ts
-var authMutationResolvers = mergeResolvers4([resolvers6, resolvers7]);
+var authMutationResolvers = mergeResolvers5([resolvers8, resolvers9]);
 
-// src/infrastructure/graphql/resolvers/mutations/index.ts
-var mutationResolvers = mergeResolvers5([userMutationResolvers, authMutationResolvers]);
-
-// src/infrastructure/graphql/resolvers/field_resolvers/index.ts
-import { mergeResolvers as mergeResolvers7 } from "@graphql-tools/merge";
-
-// src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
+// src/infrastructure/graphql/resolvers/mutations/service/index.ts
 import { mergeResolvers as mergeResolvers6 } from "@graphql-tools/merge";
 
+// src/infrastructure/graphql/resolvers/mutations/service/registerService.mutation.ts
+import { GraphQLError as GraphQLError7 } from "graphql";
+var resolvers10 = {
+  RegisterServicePayload: {
+    __resolveType(obj) {
+      if ("service" in obj) return "RegisterServiceSuccess";
+      return "ServiceAlreadyExistsError";
+    }
+  },
+  Mutation: {
+    registerService: async (_, { input }, context) => {
+      try {
+        const service = await context.useCases.registerService.execute(input);
+        return { service };
+      } catch (error) {
+        if (error instanceof ConflictError) {
+          return { message: error.message };
+        }
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError7(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
+// src/infrastructure/graphql/resolvers/mutations/service/index.ts
+var serviceMutationResolvers = mergeResolvers6([resolvers10]);
+
+// src/infrastructure/graphql/resolvers/mutations/index.ts
+var mutationResolvers = mergeResolvers7([
+  userMutationResolvers,
+  authMutationResolvers,
+  serviceMutationResolvers
+]);
+
+// src/infrastructure/graphql/resolvers/field_resolvers/index.ts
+import { mergeResolvers as mergeResolvers9 } from "@graphql-tools/merge";
+
+// src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
+import { mergeResolvers as mergeResolvers8 } from "@graphql-tools/merge";
+
 // src/infrastructure/graphql/resolvers/field_resolvers/user/User.fields.ts
-var resolvers8 = {
+var resolvers11 = {
   User: {
     role: async (parent, _, context) => {
       return context.dataLoaders.role.load(parent.roleId);
@@ -354,13 +492,13 @@ var resolvers8 = {
 };
 
 // src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
-var userTypeResolvers = mergeResolvers6([resolvers8]);
+var userTypeResolvers = mergeResolvers8([resolvers11]);
 
 // src/infrastructure/graphql/resolvers/field_resolvers/index.ts
-var fieldResolvers = mergeResolvers7([userTypeResolvers]);
+var fieldResolvers = mergeResolvers9([userTypeResolvers]);
 
 // src/infrastructure/graphql/resolvers/index.ts
-var resolvers9 = mergeResolvers8([queryResolvers, mutationResolvers, fieldResolvers]);
+var resolvers12 = mergeResolvers10([queryResolvers, mutationResolvers, fieldResolvers]);
 
 // src/infrastructure/graphql/helpers/extract-berarer-token.ts
 function extractBearerToken(authorizationHeader) {
@@ -989,6 +1127,278 @@ var DeleteUserUseCase = class {
   }
 };
 
+// src/domain/entity/service/factory/service.factory.ts
+import { randomUUID as randomUUID2 } from "crypto";
+
+// src/domain/entity/service/service.entity.ts
+var Service = class _Service extends Entity {
+  _name;
+  _category;
+  _price;
+  _durationMinutes;
+  constructor(props) {
+    super(props.id, props.createdAt, props.updatedAt);
+    this._name = props.name;
+    this._category = props.category;
+    this._price = props.price;
+    this._durationMinutes = props.durationMinutes;
+  }
+  static _instantiate(props) {
+    return new _Service(props);
+  }
+  get name() {
+    return this._name;
+  }
+  get category() {
+    return this._category;
+  }
+  get price() {
+    return this._price;
+  }
+  get durationMinutes() {
+    return this._durationMinutes;
+  }
+};
+
+// src/domain/@shared/value-object/price/price.vo.ts
+var Price = class extends ValueObject {
+  constructor(value) {
+    if (!Number.isFinite(value)) {
+      throw new InvalidValueError(`Invalid price: ${value}`);
+    }
+    if (value < 0) {
+      throw new InvalidValueError(`Price cannot be negative: ${value}`);
+    }
+    super(Math.round(value * 100) / 100);
+  }
+};
+
+// src/domain/@shared/value-object/service-category/service-category.vo.ts
+var ALLOWED = /* @__PURE__ */ new Set(["nails", "eyebrows"]);
+var ServiceCategory = class extends ValueObject {
+  constructor(value) {
+    const normalisedValue = value.trim().toLowerCase();
+    if (!ALLOWED.has(normalisedValue)) {
+      throw new InvalidValueError(`Invalid Service Category: ${value}`);
+    }
+    super(normalisedValue);
+  }
+};
+
+// src/domain/entity/service/factory/service.factory.ts
+var assertPositiveInt = (value) => {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new InvalidValueError(`durationMinutes must be a positive integer: ${value}`);
+  }
+};
+var ServiceFactory = class {
+  static create(props) {
+    assertPositiveInt(props.durationMinutes);
+    const now = /* @__PURE__ */ new Date();
+    return Service._instantiate({
+      id: randomUUID2(),
+      name: props.name,
+      category: new ServiceCategory(props.category),
+      price: new Price(props.price),
+      durationMinutes: props.durationMinutes,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+  static reconstitute(props) {
+    assertPositiveInt(props.durationMinutes);
+    return Service._instantiate({
+      id: props.id,
+      name: props.name,
+      category: new ServiceCategory(props.category),
+      price: new Price(props.price),
+      durationMinutes: props.durationMinutes,
+      createdAt: props.createdAt,
+      updatedAt: props.updatedAt
+    });
+  }
+};
+
+// src/usecase/services/register-service/register-service.schema-validator.ts
+import { z as z5 } from "zod";
+var registerServiceSchema = z5.object({
+  name: z5.string().min(1),
+  category: z5.enum(["nails", "eyebrows"]),
+  price: z5.number().nonnegative(),
+  durationMinutes: z5.number().int().positive()
+});
+
+// src/usecase/services/register-service/register-service.usecase.ts
+var RegisterServiceUseCase = class {
+  serviceRepository;
+  validationAdapter;
+  constructor(serviceRepository, validationAdapter) {
+    this.serviceRepository = serviceRepository;
+    this.validationAdapter = validationAdapter;
+  }
+  async execute(inputDto) {
+    const validatedInput = this.validationAdapter.validate(
+      registerServiceSchema,
+      inputDto
+    );
+    const alreadyExistsService = await this.serviceRepository.findByNameAndCategory(
+      validatedInput.name,
+      validatedInput.category
+    );
+    if (alreadyExistsService) {
+      throw new ConflictError(
+        `Service already registered: ${validatedInput.name} (${validatedInput.category})`
+      );
+    }
+    const service = ServiceFactory.create({
+      name: validatedInput.name,
+      category: validatedInput.category,
+      durationMinutes: validatedInput.durationMinutes,
+      price: validatedInput.price
+    });
+    await this.serviceRepository.save(service);
+    return {
+      id: service.id,
+      name: service.name,
+      category: service.category.value,
+      price: service.price.value,
+      durationMinutes: service.durationMinutes,
+      createdAt: service.createdAt.toISOString()
+    };
+  }
+};
+
+// src/infrastructure/db/schema/services.schema.ts
+import { pgTable as pgTable3, uuid as uuid3, varchar as varchar3, decimal, integer, timestamp as timestamp3 } from "drizzle-orm/pg-core";
+var services = pgTable3("services", {
+  id: uuid3("id").primaryKey().defaultRandom(),
+  name: varchar3("name", { length: 100 }).notNull(),
+  category: varchar3("category", { length: 20 }).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  durationMinutes: integer("duration_minutes").notNull(),
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow()
+});
+
+// src/infrastructure/repository/service.repository.ts
+import { and, asc as asc2, eq as eq2 } from "drizzle-orm";
+var ServiceRepository = class {
+  db;
+  constructor(db2) {
+    this.db = db2;
+  }
+  async findById(id) {
+    const rows = await this.db.select().from(services).where(eq2(services.id, id)).limit(1);
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return ServiceFactory.reconstitute({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      price: Number(row.price),
+      durationMinutes: row.durationMinutes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    });
+  }
+  async findAll(params) {
+    const rows = await this.db.select().from(services).orderBy(asc2(services.createdAt), asc2(services.id)).limit(params.limit).offset(params.offset);
+    return rows.map(
+      (row) => ServiceFactory.reconstitute({
+        id: row.id,
+        name: row.name,
+        category: row.category,
+        price: Number(row.price),
+        durationMinutes: row.durationMinutes,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt
+      })
+    );
+  }
+  async findByNameAndCategory(name, category) {
+    const rows = await this.db.select().from(services).where(and(eq2(services.name, name), eq2(services.category, category))).limit(1);
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return ServiceFactory.reconstitute({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      price: Number(row.price),
+      durationMinutes: row.durationMinutes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    });
+  }
+  async save(service) {
+    await this.db.insert(services).values({
+      id: service.id,
+      name: service.name,
+      category: service.category.value,
+      price: service.price.value.toFixed(2),
+      durationMinutes: service.durationMinutes,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt
+    });
+  }
+};
+
+// src/usecase/services/get-service/get-service.usecase.ts
+var GetServiceUseCase = class {
+  serviceRepository;
+  constructor(serviceRepository) {
+    this.serviceRepository = serviceRepository;
+  }
+  async execute(input) {
+    const service = await this.serviceRepository.findById(input.id);
+    if (!service) throw new EntityNotFoundError(`Service with id ${input.id} not found`);
+    return {
+      id: service.id,
+      name: service.name,
+      category: service.category.value,
+      durationMinutes: service.durationMinutes,
+      price: service.price.value,
+      createdAt: service.createdAt.toISOString()
+    };
+  }
+};
+
+// src/usecase/services/get-services/get-services.usecase.ts
+var DEFAULT_PAGE_SIZE2 = 20;
+var MAX_PAGE_SIZE2 = 100;
+var GetServicesUseCase = class {
+  serviceRepository;
+  constructor(serviceRepository) {
+    this.serviceRepository = serviceRepository;
+  }
+  async execute(input) {
+    const first = Math.min(input.first ?? DEFAULT_PAGE_SIZE2, MAX_PAGE_SIZE2);
+    const offset = input.after ? decodeCursor(input.after) + 1 : 0;
+    const rows = await this.serviceRepository.findAll({ limit: first + 1, offset });
+    const hasNextPage = rows.length > first;
+    const items = hasNextPage ? rows.slice(0, first) : rows;
+    const edges = items.map((service, index) => {
+      const node = {
+        id: service.id,
+        name: service.name,
+        category: service.category.value,
+        price: service.price.value,
+        durationMinutes: service.durationMinutes,
+        createdAt: service.createdAt.toISOString()
+      };
+      return { node, cursor: encodeCursor(offset + index) };
+    });
+    return {
+      edges,
+      pageInfo: {
+        hasNextPage,
+        hasPreviousPage: offset > 0,
+        startCursor: edges.length > 0 ? edges[0].cursor : null,
+        endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null
+      }
+    };
+  }
+};
+
 // src/infrastructure/container.ts
 var pool = new Pool({ connectionString: DATABASE_URL });
 var db = drizzle(pool);
@@ -1044,9 +1454,25 @@ var buildDeleteUserUseCase = () => {
   const deleteUserUseCase = new DeleteUserUseCase(userRepository, validationAdapter);
   return deleteUserUseCase;
 };
+var buildRegisterServiceUseCase = () => {
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+  const registerServiceUseCase = new RegisterServiceUseCase(serviceRepository, validationAdapter);
+  return registerServiceUseCase;
+};
+var buildGetServiceUseCase = () => {
+  const serviceRepository = new ServiceRepository(db);
+  const getServiceUseCase = new GetServiceUseCase(serviceRepository);
+  return getServiceUseCase;
+};
+var buildGetServicesUseCase = () => {
+  const serviceRepository = new ServiceRepository(db);
+  const getServicesUseCase = new GetServicesUseCase(serviceRepository);
+  return getServicesUseCase;
+};
 
 // src/infrastructure/graphql/plugins/require-auth/require-auth.plugin.ts
-import { GraphQLError as GraphQLError5 } from "graphql";
+import { GraphQLError as GraphQLError8 } from "graphql";
 
 // src/infrastructure/graphql/plugins/public-operations.ts
 var PUBLIC_OPERATIONS = /* @__PURE__ */ new Set([
@@ -1072,7 +1498,7 @@ function requireAuthPlugin() {
           if (!operation) return;
           if (!requiresAuth(operation)) return;
           if (contextValue.currentUser) return;
-          throw new GraphQLError5("You must be authenticated to perform this operation", {
+          throw new GraphQLError8("You must be authenticated to perform this operation", {
             extensions: { code: "UNAUTHENTICATED" }
           });
         }
@@ -1086,7 +1512,7 @@ async function startServer() {
   const jwtAdapter = buildJwtAdapter();
   const server = new ApolloServer({
     typeDefs,
-    resolvers: resolvers9,
+    resolvers: resolvers12,
     plugins: [requireAuthPlugin()]
   });
   await server.start();
@@ -1104,7 +1530,10 @@ async function startServer() {
           getUsers: buildGetUsersUseCase(),
           getUser: buildGetUserUseCase(),
           updateUser: buildUpdateUserUseCase(),
-          deleteUser: buildDeleteUserUseCase()
+          deleteUser: buildDeleteUserUseCase(),
+          registerService: buildRegisterServiceUseCase(),
+          getService: buildGetServiceUseCase(),
+          getServices: buildGetServicesUseCase()
         },
         {
           role: buildRoleDataLoader()

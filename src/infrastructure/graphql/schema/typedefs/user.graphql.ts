@@ -12,13 +12,6 @@ export const userTypeDefs = `#graphql
         deleteUser(input: DeleteUserInput!): DeleteUserPayload!
     }
 
-     type PageInfo {
-        hasNextPage: Boolean!
-        hasPreviousPage: Boolean!
-        startCursor: String
-        endCursor: String
-    }
-
     type Role {
         id: ID!
         name: String!

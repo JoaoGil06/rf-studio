@@ -17,6 +17,8 @@ import { UpdateUserUseCase } from '../usecase/users/update-user/update-user.usec
 import { DeleteUserUseCase } from '../usecase/users/delete-user/delete-user.usecase.js';
 import { RegisterServiceUseCase } from '../usecase/services/register-service/register-service.usecase.js';
 import { ServiceRepository } from './repository/service.repository.js';
+import { GetServiceUseCase } from '../usecase/services/get-service/get-service.usecase.js';
+import { GetServicesUseCase } from '../usecase/services/get-services/get-services.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -103,4 +105,20 @@ export const buildRegisterServiceUseCase = (): RegisterServiceUseCase => {
   const registerServiceUseCase = new RegisterServiceUseCase(serviceRepository, validationAdapter);
 
   return registerServiceUseCase;
+};
+
+export const buildGetServiceUseCase = (): GetServiceUseCase => {
+  const serviceRepository = new ServiceRepository(db);
+
+  const getServiceUseCase = new GetServiceUseCase(serviceRepository);
+
+  return getServiceUseCase;
+};
+
+export const buildGetServicesUseCase = (): GetServicesUseCase => {
+  const serviceRepository = new ServiceRepository(db);
+
+  const getServicesUseCase = new GetServicesUseCase(serviceRepository);
+
+  return getServicesUseCase;
 };
