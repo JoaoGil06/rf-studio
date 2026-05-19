@@ -6,6 +6,7 @@ export const serviceTypeDefs = `#graphql
 
     type Mutation {
         registerService(input: RegisterServiceInput!): RegisterServicePayload!
+        updateService(input: UpdateServiceInput!): UpdateServicePayload!
     }
 
     enum ServiceCategory {
@@ -44,4 +45,18 @@ export const serviceTypeDefs = `#graphql
     }
 
     union RegisterServicePayload = RegisterServiceSuccess | ServiceAlreadyExistsError
+
+    input UpdateServiceInput {
+        id: ID!
+        name: String
+        category: ServiceCategory
+        price: Float
+        durationMinutes: Int
+    }
+
+    type UpdateServiceSuccess {
+        service: Service!
+    }
+
+    union UpdateServicePayload = UpdateServiceSuccess | ServiceNotFoundError | ServiceAlreadyExistsError
 `;

@@ -17,4 +17,8 @@ export const errorTypeDefs = `#graphql
   type ServiceAlreadyExistsError {
     message: String!
   }
+
+  type ServiceNotFoundError {
+    message: String!
+  }
 `;

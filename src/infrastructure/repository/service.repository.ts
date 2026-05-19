@@ -84,4 +84,17 @@ export class ServiceRepository implements IServiceRepository {
       updatedAt: service.updatedAt,
     });
   }
+
+  async update(service: Service): Promise<void> {
+    await this.db
+      .update(services)
+      .set({
+        name: service.name,
+        category: service.category.value,
+        price: service.price.value.toFixed(2),
+        durationMinutes: service.durationMinutes,
+        updatedAt: service.updatedAt,
+      })
+      .where(eq(services.id, service.id));
+  }
 }

@@ -27,6 +27,10 @@ var errorTypeDefs = `#graphql
   type ServiceAlreadyExistsError {
     message: String!
   }
+
+  type ServiceNotFoundError {
+    message: String!
+  }
 `;
 
 // src/infrastructure/graphql/schema/typedefs/pagination.graphql.ts
@@ -48,6 +52,7 @@ var serviceTypeDefs = `#graphql
 
     type Mutation {
         registerService(input: RegisterServiceInput!): RegisterServicePayload!
+        updateService(input: UpdateServiceInput!): UpdateServicePayload!
     }
 
     enum ServiceCategory {
@@ -86,6 +91,20 @@ var serviceTypeDefs = `#graphql
     }
 
     union RegisterServicePayload = RegisterServiceSuccess | ServiceAlreadyExistsError
+
+    input UpdateServiceInput {
+        id: ID!
+        name: String
+        category: ServiceCategory
+        price: Float
+        durationMinutes: Int
+    }
+
+    type UpdateServiceSuccess {
+        service: Service!
+    }
+
+    union UpdateServicePayload = UpdateServiceSuccess | ServiceNotFoundError | ServiceAlreadyExistsError
 `;
 
 // src/infrastructure/graphql/schema/typedefs/user.graphql.ts
@@ -466,8 +485,39 @@ var resolvers10 = {
   }
 };
 
+// src/infrastructure/graphql/resolvers/mutations/service/updateService.mutation.ts
+import { GraphQLError as GraphQLError8 } from "graphql";
+var resolvers11 = {
+  UpdateServicePayload: {
+    __resolveType(obj) {
+      if ("service" in obj) return "UpdateServiceSuccess";
+      if (obj.__kind === "ServiceNotFoundError") return "ServiceNotFoundError";
+      return "ServiceAlreadyExistsError";
+    }
+  },
+  Mutation: {
+    updateService: async (_, { input }, context) => {
+      try {
+        const service = await context.useCases.updateService.execute(input);
+        return { service };
+      } catch (error) {
+        if (error instanceof EntityNotFoundError) {
+          return { __kind: "ServiceNotFoundError", message: error.message };
+        }
+        if (error instanceof ConflictError) {
+          return { __kind: "ServiceAlreadyExistsError", message: error.message };
+        }
+        if (error instanceof InvalidValueError) {
+          throw new GraphQLError8(error.message, { extensions: { code: "BAD_USER_INPUT" } });
+        }
+        throw error;
+      }
+    }
+  }
+};
+
 // src/infrastructure/graphql/resolvers/mutations/service/index.ts
-var serviceMutationResolvers = mergeResolvers6([resolvers10]);
+var serviceMutationResolvers = mergeResolvers6([resolvers10, resolvers11]);
 
 // src/infrastructure/graphql/resolvers/mutations/index.ts
 var mutationResolvers = mergeResolvers7([
@@ -483,7 +533,7 @@ import { mergeResolvers as mergeResolvers9 } from "@graphql-tools/merge";
 import { mergeResolvers as mergeResolvers8 } from "@graphql-tools/merge";
 
 // src/infrastructure/graphql/resolvers/field_resolvers/user/User.fields.ts
-var resolvers11 = {
+var resolvers12 = {
   User: {
     role: async (parent, _, context) => {
       return context.dataLoaders.role.load(parent.roleId);
@@ -492,13 +542,13 @@ var resolvers11 = {
 };
 
 // src/infrastructure/graphql/resolvers/field_resolvers/user/index.ts
-var userTypeResolvers = mergeResolvers8([resolvers11]);
+var userTypeResolvers = mergeResolvers8([resolvers12]);
 
 // src/infrastructure/graphql/resolvers/field_resolvers/index.ts
 var fieldResolvers = mergeResolvers9([userTypeResolvers]);
 
 // src/infrastructure/graphql/resolvers/index.ts
-var resolvers12 = mergeResolvers10([queryResolvers, mutationResolvers, fieldResolvers]);
+var resolvers13 = mergeResolvers10([queryResolvers, mutationResolvers, fieldResolvers]);
 
 // src/infrastructure/graphql/helpers/extract-berarer-token.ts
 function extractBearerToken(authorizationHeader) {
@@ -1130,6 +1180,31 @@ var DeleteUserUseCase = class {
 // src/domain/entity/service/factory/service.factory.ts
 import { randomUUID as randomUUID2 } from "crypto";
 
+// src/domain/@shared/value-object/price/price.vo.ts
+var Price = class extends ValueObject {
+  constructor(value) {
+    if (!Number.isFinite(value)) {
+      throw new InvalidValueError(`Invalid price: ${value}`);
+    }
+    if (value < 0) {
+      throw new InvalidValueError(`Price cannot be negative: ${value}`);
+    }
+    super(Math.round(value * 100) / 100);
+  }
+};
+
+// src/domain/@shared/value-object/service-category/service-category.vo.ts
+var ALLOWED = /* @__PURE__ */ new Set(["nails", "eyebrows"]);
+var ServiceCategory = class extends ValueObject {
+  constructor(value) {
+    const normalisedValue = value.trim().toLowerCase();
+    if (!ALLOWED.has(normalisedValue)) {
+      throw new InvalidValueError(`Invalid Service Category: ${value}`);
+    }
+    super(normalisedValue);
+  }
+};
+
 // src/domain/entity/service/service.entity.ts
 var Service = class _Service extends Entity {
   _name;
@@ -1158,30 +1233,19 @@ var Service = class _Service extends Entity {
   get durationMinutes() {
     return this._durationMinutes;
   }
-};
-
-// src/domain/@shared/value-object/price/price.vo.ts
-var Price = class extends ValueObject {
-  constructor(value) {
-    if (!Number.isFinite(value)) {
-      throw new InvalidValueError(`Invalid price: ${value}`);
+  updateServiceDetails(props) {
+    if (props.name !== void 0) this._name = props.name;
+    if (props.category !== void 0) this._category = new ServiceCategory(props.category);
+    if (props.price !== void 0) this._price = new Price(props.price);
+    if (props.durationMinutes !== void 0) {
+      if (!Number.isInteger(props.durationMinutes) || props.durationMinutes && props.durationMinutes <= 0) {
+        throw new InvalidValueError(
+          `durationMinutes mus be a positive integer: ${props.durationMinutes}`
+        );
+      }
+      this._durationMinutes = props.durationMinutes;
     }
-    if (value < 0) {
-      throw new InvalidValueError(`Price cannot be negative: ${value}`);
-    }
-    super(Math.round(value * 100) / 100);
-  }
-};
-
-// src/domain/@shared/value-object/service-category/service-category.vo.ts
-var ALLOWED = /* @__PURE__ */ new Set(["nails", "eyebrows"]);
-var ServiceCategory = class extends ValueObject {
-  constructor(value) {
-    const normalisedValue = value.trim().toLowerCase();
-    if (!ALLOWED.has(normalisedValue)) {
-      throw new InvalidValueError(`Invalid Service Category: ${value}`);
-    }
-    super(normalisedValue);
+    this._updatedAt = /* @__PURE__ */ new Date();
   }
 };
 
@@ -1340,6 +1404,15 @@ var ServiceRepository = class {
       updatedAt: service.updatedAt
     });
   }
+  async update(service) {
+    await this.db.update(services).set({
+      name: service.name,
+      category: service.category.value,
+      price: service.price.value.toFixed(2),
+      durationMinutes: service.durationMinutes,
+      updatedAt: service.updatedAt
+    }).where(eq2(services.id, service.id));
+  }
 };
 
 // src/usecase/services/get-service/get-service.usecase.ts
@@ -1395,6 +1468,58 @@ var GetServicesUseCase = class {
         startCursor: edges.length > 0 ? edges[0].cursor : null,
         endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null
       }
+    };
+  }
+};
+
+// src/usecase/services/update-service/update-service.schema-validator.ts
+import z6 from "zod";
+var updateServiceSchema = z6.object({
+  id: z6.string().uuid(),
+  name: z6.string().min(1).optional(),
+  category: z6.enum(["nails", "eyebrows"]).optional(),
+  price: z6.number().nonnegative().optional(),
+  durationMinutes: z6.number().int().positive().optional()
+});
+
+// src/usecase/services/update-service/update-service.usecase.ts
+var UpdateServiceUseCase = class {
+  serviceRepository;
+  validationAdapter;
+  constructor(serviceRepository, validationAdapter) {
+    this.serviceRepository = serviceRepository;
+    this.validationAdapter = validationAdapter;
+  }
+  async execute(input) {
+    const validated = this.validationAdapter.validate(
+      updateServiceSchema,
+      input
+    );
+    const serviceFound = await this.serviceRepository.findById(validated.id);
+    if (!serviceFound) throw new EntityNotFoundError(`Service with id ${validated.id} not found`);
+    const newName = validated.name ?? serviceFound.name;
+    const newCategory = validated.category ?? serviceFound.category.value;
+    const nameAndCategoryChanged = newName !== serviceFound.name || newCategory !== serviceFound.category.value;
+    if (nameAndCategoryChanged) {
+      const existing = await this.serviceRepository.findByNameAndCategory(newName, newCategory);
+      if (existing && existing.id !== serviceFound.id) {
+        throw new ConflictError(`Service already registered: ${newName} (${newCategory})`);
+      }
+    }
+    serviceFound.updateServiceDetails({
+      name: validated.name,
+      category: validated.category,
+      price: validated.price,
+      durationMinutes: validated.durationMinutes
+    });
+    await this.serviceRepository.update(serviceFound);
+    return {
+      id: serviceFound.id,
+      name: serviceFound.name,
+      category: serviceFound.category.value,
+      price: serviceFound.price.value,
+      durationMinutes: serviceFound.durationMinutes,
+      createdAt: serviceFound.createdAt.toISOString()
     };
   }
 };
@@ -1470,9 +1595,15 @@ var buildGetServicesUseCase = () => {
   const getServicesUseCase = new GetServicesUseCase(serviceRepository);
   return getServicesUseCase;
 };
+var buildUpdateServiceUseCase = () => {
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+  const updateServiceUseCase = new UpdateServiceUseCase(serviceRepository, validationAdapter);
+  return updateServiceUseCase;
+};
 
 // src/infrastructure/graphql/plugins/require-auth/require-auth.plugin.ts
-import { GraphQLError as GraphQLError8 } from "graphql";
+import { GraphQLError as GraphQLError9 } from "graphql";
 
 // src/infrastructure/graphql/plugins/public-operations.ts
 var PUBLIC_OPERATIONS = /* @__PURE__ */ new Set([
@@ -1498,7 +1629,7 @@ function requireAuthPlugin() {
           if (!operation) return;
           if (!requiresAuth(operation)) return;
           if (contextValue.currentUser) return;
-          throw new GraphQLError8("You must be authenticated to perform this operation", {
+          throw new GraphQLError9("You must be authenticated to perform this operation", {
             extensions: { code: "UNAUTHENTICATED" }
           });
         }
@@ -1512,7 +1643,7 @@ async function startServer() {
   const jwtAdapter = buildJwtAdapter();
   const server = new ApolloServer({
     typeDefs,
-    resolvers: resolvers12,
+    resolvers: resolvers13,
     plugins: [requireAuthPlugin()]
   });
   await server.start();
@@ -1533,7 +1664,8 @@ async function startServer() {
           deleteUser: buildDeleteUserUseCase(),
           registerService: buildRegisterServiceUseCase(),
           getService: buildGetServiceUseCase(),
-          getServices: buildGetServicesUseCase()
+          getServices: buildGetServicesUseCase(),
+          updateService: buildUpdateServiceUseCase()
         },
         {
           role: buildRoleDataLoader()
