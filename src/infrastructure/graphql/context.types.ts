@@ -11,6 +11,7 @@ import { DeleteUserUseCase } from '../../usecase/users/delete-user/delete-user.u
 import { RegisterServiceUseCase } from '../../usecase/services/register-service/register-service.usecase.js';
 import { GetServiceUseCase } from '../../usecase/services/get-service/get-service.usecase.js';
 import { GetServicesUseCase } from '../../usecase/services/get-services/get-services.usecase.js';
+import { UpdateServiceUseCase } from '../../usecase/services/update-service/update-service.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -25,6 +26,7 @@ export interface AppContext {
     registerService: RegisterServiceUseCase;
     getService: GetServiceUseCase;
     getServices: GetServicesUseCase;
+    updateService: UpdateServiceUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -42,6 +44,7 @@ export interface AppUseCases {
   registerService: RegisterServiceUseCase;
   getService: GetServiceUseCase;
   getServices: GetServicesUseCase;
+  updateService: UpdateServiceUseCase;
 }
 
 export interface AppDataLoaders {

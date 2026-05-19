@@ -10,3 +10,10 @@ export interface ServiceProps {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UpdateServiceProps {
+  name?: string;
+  category?: string;
+  price?: number;
+  durationMinutes?: number;
+}

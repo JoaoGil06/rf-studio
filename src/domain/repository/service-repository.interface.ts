@@ -5,4 +5,5 @@ export interface IServiceRepository {
   save(service: Service): Promise<void>;
   findById(id: string): Promise<Service | null>;
   findAll(params: { limit: number; offset: number }): Promise<Service[]>;
+  update(service: Service): Promise<void>;
 }

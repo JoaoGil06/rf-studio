@@ -19,6 +19,7 @@ import { RegisterServiceUseCase } from '../usecase/services/register-service/reg
 import { ServiceRepository } from './repository/service.repository.js';
 import { GetServiceUseCase } from '../usecase/services/get-service/get-service.usecase.js';
 import { GetServicesUseCase } from '../usecase/services/get-services/get-services.usecase.js';
+import { UpdateServiceUseCase } from '../usecase/services/update-service/update-service.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -121,4 +122,13 @@ export const buildGetServicesUseCase = (): GetServicesUseCase => {
   const getServicesUseCase = new GetServicesUseCase(serviceRepository);
 
   return getServicesUseCase;
+};
+
+export const buildUpdateServiceUseCase = (): UpdateServiceUseCase => {
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  const updateServiceUseCase = new UpdateServiceUseCase(serviceRepository, validationAdapter);
+
+  return updateServiceUseCase;
 };

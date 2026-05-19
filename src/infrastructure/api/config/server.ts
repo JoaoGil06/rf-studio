@@ -19,6 +19,7 @@ import {
   buildRegisterServiceUseCase,
   buildRegisterUserUseCase,
   buildRoleDataLoader,
+  buildUpdateServiceUseCase,
   buildUpdateUserUseCase,
 } from '../../container.js';
 import { PORT } from '../../constants/env.js';
@@ -52,6 +53,7 @@ export async function startServer() {
           registerService: buildRegisterServiceUseCase(),
           getService: buildGetServiceUseCase(),
           getServices: buildGetServicesUseCase(),
+          updateService: buildUpdateServiceUseCase(),
         },
         {
           role: buildRoleDataLoader(),
