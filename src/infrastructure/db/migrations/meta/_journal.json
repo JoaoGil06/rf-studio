@@ -15,6 +15,13 @@
       "when": 1778678359860,
       "tag": "0001_sudden_zombie",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779703130468,
+      "tag": "0002_sweet_tomas",
+      "breakpoints": true
     }
   ]
 }

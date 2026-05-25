@@ -21,6 +21,8 @@ import { GetServiceUseCase } from '../usecase/services/get-service/get-service.u
 import { GetServicesUseCase } from '../usecase/services/get-services/get-services.usecase.js';
 import { UpdateServiceUseCase } from '../usecase/services/update-service/update-service.usecase.js';
 import { DeleteServiceUseCase } from '../usecase/services/delete-service/delete-service.usecase.js';
+import { RegisterScheduleUseCase } from '../usecase/schedule/register-schedule/register-schedule.usecase.js';
+import { ScheduleRepository } from './repository/schedule.repository.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
@@ -141,4 +143,18 @@ export const buildDeleteServiceUseCase = (): DeleteServiceUseCase => {
   const deleteServiceUseCase = new DeleteServiceUseCase(serviceRepository, validationAdapter);
 
   return deleteServiceUseCase;
+};
+
+export const buildRegisterScheduleUseCase = (): RegisterScheduleUseCase => {
+  const scheduleRepository = new ScheduleRepository(db);
+  const userRepository = new UserRepository(db);
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  return new RegisterScheduleUseCase(
+    scheduleRepository,
+    userRepository,
+    serviceRepository,
+    validationAdapter,
+  );
 };
