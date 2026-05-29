@@ -6,6 +6,9 @@ import type { Schedule } from '../../entity/schedule/schedule.entity.js';
 const mockRepo: IScheduleRepository = {
   save: vi.fn(),
   findOverlapping: vi.fn(),
+  findById: vi.fn(),
+  findAll: vi.fn(),
+  findInRange: vi.fn(),
 };
 
 describe('ScheduleConflictService', () => {

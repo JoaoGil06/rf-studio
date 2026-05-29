@@ -1,6 +1,8 @@
 export const scheduleTypeDefs = `#graphql
     type Query {
-        _scheduleRoot: String
+       schedule(id: ID!): Schedule!
+       schedules(filter: SchedulesFilter, first: Int, after: String): ScheduleConnection!
+       schedulesInRange(filter: SchedulesRangeFilter!): [Schedule!]!
     }
 
     type Mutation {
@@ -23,6 +25,29 @@ export const scheduleTypeDefs = `#graphql
         date: String!
         photoUrl: String
         createdAt: String!
+        user: User!
+        service: Service!
+    }
+
+    type ScheduleEdge {
+        node: Schedule!
+        cursor: String!
+    }
+
+    type ScheduleConnection {
+        edges: [ScheduleEdge!]!
+        pageInfo: PageInfo!
+    }
+
+    input SchedulesFilter {
+        userId: ID
+    }
+
+    input SchedulesRangeFilter {
+        user: ID
+        year: Int
+        month: Int
+        weekStart: String
     }
 
     input RegisterScheduleInput {

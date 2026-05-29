@@ -14,6 +14,11 @@ import { GetServicesUseCase } from '../../usecase/services/get-services/get-serv
 import { UpdateServiceUseCase } from '../../usecase/services/update-service/update-service.usecase.js';
 import { DeleteServiceUseCase } from '../../usecase/services/delete-service/delete-service.usecase.js';
 import { RegisterScheduleUseCase } from '../../usecase/schedule/register-schedule/register-schedule.usecase.js';
+import { GetScheduleUseCase } from '../../usecase/schedule/get-schedule/get-schedule.usecase.js';
+import { GetSchedulesUseCase } from '../../usecase/schedule/get-schedules/get-schedules.usecase.js';
+import { GetSchedulesInRangeUseCase } from '../../usecase/schedule/get-schedules-in-range/get-schedules-in-range.usecase.js';
+import { UserDataLoaderDto } from './dataloaders/user/user.dataloader.dto.js';
+import { ServiceDataLoaderDto } from './dataloaders/service/service.dataloader.dto.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -31,9 +36,14 @@ export interface AppContext {
     updateService: UpdateServiceUseCase;
     deleteService: DeleteServiceUseCase;
     registerSchedule: RegisterScheduleUseCase;
+    getSchedule: GetScheduleUseCase;
+    getSchedules: GetSchedulesUseCase;
+    getSchedulesInRange: GetSchedulesInRangeUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
+    user: DataLoader<string, UserDataLoaderDto | null>;
+    service: DataLoader<string, ServiceDataLoaderDto | null>;
   };
 }
 
@@ -51,8 +61,7 @@ export interface AppUseCases {
   updateService: UpdateServiceUseCase;
   deleteService: DeleteServiceUseCase;
   registerSchedule: RegisterScheduleUseCase;
-}
-
-export interface AppDataLoaders {
-  role: DataLoader<string, RoleDto | null>;
+  getSchedule: GetScheduleUseCase;
+  getSchedules: GetSchedulesUseCase;
+  getSchedulesInRange: GetSchedulesInRangeUseCase;
 }

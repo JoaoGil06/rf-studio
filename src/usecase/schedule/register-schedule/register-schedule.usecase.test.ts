@@ -35,6 +35,9 @@ const mockServiceRepo = {
 const mockScheduleRepo = {
   save: vi.fn(),
   findOverlapping: vi.fn(),
+  findById: vi.fn(),
+  findAll: vi.fn(),
+  findInRange: vi.fn(),
 } satisfies IScheduleRepository;
 
 const mockValidation: IValidationAdapter = {

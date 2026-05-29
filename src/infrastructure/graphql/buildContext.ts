@@ -1,14 +1,14 @@
 import type { Request } from 'express';
-import type { AppContext, AppDataLoaders, AppUseCases } from './context.types.js';
+import type { AppContext, AppUseCases } from './context.types.js';
 import { extractBearerToken } from './helpers/extract-berarer-token.js';
 import { JwtPayload } from 'jsonwebtoken';
 import { IJwtAdapter } from '../../usecase/interfaces/jwt-adapter.interface.js';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { createRoleDataLoader } from './dataloaders/role/role.dataloader.js';
+import { createUserDataLoader } from './dataloaders/user/user.dataloader.js';
+import { createServiceDataLoader } from './dataloaders/service/service.dataloader.js';
 
-export function buildContext(
-  useCases: AppUseCases,
-  dataLoaders: AppDataLoaders,
-  jwtAdapter: IJwtAdapter,
-) {
+export function buildContext(useCases: AppUseCases, db: NodePgDatabase, jwtAdapter: IJwtAdapter) {
   return async ({ req }: { req: Request }): Promise<AppContext> => {
     const token = extractBearerToken(req.headers.authorization);
 
@@ -25,7 +25,11 @@ export function buildContext(
     return {
       currentUser,
       useCases,
-      dataLoaders,
+      dataLoaders: {
+        role: createRoleDataLoader(db),
+        user: createUserDataLoader(db),
+        service: createServiceDataLoader(db),
+      },
     };
   };
 }
