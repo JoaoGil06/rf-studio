@@ -10,6 +10,9 @@ import { buildContext } from '../../graphql/buildContext.js';
 import {
   buildDeleteServiceUseCase,
   buildDeleteUserUseCase,
+  buildGetSchedulesInRangeUseCase,
+  buildGetSchedulesUseCase,
+  buildGetScheduleUseCase,
   buildGetServicesUseCase,
   buildGetServiceUseCase,
   buildGetUsersUseCase,
@@ -20,9 +23,9 @@ import {
   buildRegisterScheduleUseCase,
   buildRegisterServiceUseCase,
   buildRegisterUserUseCase,
-  buildRoleDataLoader,
   buildUpdateServiceUseCase,
   buildUpdateUserUseCase,
+  db,
 } from '../../container.js';
 import { PORT } from '../../constants/env.js';
 import { requireAuthPlugin } from '../../graphql/plugins/require-auth/require-auth.plugin.js';
@@ -58,10 +61,11 @@ export async function startServer() {
           updateService: buildUpdateServiceUseCase(),
           deleteService: buildDeleteServiceUseCase(),
           registerSchedule: buildRegisterScheduleUseCase(),
+          getSchedule: buildGetScheduleUseCase(),
+          getSchedules: buildGetSchedulesUseCase(),
+          getSchedulesInRange: buildGetSchedulesInRangeUseCase(),
         },
-        {
-          role: buildRoleDataLoader(),
-        },
+        db,
         jwtAdapter,
       ),
     }),
