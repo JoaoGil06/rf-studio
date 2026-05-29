@@ -7,7 +7,7 @@ import {
 } from '../../domain/repository/schedule-repository.interface.js';
 import { schedules } from '../db/schema/schedules.schema.js';
 import { services } from '../db/schema/services.schema.js';
-import { and, sql, eq, asc, gte, lt } from 'drizzle-orm';
+import { and, sql, eq, asc, gte, lt, ne } from 'drizzle-orm';
 import { ScheduleFactory } from '../../domain/entity/schedule/factory/schedule.factory.js';
 
 export class ScheduleRepository implements IScheduleRepository {
@@ -30,7 +30,16 @@ export class ScheduleRepository implements IScheduleRepository {
     });
   }
 
-  async findOverlapping(start: Date, end: Date): Promise<Schedule[]> {
+  async findOverlapping(start: Date, end: Date, excludeId?: string): Promise<Schedule[]> {
+    const conditions = [
+      sql`${schedules.date} < ${end}`,
+      sql`${schedules.date} + (${services.durationMinutes} * INTERVAL '1 minute') > ${start}`,
+    ];
+
+    if (excludeId) {
+      conditions.push(ne(schedules.id, excludeId));
+    }
+
     const rows = await this.db
       .select({
         id: schedules.id,
@@ -45,12 +54,7 @@ export class ScheduleRepository implements IScheduleRepository {
       })
       .from(schedules)
       .innerJoin(services, eq(schedules.serviceId, services.id))
-      .where(
-        and(
-          sql`${schedules.date} < ${end}`,
-          sql`${schedules.date} + (${services.durationMinutes} * INTERVAL '1 minute') > ${start}`,
-        ),
-      );
+      .where(and(...conditions));
 
     return rows.map((row) =>
       ScheduleFactory.reconstitute({
@@ -137,5 +141,17 @@ export class ScheduleRepository implements IScheduleRepository {
         updatedAt: row.updatedAt,
       }),
     );
+  }
+
+  async update(schedule: Schedule): Promise<void> {
+    await this.db
+      .update(schedules)
+      .set({
+        serviceId: schedule.serviceId,
+        status: schedule.status.value,
+        date: schedule.date,
+        updatedAt: schedule.updatedAt,
+      })
+      .where(eq(schedules.id, schedule.id));
   }
 }

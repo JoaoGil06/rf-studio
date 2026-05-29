@@ -7,6 +7,7 @@ export const scheduleTypeDefs = `#graphql
 
     type Mutation {
         registerSchedule(input: RegisterScheduleInput!): RegisterSchedulePayload!
+        updateSchedule(input: UpdateScheduleInput!): UpdateSchedulePayload!
     }
 
     enum ScheduleStatus {
@@ -58,6 +59,17 @@ export const scheduleTypeDefs = `#graphql
         photoUrl: String
     }
 
+     input UpdateScheduleInput {
+        id: ID!
+        status: ScheduleStatus
+        date: String
+        serviceId: ID
+    }
+
+    type UpdateScheduleSuccess {
+        schedule: Schedule!
+    }
+
     type ScheduleAlreadyBookedError {
         message: String!
     }
@@ -69,6 +81,12 @@ export const scheduleTypeDefs = `#graphql
     union RegisterSchedulePayload =
           RegisterScheduleSuccess
         | UserNotFoundError
+        | ServiceNotFoundError
+        | ScheduleAlreadyBookedError
+
+    union UpdateSchedulePayload =
+        UpdateScheduleSuccess
+        | ScheduleNotFoundError
         | ServiceNotFoundError
         | ScheduleAlreadyBookedError
 `;

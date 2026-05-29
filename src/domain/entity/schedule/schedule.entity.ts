@@ -1,12 +1,13 @@
 import { Entity } from '../../@shared/entity/entity.abstract.js';
+import { InvalidValueError } from '../../@shared/errors/invalidValueError.js';
 import { ScheduleStatus } from '../../@shared/value-object/schedule-status/schedule-status.vo.js';
-import { ScheduleProps } from './schedule.entity.types.js';
+import { ScheduleProps, UpdateScheduleProps } from './schedule.entity.types.js';
 
 export class Schedule extends Entity<ScheduleProps> {
   private readonly _userId: string;
-  private readonly _serviceId: string;
-  private readonly _status: ScheduleStatus;
-  private readonly _date: Date;
+  private _serviceId: string;
+  private _status: ScheduleStatus;
+  private _date: Date;
   private readonly _photoUrl: string | null;
 
   private constructor(props: ScheduleProps) {
@@ -36,5 +37,17 @@ export class Schedule extends Entity<ScheduleProps> {
   }
   public get photoUrl(): string | null {
     return this._photoUrl;
+  }
+
+  public updateScheduleDetails(props: UpdateScheduleProps): void {
+    if (props.status !== undefined) this._status = new ScheduleStatus(props.status);
+    if (props.serviceId !== undefined) this._serviceId = props.serviceId;
+    if (props.date !== undefined) {
+      if (!(props.date instanceof Date) || !Number.isFinite(props.date.getTime())) {
+        throw new InvalidValueError(`Invalid schedule date: ${String(props.date)}`);
+      }
+      this._date = props.date;
+    }
+    this._updatedAt = new Date();
   }
 }

@@ -10,3 +10,9 @@ export interface ScheduleProps {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UpdateScheduleProps {
+  status?: string;
+  date?: Date;
+  serviceId?: string;
+}

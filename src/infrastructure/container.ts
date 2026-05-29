@@ -26,6 +26,7 @@ import { ScheduleRepository } from './repository/schedule.repository.js';
 import { GetScheduleUseCase } from '../usecase/schedule/get-schedule/get-schedule.usecase.js';
 import { GetSchedulesUseCase } from '../usecase/schedule/get-schedules/get-schedules.usecase.js';
 import { GetSchedulesInRangeUseCase } from '../usecase/schedule/get-schedules-in-range/get-schedules-in-range.usecase.js';
+import { UpdateScheduleUseCase } from '../usecase/schedule/update-schedule/update-schedule.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -176,4 +177,12 @@ export const buildGetSchedulesInRangeUseCase = (): GetSchedulesInRangeUseCase =>
   const scheduleRepository = new ScheduleRepository(db);
   const validationAdapter = new ZodAdapter();
   return new GetSchedulesInRangeUseCase(scheduleRepository, validationAdapter);
+};
+
+export const buildUpdateScheduleUseCase = (): UpdateScheduleUseCase => {
+  const scheduleRepository = new ScheduleRepository(db);
+  const serviceRepository = new ServiceRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  return new UpdateScheduleUseCase(scheduleRepository, serviceRepository, validationAdapter);
 };
