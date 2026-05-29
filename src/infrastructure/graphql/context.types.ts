@@ -19,6 +19,7 @@ import { GetSchedulesUseCase } from '../../usecase/schedule/get-schedules/get-sc
 import { GetSchedulesInRangeUseCase } from '../../usecase/schedule/get-schedules-in-range/get-schedules-in-range.usecase.js';
 import { UserDataLoaderDto } from './dataloaders/user/user.dataloader.dto.js';
 import { ServiceDataLoaderDto } from './dataloaders/service/service.dataloader.dto.js';
+import { UpdateScheduleUseCase } from '../../usecase/schedule/update-schedule/update-schedule.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -39,6 +40,7 @@ export interface AppContext {
     getSchedule: GetScheduleUseCase;
     getSchedules: GetSchedulesUseCase;
     getSchedulesInRange: GetSchedulesInRangeUseCase;
+    updateSchedule: UpdateScheduleUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -64,4 +66,5 @@ export interface AppUseCases {
   getSchedule: GetScheduleUseCase;
   getSchedules: GetSchedulesUseCase;
   getSchedulesInRange: GetSchedulesInRangeUseCase;
+  updateSchedule: UpdateScheduleUseCase;
 }

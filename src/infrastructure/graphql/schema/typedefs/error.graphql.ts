@@ -21,4 +21,9 @@ export const errorTypeDefs = `#graphql
   type ServiceNotFoundError {
     message: String!
   }
+
+  # Schedules
+  type ScheduleNotFoundError {
+    message: String!
+  }
 `;

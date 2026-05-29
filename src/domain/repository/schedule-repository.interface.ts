@@ -14,8 +14,11 @@ export interface ScheduleRangeParams {
 
 export interface IScheduleRepository {
   save(schedule: Schedule): Promise<void>;
-  findOverlapping(start: Date, end: Date): Promise<Schedule[]>;
+  // O excludeID é para quando estamso a fazer o update
+  // Assim não há colisão da marcação que estamos a fazer com ela mesma
+  findOverlapping(start: Date, end: Date, excludeId?: string): Promise<Schedule[]>;
   findById(id: string): Promise<Schedule | null>;
   findAll(params: ScheduleListParams): Promise<Schedule[]>;
   findInRange(params: ScheduleRangeParams): Promise<Schedule[]>;
+  update(schedule: Schedule): Promise<void>;
 }

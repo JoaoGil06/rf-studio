@@ -10,9 +10,10 @@ export class ScheduleConflictService {
     start: Date,
     durationMinutes: number,
     repo: IScheduleRepository,
+    excludeId?: string,
   ): Promise<boolean> {
     const end = new Date(start.getTime() + durationMinutes * 60_000);
-    const overlapping = await repo.findOverlapping(start, end);
+    const overlapping = await repo.findOverlapping(start, end, excludeId);
     return overlapping.length > 0;
   }
 }

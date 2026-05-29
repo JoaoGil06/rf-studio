@@ -9,6 +9,7 @@ const mockRepo: IScheduleRepository = {
   findById: vi.fn(),
   findAll: vi.fn(),
   findInRange: vi.fn(),
+  update: vi.fn(),
 };
 
 describe('ScheduleConflictService', () => {
@@ -27,6 +28,7 @@ describe('ScheduleConflictService', () => {
     expect(mockRepo.findOverlapping).toHaveBeenCalledWith(
       new Date('2026-06-01T10:00:00Z'),
       new Date('2026-06-01T10:45:00Z'),
+      undefined,
     );
   });
 
