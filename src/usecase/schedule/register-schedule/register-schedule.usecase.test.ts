@@ -39,6 +39,7 @@ const mockScheduleRepo = {
   findAll: vi.fn(),
   findInRange: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 } satisfies IScheduleRepository;
 
 const mockValidation: IValidationAdapter = {

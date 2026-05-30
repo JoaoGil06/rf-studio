@@ -21,4 +21,5 @@ export interface IScheduleRepository {
   findAll(params: ScheduleListParams): Promise<Schedule[]>;
   findInRange(params: ScheduleRangeParams): Promise<Schedule[]>;
   update(schedule: Schedule): Promise<void>;
+  delete(id: string): Promise<void>;
 }

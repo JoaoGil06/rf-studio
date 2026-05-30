@@ -30,6 +30,7 @@ const mockScheduleRepo: IScheduleRepository = {
   findAll: vi.fn(),
   findInRange: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 };
 
 const mockServiceRepo: IServiceRepository = {

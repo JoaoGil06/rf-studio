@@ -154,4 +154,8 @@ export class ScheduleRepository implements IScheduleRepository {
       })
       .where(eq(schedules.id, schedule.id));
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(schedules).where(eq(schedules.id, id));
+  }
 }
