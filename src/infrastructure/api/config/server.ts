@@ -8,6 +8,7 @@ import { typeDefs } from '../../graphql/schema/schema.js';
 import { resolvers } from '../../graphql/resolvers/index.js';
 import { buildContext } from '../../graphql/buildContext.js';
 import {
+  buildDeleteScheduleUseCase,
   buildDeleteServiceUseCase,
   buildDeleteUserUseCase,
   buildGetSchedulesInRangeUseCase,
@@ -66,6 +67,7 @@ export async function startServer() {
           getSchedules: buildGetSchedulesUseCase(),
           getSchedulesInRange: buildGetSchedulesInRangeUseCase(),
           updateSchedule: buildUpdateScheduleUseCase(),
+          deleteSchedule: buildDeleteScheduleUseCase(),
         },
         db,
         jwtAdapter,

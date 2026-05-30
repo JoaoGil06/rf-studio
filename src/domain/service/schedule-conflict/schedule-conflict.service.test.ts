@@ -10,6 +10,7 @@ const mockRepo: IScheduleRepository = {
   findAll: vi.fn(),
   findInRange: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 };
 
 describe('ScheduleConflictService', () => {
