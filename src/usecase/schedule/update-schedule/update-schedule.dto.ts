@@ -10,9 +10,10 @@ export interface ScheduleNodeDto {
 
 export interface UpdateScheduleInputDto {
   id: string;
-  status?: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no-show';
+  status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   date?: Date;
   serviceId?: string;
+  photoUrl?: string | null;
 }
 
 export type UpdateScheduleOutputDto = ScheduleNodeDto;

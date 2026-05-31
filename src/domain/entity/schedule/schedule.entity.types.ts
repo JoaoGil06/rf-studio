@@ -15,4 +15,5 @@ export interface UpdateScheduleProps {
   status?: string;
   date?: Date;
   serviceId?: string;
+  photoUrl?: string | null;
 }

@@ -8,7 +8,7 @@ export class Schedule extends Entity<ScheduleProps> {
   private _serviceId: string;
   private _status: ScheduleStatus;
   private _date: Date;
-  private readonly _photoUrl: string | null;
+  private _photoUrl: string | null;
 
   private constructor(props: ScheduleProps) {
     super(props.id, props.createdAt, props.updatedAt);
@@ -48,6 +48,8 @@ export class Schedule extends Entity<ScheduleProps> {
       }
       this._date = props.date;
     }
+    if (props.photoUrl !== undefined) this._photoUrl = props.photoUrl;
+
     this._updatedAt = new Date();
   }
 }

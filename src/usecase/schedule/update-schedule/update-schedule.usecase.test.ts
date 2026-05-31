@@ -6,6 +6,7 @@ import type { IValidationAdapter } from '../../interfaces/validation-adapter.int
 import { ScheduleFactory } from '../../../domain/entity/schedule/factory/schedule.factory.js';
 import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
+import type { IStorageAdapter } from '../../interfaces/storage-adapter.interface.js';
 
 const SCH_ID = '11111111-1111-1111-1111-111111111111';
 const SVC_ID = '22222222-2222-2222-2222-222222222222';
@@ -46,8 +47,13 @@ const mockValidation: IValidationAdapter = {
   validate: vi.fn().mockImplementation((_, data) => data),
 };
 
+const mockStorage: IStorageAdapter = {
+  upload: vi.fn(),
+  delete: vi.fn(),
+};
+
 const buildUsecase = () =>
-  new UpdateScheduleUseCase(mockScheduleRepo, mockServiceRepo, mockValidation);
+  new UpdateScheduleUseCase(mockScheduleRepo, mockServiceRepo, mockValidation, mockStorage);
 
 describe('UpdateScheduleUseCase', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -130,5 +136,51 @@ describe('UpdateScheduleUseCase', () => {
       buildUsecase().execute({ id: SCH_ID, date: new Date('2026-06-02T12:00:00Z') }),
     ).rejects.toThrow(ConflictError);
     expect(mockScheduleRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('updates the photoUrl and persists it', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule());
+
+    const result = await buildUsecase().execute({
+      id: SCH_ID,
+      photoUrl: 'http://localhost:8000/assets/schedules/photos/new.jpg',
+    });
+
+    expect(result.photoUrl).toBe('http://localhost:8000/assets/schedules/photos/new.jpg');
+    expect(mockScheduleRepo.update).toHaveBeenCalledOnce();
+  });
+
+  it('deletes the previous photo when a new one replaces it', async () => {
+    const existing = ScheduleFactory.reconstitute({
+      id: SCH_ID,
+      userId: '44444444-4444-4444-4444-444444444444',
+      serviceId: SVC_ID,
+      status: 'pending',
+      date: new Date('2026-06-01T10:00:00Z'),
+      photoUrl: 'http://localhost:8000/assets/schedules/photos/old.jpg',
+      createdAt: new Date('2026-01-01T00:00:00Z'),
+      updatedAt: new Date('2026-01-01T00:00:00Z'),
+    });
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(existing);
+
+    await buildUsecase().execute({
+      id: SCH_ID,
+      photoUrl: 'http://localhost:8000/assets/schedules/photos/new.jpg',
+    });
+
+    expect(mockStorage.delete).toHaveBeenCalledWith(
+      'http://localhost:8000/assets/schedules/photos/old.jpg',
+    );
+  });
+
+  it('does not delete anything when there was no previous photo', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule()); // photoUrl: null
+
+    await buildUsecase().execute({
+      id: SCH_ID,
+      photoUrl: 'http://localhost:8000/assets/schedules/photos/new.jpg',
+    });
+
+    expect(mockStorage.delete).not.toHaveBeenCalled();
   });
 });

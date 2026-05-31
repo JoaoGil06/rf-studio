@@ -1,5 +1,6 @@
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import cors from 'cors';
 import express from 'express';
 
@@ -27,10 +28,13 @@ import {
   buildUpdateScheduleUseCase,
   buildUpdateServiceUseCase,
   buildUpdateUserUseCase,
+  buildUploadPhotoUseCase,
   db,
 } from '../../container.js';
-import { PORT } from '../../constants/env.js';
+import { PORT, ASSETS_DIR } from '../../constants/env.js';
 import { requireAuthPlugin } from '../../graphql/plugins/require-auth/require-auth.plugin.js';
+
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function startServer() {
   const jwtAdapter = buildJwtAdapter();
@@ -45,8 +49,12 @@ export async function startServer() {
   const app = express();
   app.use(cors());
   app.use(express.json());
+
+  app.use('/assets', express.static(ASSETS_DIR));
+
   app.use(
     '/graphql',
+    graphqlUploadExpress({ maxFileSize: MAX_BYTES, maxFiles: 1 }),
     expressMiddleware(server, {
       context: buildContext(
         {
@@ -68,6 +76,7 @@ export async function startServer() {
           getSchedulesInRange: buildGetSchedulesInRangeUseCase(),
           updateSchedule: buildUpdateScheduleUseCase(),
           deleteSchedule: buildDeleteScheduleUseCase(),
+          uploadPhoto: buildUploadPhotoUseCase(),
         },
         db,
         jwtAdapter,

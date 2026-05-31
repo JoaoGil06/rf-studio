@@ -3,6 +3,8 @@ import { ConflictError } from '../../../../../domain/@shared/errors/conflictErro
 import { EntityNotFoundError } from '../../../../../domain/@shared/errors/entityNotFoundError.js';
 import { InvalidValueError } from '../../../../../domain/@shared/errors/invalidValueError.js';
 import type { AppContext } from '../../../context.types.js';
+import { streamToBuffer } from '../../../helpers/stream-to-buffer.js';
+import type { FileUpload } from 'graphql-upload/processRequest.mjs';
 
 type GraphQLScheduleStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 type DomainScheduleStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -14,6 +16,7 @@ export interface RegisterScheduleArgs {
     date: string;
     status?: GraphQLScheduleStatus;
     photoUrl?: string | null;
+    photo?: Promise<FileUpload>;
   };
 }
 
@@ -34,12 +37,26 @@ export const resolvers = {
   Mutation: {
     registerSchedule: async (_: unknown, { input }: RegisterScheduleArgs, context: AppContext) => {
       try {
+        let photoUrl = input.photoUrl ?? null;
+
+        if (input.photo) {
+          const file = await input.photo;
+          const buffer = await streamToBuffer(file.createReadStream());
+          const uploaded = await context.useCases.uploadPhoto.execute({
+            buffer,
+            filename: file.filename,
+            mimetype: file.mimetype,
+          });
+
+          photoUrl = uploaded.url;
+        }
+
         const dto = await context.useCases.registerSchedule.execute({
           userId: input.userId,
           serviceId: input.serviceId,
           date: new Date(input.date),
           status: input.status,
-          photoUrl: input.photoUrl ?? null,
+          photoUrl,
         });
 
         return {
