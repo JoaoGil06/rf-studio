@@ -21,6 +21,7 @@ import { UserDataLoaderDto } from './dataloaders/user/user.dataloader.dto.js';
 import { ServiceDataLoaderDto } from './dataloaders/service/service.dataloader.dto.js';
 import { UpdateScheduleUseCase } from '../../usecase/schedule/update-schedule/update-schedule.usecase.js';
 import { DeleteScheduleUseCase } from '../../usecase/schedule/delete-schedule/delete-schedule.usecase.js';
+import { UploadPhotoUseCase } from '../../usecase/schedule/upload-photo/upload-photo.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -43,6 +44,7 @@ export interface AppContext {
     getSchedulesInRange: GetSchedulesInRangeUseCase;
     updateSchedule: UpdateScheduleUseCase;
     deleteSchedule: DeleteScheduleUseCase;
+    uploadPhoto: UploadPhotoUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -70,4 +72,5 @@ export interface AppUseCases {
   getSchedulesInRange: GetSchedulesInRangeUseCase;
   updateSchedule: UpdateScheduleUseCase;
   deleteSchedule: DeleteScheduleUseCase;
+  uploadPhoto: UploadPhotoUseCase;
 }

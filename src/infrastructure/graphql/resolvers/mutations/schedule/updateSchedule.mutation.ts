@@ -3,6 +3,8 @@ import { ConflictError } from '../../../../../domain/@shared/errors/conflictErro
 import { EntityNotFoundError } from '../../../../../domain/@shared/errors/entityNotFoundError.js';
 import { InvalidValueError } from '../../../../../domain/@shared/errors/invalidValueError.js';
 import type { AppContext } from '../../../context.types.js';
+import { streamToBuffer } from '../../../helpers/stream-to-buffer.js';
+import type { FileUpload } from 'graphql-upload/processRequest.mjs';
 
 type GraphQLScheduleStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
@@ -12,6 +14,8 @@ export interface UpdateScheduleArgs {
     status?: GraphQLScheduleStatus;
     date?: string | null;
     serviceId?: string | null;
+    photoUrl?: string;
+    photo?: Promise<FileUpload>;
   };
 }
 
@@ -32,11 +36,26 @@ export const resolvers = {
   Mutation: {
     updateSchedule: async (_: unknown, { input }: UpdateScheduleArgs, context: AppContext) => {
       try {
+        let photoUrl = input.photoUrl ?? null;
+
+        if (input.photo) {
+          const file = await input.photo;
+          const buffer = await streamToBuffer(file.createReadStream());
+          const uploaded = await context.useCases.uploadPhoto.execute({
+            buffer,
+            filename: file.filename,
+            mimetype: file.mimetype,
+          });
+
+          photoUrl = uploaded.url;
+        }
+
         const dto = await context.useCases.updateSchedule.execute({
           id: input.id,
           status: input.status,
           date: input.date ? new Date(input.date) : undefined,
           serviceId: input.serviceId ?? undefined,
+          photoUrl,
         });
 
         return {

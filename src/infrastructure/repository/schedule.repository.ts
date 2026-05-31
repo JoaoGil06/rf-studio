@@ -150,6 +150,7 @@ export class ScheduleRepository implements IScheduleRepository {
         serviceId: schedule.serviceId,
         status: schedule.status.value,
         date: schedule.date,
+        photoUrl: schedule.photoUrl,
         updatedAt: schedule.updatedAt,
       })
       .where(eq(schedules.id, schedule.id));

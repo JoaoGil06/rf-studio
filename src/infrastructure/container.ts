@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { DATABASE_URL, JWT_SECRET } from './constants/env.js';
+import { DATABASE_URL, JWT_SECRET, ASSETS_DIR, PUBLIC_BASE_URL } from './constants/env.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { UserRepository } from './repository/user.repository.js';
 import { BcryptAdapter } from './adapters/bcrypt.adapter.js';
@@ -28,6 +28,8 @@ import { GetSchedulesUseCase } from '../usecase/schedule/get-schedules/get-sched
 import { GetSchedulesInRangeUseCase } from '../usecase/schedule/get-schedules-in-range/get-schedules-in-range.usecase.js';
 import { UpdateScheduleUseCase } from '../usecase/schedule/update-schedule/update-schedule.usecase.js';
 import { DeleteScheduleUseCase } from '../usecase/schedule/delete-schedule/delete-schedule.usecase.js';
+import { LocalStorageAdapter } from './adapters/local-storage.adapter.js';
+import { UploadPhotoUseCase } from '../usecase/schedule/upload-photo/upload-photo.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -184,8 +186,17 @@ export const buildUpdateScheduleUseCase = (): UpdateScheduleUseCase => {
   const scheduleRepository = new ScheduleRepository(db);
   const serviceRepository = new ServiceRepository(db);
   const validationAdapter = new ZodAdapter();
+  const storageAdapter = new LocalStorageAdapter({
+    assetsDir: ASSETS_DIR,
+    publicBaseUrl: `${PUBLIC_BASE_URL.replace(/\/$/, '')}/assets`,
+  });
 
-  return new UpdateScheduleUseCase(scheduleRepository, serviceRepository, validationAdapter);
+  return new UpdateScheduleUseCase(
+    scheduleRepository,
+    serviceRepository,
+    validationAdapter,
+    storageAdapter,
+  );
 };
 
 export const buildDeleteScheduleUseCase = (): DeleteScheduleUseCase => {
@@ -193,4 +204,15 @@ export const buildDeleteScheduleUseCase = (): DeleteScheduleUseCase => {
   const validationAdapter = new ZodAdapter();
 
   return new DeleteScheduleUseCase(scheduleRepository, validationAdapter);
+};
+
+export const buildUploadPhotoUseCase = (): UploadPhotoUseCase => {
+  const storageAdapter = new LocalStorageAdapter({
+    assetsDir: ASSETS_DIR,
+    publicBaseUrl: `${PUBLIC_BASE_URL.replace(/\/$/, '')}/assets`,
+  });
+
+  const validationAdapter = new ZodAdapter();
+
+  return new UploadPhotoUseCase(storageAdapter, validationAdapter);
 };

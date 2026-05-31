@@ -57,7 +57,7 @@ export const scheduleTypeDefs = `#graphql
         serviceId: ID!
         date: String!
         status: ScheduleStatus
-        photoUrl: String
+        photoUrl: Upload
     }
 
      input UpdateScheduleInput {
@@ -65,6 +65,7 @@ export const scheduleTypeDefs = `#graphql
         status: ScheduleStatus
         date: String
         serviceId: ID
+        photo: Upload
     }
 
     type UpdateScheduleSuccess {

@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 const getEnv = (key: string, defaultValue?: string): string => {
   const value = process.env[key] ?? defaultValue;
 
@@ -12,3 +14,5 @@ export const DATABASE_URL = getEnv('DATABASE_URL');
 export const REDIS_URL = getEnv('REDIS_URL');
 export const JWT_SECRET = getEnv('JWT_SECRET');
 export const JWT_EXPIRES_IN = getEnv('JWT_EXPIRES_IN');
+export const PUBLIC_BASE_URL = getEnv('PUBLIC_BASE_URL', 'http://localhost:8000');
+export const ASSETS_DIR = resolve(process.cwd(), getEnv('ASSETS_DIR', 'assets'));

@@ -3,6 +3,7 @@ import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFou
 import { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { ScheduleConflictService } from '../../../domain/service/schedule-conflict/schedule-conflict.service.js';
+import { IStorageAdapter } from '../../interfaces/storage-adapter.interface.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { UpdateScheduleInputDto, UpdateScheduleOutputDto } from './update-schedule.dto.js';
 import { updateScheduleSchema } from './update-schedule.schema-validator.js';
@@ -11,15 +12,18 @@ export class UpdateScheduleUseCase {
   private readonly scheduleRepository: IScheduleRepository;
   private readonly serviceRepository: IServiceRepository;
   private readonly validationAdapter: IValidationAdapter;
+  private readonly storageAdapter: IStorageAdapter;
 
   constructor(
     scheduleRepository: IScheduleRepository,
     serviceRepository: IServiceRepository,
     validationAdapter: IValidationAdapter,
+    storageAdapter: IStorageAdapter,
   ) {
     this.scheduleRepository = scheduleRepository;
     this.serviceRepository = serviceRepository;
     this.validationAdapter = validationAdapter;
+    this.storageAdapter = storageAdapter;
   }
 
   async execute(inputDto: UpdateScheduleInputDto): Promise<UpdateScheduleOutputDto> {
@@ -33,6 +37,7 @@ export class UpdateScheduleUseCase {
       throw new EntityNotFoundError(`Schedule not found: ${validated.id}`);
     }
 
+    const previousPhotoUrl = schedule.photoUrl;
     const nextServiceId = validated.serviceId ?? schedule.serviceId;
     const nextDate = validated.date ?? schedule.date;
     const timingChanged = validated.serviceId !== undefined || validated.date !== undefined;
@@ -58,9 +63,19 @@ export class UpdateScheduleUseCase {
       status: validated.status,
       date: validated.date,
       serviceId: validated.serviceId,
+      photoUrl: validated.photoUrl,
     });
 
     await this.scheduleRepository.update(schedule);
+
+    // Remove the replaced file so it doesn't orphan on disk.
+    if (
+      validated.photoUrl !== undefined &&
+      previousPhotoUrl !== null &&
+      previousPhotoUrl !== schedule.photoUrl
+    ) {
+      await this.storageAdapter.delete(previousPhotoUrl);
+    }
 
     return {
       id: schedule.id,
