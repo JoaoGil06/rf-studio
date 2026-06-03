@@ -26,4 +26,9 @@ export const errorTypeDefs = `#graphql
   type ScheduleNotFoundError {
     message: String!
   }
+
+  # Products
+  type ProductAlreadyExistsError {
+    message: String!
+  }
 `;

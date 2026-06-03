@@ -30,6 +30,8 @@ import { UpdateScheduleUseCase } from '../usecase/schedule/update-schedule/updat
 import { DeleteScheduleUseCase } from '../usecase/schedule/delete-schedule/delete-schedule.usecase.js';
 import { LocalStorageAdapter } from './adapters/local-storage.adapter.js';
 import { UploadPhotoUseCase } from '../usecase/schedule/upload-photo/upload-photo.usecase.js';
+import { ProductRepository } from './repository/product.repository.js';
+import { RegisterProductUseCase } from '../usecase/products/register-product/register-product.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -215,4 +217,13 @@ export const buildUploadPhotoUseCase = (): UploadPhotoUseCase => {
   const validationAdapter = new ZodAdapter();
 
   return new UploadPhotoUseCase(storageAdapter, validationAdapter);
+};
+
+export const buildRegisterProductUseCase = (): RegisterProductUseCase => {
+  const productRepository = new ProductRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  const registerProductUseCase = new RegisterProductUseCase(productRepository, validationAdapter);
+
+  return registerProductUseCase;
 };
