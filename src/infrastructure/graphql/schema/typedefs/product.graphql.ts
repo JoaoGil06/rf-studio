@@ -7,6 +7,7 @@ export const productTypeDefs = `#graphql
     type Mutation {
         registerProduct(input: RegisterProductInput!): RegisterProductPayload!
         updateProduct(input: UpdateProductInput!): UpdateProductPayload!
+        deleteProduct(input: DeleteProductInput!): DeleteProductPayload!
     }
 
     type Product {
@@ -54,4 +55,14 @@ export const productTypeDefs = `#graphql
     }
 
     union UpdateProductPayload = UpdateProductSuccess | ProductNotFoundError | ProductAlreadyExistsError
+
+    input DeleteProductInput {
+        id: ID!
+    }
+
+    type DeleteProductSuccess {
+        id: ID!
+    }
+
+    union DeleteProductPayload = DeleteProductSuccess | ProductNotFoundError
 `;

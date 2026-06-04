@@ -26,6 +26,7 @@ import { RegisterProductUseCase } from '../../usecase/products/register-product/
 import { GetProductUseCase } from '../../usecase/products/get-product/get-product.usecase.js';
 import { GetProductsUseCase } from '../../usecase/products/get-products/get-products.usecase.js';
 import { UpdateProductUseCase } from '../../usecase/products/update-product/update-product.usecase.js';
+import { DeleteProductUseCase } from '../../usecase/products/delete-product/delete-product.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -53,6 +54,7 @@ export interface AppContext {
     getProduct: GetProductUseCase;
     getProducts: GetProductsUseCase;
     updateProduct: UpdateProductUseCase;
+    deleteProduct: DeleteProductUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -85,4 +87,5 @@ export interface AppUseCases {
   getProduct: GetProductUseCase;
   getProducts: GetProductsUseCase;
   updateProduct: UpdateProductUseCase;
+  deleteProduct: DeleteProductUseCase;
 }

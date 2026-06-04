@@ -21,6 +21,7 @@ const mockRepo: IProductRepository = {
   findById: vi.fn(),
   findAll: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 };
 
 describe('GetProductsUseCase', () => {
