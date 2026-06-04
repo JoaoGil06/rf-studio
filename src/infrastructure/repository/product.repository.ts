@@ -97,4 +97,8 @@ export class ProductRepository implements IProductRepository {
       })
       .where(eq(products.id, product.id));
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(products).where(eq(products.id, id));
+  }
 }
