@@ -31,4 +31,8 @@ export const errorTypeDefs = `#graphql
   type ProductAlreadyExistsError {
     message: String!
   }
+
+  type ProductNotFoundError {
+    message: String!
+  }
 `;

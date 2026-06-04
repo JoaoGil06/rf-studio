@@ -9,6 +9,7 @@ const mockRepo: IProductRepository = {
   save: vi.fn(),
   findById: vi.fn(),
   findAll: vi.fn(),
+  update: vi.fn(),
 };
 
 const mockValidation: IValidationAdapter = {

@@ -6,6 +6,7 @@ export const productTypeDefs = `#graphql
 
     type Mutation {
         registerProduct(input: RegisterProductInput!): RegisterProductPayload!
+        updateProduct(input: UpdateProductInput!): UpdateProductPayload!
     }
 
     type Product {
@@ -39,4 +40,18 @@ export const productTypeDefs = `#graphql
     }
 
     union RegisterProductPayload = RegisterProductSuccess | ProductAlreadyExistsError
+
+    input UpdateProductInput {
+        id: ID!
+        name: String
+        brand: String
+        color: String
+        isAvailable: Boolean
+    }
+
+    type UpdateProductSuccess {
+        product: Product!
+    }
+
+    union UpdateProductPayload = UpdateProductSuccess | ProductNotFoundError | ProductAlreadyExistsError
 `;
