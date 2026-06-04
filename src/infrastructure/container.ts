@@ -32,6 +32,8 @@ import { LocalStorageAdapter } from './adapters/local-storage.adapter.js';
 import { UploadPhotoUseCase } from '../usecase/schedule/upload-photo/upload-photo.usecase.js';
 import { ProductRepository } from './repository/product.repository.js';
 import { RegisterProductUseCase } from '../usecase/products/register-product/register-product.usecase.js';
+import { GetProductUseCase } from '../usecase/products/get-product/get-product.usecase.js';
+import { GetProductsUseCase } from '../usecase/products/get-products/get-products.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -226,4 +228,16 @@ export const buildRegisterProductUseCase = (): RegisterProductUseCase => {
   const registerProductUseCase = new RegisterProductUseCase(productRepository, validationAdapter);
 
   return registerProductUseCase;
+};
+
+export const buildGetProductUseCase = (): GetProductUseCase => {
+  const productRepository = new ProductRepository(db);
+
+  return new GetProductUseCase(productRepository);
+};
+
+export const buildGetProductsUseCase = (): GetProductsUseCase => {
+  const productRepository = new ProductRepository(db);
+
+  return new GetProductsUseCase(productRepository);
 };

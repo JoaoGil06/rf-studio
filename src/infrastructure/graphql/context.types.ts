@@ -23,6 +23,8 @@ import { UpdateScheduleUseCase } from '../../usecase/schedule/update-schedule/up
 import { DeleteScheduleUseCase } from '../../usecase/schedule/delete-schedule/delete-schedule.usecase.js';
 import { UploadPhotoUseCase } from '../../usecase/schedule/upload-photo/upload-photo.usecase.js';
 import { RegisterProductUseCase } from '../../usecase/products/register-product/register-product.usecase.js';
+import { GetProductUseCase } from '../../usecase/products/get-product/get-product.usecase.js';
+import { GetProductsUseCase } from '../../usecase/products/get-products/get-products.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -47,6 +49,8 @@ export interface AppContext {
     deleteSchedule: DeleteScheduleUseCase;
     uploadPhoto: UploadPhotoUseCase;
     registerProduct: RegisterProductUseCase;
+    getProduct: GetProductUseCase;
+    getProducts: GetProductsUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -76,4 +80,6 @@ export interface AppUseCases {
   deleteSchedule: DeleteScheduleUseCase;
   uploadPhoto: UploadPhotoUseCase;
   registerProduct: RegisterProductUseCase;
+  getProduct: GetProductUseCase;
+  getProducts: GetProductsUseCase;
 }
