@@ -25,6 +25,7 @@ import { UploadPhotoUseCase } from '../../usecase/schedule/upload-photo/upload-p
 import { RegisterProductUseCase } from '../../usecase/products/register-product/register-product.usecase.js';
 import { GetProductUseCase } from '../../usecase/products/get-product/get-product.usecase.js';
 import { GetProductsUseCase } from '../../usecase/products/get-products/get-products.usecase.js';
+import { UpdateProductUseCase } from '../../usecase/products/update-product/update-product.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -51,6 +52,7 @@ export interface AppContext {
     registerProduct: RegisterProductUseCase;
     getProduct: GetProductUseCase;
     getProducts: GetProductsUseCase;
+    updateProduct: UpdateProductUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
@@ -82,4 +84,5 @@ export interface AppUseCases {
   registerProduct: RegisterProductUseCase;
   getProduct: GetProductUseCase;
   getProducts: GetProductsUseCase;
+  updateProduct: UpdateProductUseCase;
 }

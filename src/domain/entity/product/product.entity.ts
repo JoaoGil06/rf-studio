@@ -1,5 +1,6 @@
 import { Entity } from '../../@shared/entity/entity.abstract.js';
-import { ProductProps } from './product.entity.types.js';
+import { InvalidValueError } from '../../@shared/errors/invalidValueError.js';
+import { ProductProps, UpdateProductProps } from './product.entity.types.js';
 
 export class Product extends Entity<ProductProps> {
   private _name: string;
@@ -30,5 +31,24 @@ export class Product extends Entity<ProductProps> {
   }
   public get isAvailable(): boolean {
     return this._isAvailable;
+  }
+
+  public updateProductDetails(props: UpdateProductProps): void {
+    if (props.name !== undefined) {
+      if (props.name.trim().length === 0) {
+        throw new InvalidValueError('Product name cannot be empty');
+      }
+      this._name = props.name;
+    }
+    if (props.brand !== undefined) {
+      if (props.brand.trim().length === 0) {
+        throw new InvalidValueError('Product brand cannot be empty');
+      }
+      this._brand = props.brand;
+    }
+    if (props.color !== undefined) this._color = props.color;
+    if (props.isAvailable !== undefined) this._isAvailable = props.isAvailable;
+
+    this._updatedAt = new Date();
   }
 }

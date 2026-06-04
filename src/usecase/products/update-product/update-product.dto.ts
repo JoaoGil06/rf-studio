@@ -1,16 +1,18 @@
-export interface ProductProps {
+export interface ProductNodeDto {
   id: string;
   name: string;
   brand: string;
   color: string | null;
   isAvailable: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
 }
 
-export interface UpdateProductProps {
+export interface UpdateProductInputDto {
+  id: string;
   name?: string;
   brand?: string;
   color?: string;
   isAvailable?: boolean;
 }
+
+export type UpdateProductOutputDto = ProductNodeDto;

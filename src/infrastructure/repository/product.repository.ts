@@ -84,4 +84,17 @@ export class ProductRepository implements IProductRepository {
       updatedAt: product.updatedAt,
     });
   }
+
+  async update(product: Product): Promise<void> {
+    await this.db
+      .update(products)
+      .set({
+        name: product.name,
+        brand: product.brand,
+        color: product.color,
+        isAvailable: product.isAvailable,
+        updatedAt: product.updatedAt,
+      })
+      .where(eq(products.id, product.id));
+  }
 }

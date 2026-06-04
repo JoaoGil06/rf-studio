@@ -34,6 +34,7 @@ import { ProductRepository } from './repository/product.repository.js';
 import { RegisterProductUseCase } from '../usecase/products/register-product/register-product.usecase.js';
 import { GetProductUseCase } from '../usecase/products/get-product/get-product.usecase.js';
 import { GetProductsUseCase } from '../usecase/products/get-products/get-products.usecase.js';
+import { UpdateProductUseCase } from '../usecase/products/update-product/update-product.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -240,4 +241,11 @@ export const buildGetProductsUseCase = (): GetProductsUseCase => {
   const productRepository = new ProductRepository(db);
 
   return new GetProductsUseCase(productRepository);
+};
+
+export const buildUpdateProductUseCase = (): UpdateProductUseCase => {
+  const productRepository = new ProductRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  return new UpdateProductUseCase(productRepository, validationAdapter);
 };
