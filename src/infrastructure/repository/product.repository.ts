@@ -1,5 +1,5 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { Product } from '../../domain/entity/product/product.entity.js';
 import { IProductRepository } from '../../domain/repository/product-repository.interface.js';
 import { products } from '../db/schema/products.schema.js';
@@ -32,6 +32,45 @@ export class ProductRepository implements IProductRepository {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
+  }
+
+  async findById(id: string): Promise<Product | null> {
+    const rows = await this.db.select().from(products).where(eq(products.id, id)).limit(1);
+
+    if (rows.length === 0) return null;
+
+    const row = rows[0];
+
+    return ProductFactory.reconstitute({
+      id: row.id,
+      name: row.name,
+      brand: row.brand,
+      color: row.color,
+      isAvailable: row.isAvailable,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    });
+  }
+
+  async findAll(params: { limit: number; offset: number }): Promise<Product[]> {
+    const rows = await this.db
+      .select()
+      .from(products)
+      .orderBy(asc(products.createdAt), asc(products.id))
+      .limit(params.limit)
+      .offset(params.offset);
+
+    return rows.map((row) =>
+      ProductFactory.reconstitute({
+        id: row.id,
+        name: row.name,
+        brand: row.brand,
+        color: row.color,
+        isAvailable: row.isAvailable,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      }),
+    );
   }
 
   async save(product: Product): Promise<void> {
