@@ -16,7 +16,6 @@ export const scheduleTypeDefs = `#graphql
         confirmed
         completed
         cancelled
-        no_show
     }
 
     type Schedule {
