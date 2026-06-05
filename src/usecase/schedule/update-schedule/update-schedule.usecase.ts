@@ -1,8 +1,10 @@
 import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
+import { ScheduleStatusValue } from '../../../domain/@shared/value-object/schedule-status/schedule-status.vo.js';
 import { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { ScheduleConflictService } from '../../../domain/service/schedule-conflict/schedule-conflict.service.js';
+import { ScheduleStatusService } from '../../../domain/service/schedule-status/schedule-status.service.js';
 import { IStorageAdapter } from '../../interfaces/storage-adapter.interface.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { UpdateScheduleInputDto, UpdateScheduleOutputDto } from './update-schedule.dto.js';
@@ -36,6 +38,19 @@ export class UpdateScheduleUseCase {
     if (!schedule) {
       throw new EntityNotFoundError(`Schedule not found: ${validated.id}`);
     }
+
+    // Status Transiction Guard
+    if (validated.status !== undefined && validated.status !== schedule.status.value) {
+      if (validated.status === 'completed')
+        throw new ConflictError(
+          'Completing a schedule requires products; use the completeSchedule mutation',
+        );
+    }
+
+    ScheduleStatusService.assertCanTransition(
+      schedule.status.value,
+      validated.status as ScheduleStatusValue,
+    );
 
     const previousPhotoUrl = schedule.photoUrl;
     const nextServiceId = validated.serviceId ?? schedule.serviceId;

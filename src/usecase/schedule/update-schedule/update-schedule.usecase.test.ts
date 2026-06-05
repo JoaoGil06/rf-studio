@@ -12,16 +12,23 @@ const SCH_ID = '11111111-1111-1111-1111-111111111111';
 const SVC_ID = '22222222-2222-2222-2222-222222222222';
 const NEW_SVC_ID = '33333333-3333-3333-3333-333333333333';
 
-const makeSchedule = () =>
+const schedule = {
+  id: SCH_ID,
+  userId: '44444444-4444-4444-4444-444444444444',
+  serviceId: SVC_ID,
+  status: 'pending',
+  date: new Date('2026-06-01T10:00:00Z'),
+  photoUrl: null,
+  createdAt: new Date('2026-01-01T00:00:00Z'),
+  updatedAt: new Date('2026-01-01T00:00:00Z'),
+};
+
+const makeSchedule = () => ScheduleFactory.reconstitute(schedule);
+
+const makeScheduleCancelled = () =>
   ScheduleFactory.reconstitute({
-    id: SCH_ID,
-    userId: '44444444-4444-4444-4444-444444444444',
-    serviceId: SVC_ID,
-    status: 'pending',
-    date: new Date('2026-06-01T10:00:00Z'),
-    photoUrl: null,
-    createdAt: new Date('2026-01-01T00:00:00Z'),
-    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...schedule,
+    status: 'cancelled',
   });
 
 const mockScheduleRepo: IScheduleRepository = {
@@ -87,7 +94,7 @@ describe('UpdateScheduleUseCase', () => {
     vi.mocked(mockScheduleRepo.findOverlapping).mockResolvedValue([]);
 
     const newDate = new Date('2026-06-02T12:00:00Z');
-    const result = await buildUsecase().execute({ id: SCH_ID, date: newDate });
+    const result = await buildUsecase().execute({ id: SCH_ID, date: newDate, status: 'pending' });
 
     expect(mockServiceRepo.findById).toHaveBeenCalledWith(SVC_ID);
     expect(mockScheduleRepo.findOverlapping).toHaveBeenCalledWith(
@@ -107,7 +114,11 @@ describe('UpdateScheduleUseCase', () => {
     } as never);
     vi.mocked(mockScheduleRepo.findOverlapping).mockResolvedValue([]);
 
-    const result = await buildUsecase().execute({ id: SCH_ID, serviceId: NEW_SVC_ID });
+    const result = await buildUsecase().execute({
+      id: SCH_ID,
+      serviceId: NEW_SVC_ID,
+      status: 'pending',
+    });
 
     expect(mockServiceRepo.findById).toHaveBeenCalledWith(NEW_SVC_ID);
     expect(result.serviceId).toBe(NEW_SVC_ID);
@@ -118,9 +129,9 @@ describe('UpdateScheduleUseCase', () => {
     vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule());
     vi.mocked(mockServiceRepo.findById).mockResolvedValue(null);
 
-    await expect(buildUsecase().execute({ id: SCH_ID, serviceId: NEW_SVC_ID })).rejects.toThrow(
-      EntityNotFoundError,
-    );
+    await expect(
+      buildUsecase().execute({ id: SCH_ID, serviceId: NEW_SVC_ID, status: 'pending' }),
+    ).rejects.toThrow(EntityNotFoundError);
     expect(mockScheduleRepo.update).not.toHaveBeenCalled();
   });
 
@@ -144,6 +155,7 @@ describe('UpdateScheduleUseCase', () => {
     const result = await buildUsecase().execute({
       id: SCH_ID,
       photoUrl: 'http://localhost:8000/assets/schedules/photos/new.jpg',
+      status: 'pending',
     });
 
     expect(result.photoUrl).toBe('http://localhost:8000/assets/schedules/photos/new.jpg');
@@ -166,6 +178,7 @@ describe('UpdateScheduleUseCase', () => {
     await buildUsecase().execute({
       id: SCH_ID,
       photoUrl: 'http://localhost:8000/assets/schedules/photos/new.jpg',
+      status: 'pending',
     });
 
     expect(mockStorage.delete).toHaveBeenCalledWith(
@@ -179,8 +192,24 @@ describe('UpdateScheduleUseCase', () => {
     await buildUsecase().execute({
       id: SCH_ID,
       photoUrl: 'http://localhost:8000/assets/schedules/photos/new.jpg',
+      status: 'pending',
     });
 
     expect(mockStorage.delete).not.toHaveBeenCalled();
+  });
+
+  it('rejects a completed target — completion must use completeSchedule', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule()); // status: pending
+    await expect(buildUsecase().execute({ id: SCH_ID, status: 'completed' })).rejects.toThrow(
+      ConflictError,
+    );
+    expect(mockScheduleRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects an illegal transition (cancelled -> confirmed)', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeScheduleCancelled());
+    await expect(buildUsecase().execute({ id: SCH_ID, status: 'confirmed' })).rejects.toThrow(
+      ConflictError,
+    );
   });
 });
