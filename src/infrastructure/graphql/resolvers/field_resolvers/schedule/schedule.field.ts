@@ -31,5 +31,7 @@ export const resolvers = {
       }
       return service;
     },
+    products: (parent: ScheduleNodeDto, _: unknown, context: AppContext) =>
+      context.dataLoaders.scheduleProducts.load(parent.id),
   },
 };

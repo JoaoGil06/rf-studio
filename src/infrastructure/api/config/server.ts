@@ -35,6 +35,7 @@ import {
   buildUpdateUserUseCase,
   buildUploadPhotoUseCase,
   db,
+  buildCompleteScheduleUseCase,
 } from '../../container.js';
 import { PORT, ASSETS_DIR } from '../../constants/env.js';
 import { requireAuthPlugin } from '../../graphql/plugins/require-auth/require-auth.plugin.js';
@@ -87,6 +88,7 @@ export async function startServer() {
           getProducts: buildGetProductsUseCase(),
           updateProduct: buildUpdateProductUseCase(),
           deleteProduct: buildDeleteProductUseCase(),
+          completeSchedule: buildCompleteScheduleUseCase(),
         },
         db,
         jwtAdapter,

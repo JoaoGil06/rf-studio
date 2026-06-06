@@ -1,5 +1,5 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { Product } from '../../domain/entity/product/product.entity.js';
 import { IProductRepository } from '../../domain/repository/product-repository.interface.js';
 import { products } from '../db/schema/products.schema.js';
@@ -52,6 +52,25 @@ export class ProductRepository implements IProductRepository {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
+  }
+
+  async findByIds(ids: string[]): Promise<Product[]> {
+    if (ids.length === 0) return [];
+
+    const rows = await this.db.select().from(products).where(inArray(products.id, ids));
+
+    return rows.map((row) =>
+      ProductFactory.reconstitute({
+        id: row.id,
+        name: row.name,
+        brand: row.brand,
+        category: row.category,
+        color: row.color,
+        isAvailable: row.isAvailable,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      }),
+    );
   }
 
   async findAll(params: { limit: number; offset: number }): Promise<Product[]> {

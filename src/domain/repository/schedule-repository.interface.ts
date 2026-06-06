@@ -22,4 +22,6 @@ export interface IScheduleRepository {
   findInRange(params: ScheduleRangeParams): Promise<Schedule[]>;
   update(schedule: Schedule): Promise<void>;
   delete(id: string): Promise<void>;
+  // Isto é o "atomic write (do ACID)" em que fazermos um status UPDATE + join INSERT em uma só transaction
+  complete(schedule: Schedule, productIds: string[]): Promise<void>;
 }

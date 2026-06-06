@@ -27,6 +27,8 @@ import { GetProductUseCase } from '../../usecase/products/get-product/get-produc
 import { GetProductsUseCase } from '../../usecase/products/get-products/get-products.usecase.js';
 import { UpdateProductUseCase } from '../../usecase/products/update-product/update-product.usecase.js';
 import { DeleteProductUseCase } from '../../usecase/products/delete-product/delete-product.usecase.js';
+import { ScheduleProductDto } from './dataloaders/schedule-products/schedule-products.dataloader.dto.js';
+import { CompleteScheduleUseCase } from '../../usecase/schedule/complete-schedule/complete-schedule.usecase.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -55,11 +57,13 @@ export interface AppContext {
     getProducts: GetProductsUseCase;
     updateProduct: UpdateProductUseCase;
     deleteProduct: DeleteProductUseCase;
+    completeSchedule: CompleteScheduleUseCase;
   };
   dataLoaders: {
     role: DataLoader<string, RoleDto | null>;
     user: DataLoader<string, UserDataLoaderDto | null>;
     service: DataLoader<string, ServiceDataLoaderDto | null>;
+    scheduleProducts: DataLoader<string, ScheduleProductDto[]>;
   };
 }
 
@@ -88,4 +92,5 @@ export interface AppUseCases {
   getProducts: GetProductsUseCase;
   updateProduct: UpdateProductUseCase;
   deleteProduct: DeleteProductUseCase;
+  completeSchedule: CompleteScheduleUseCase;
 }
