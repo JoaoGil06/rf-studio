@@ -3,6 +3,7 @@ export interface ProductNodeDto {
   name: string;
   brand: string;
   color: string | null;
+  category: string;
   isAvailable: boolean;
   createdAt: string;
 }

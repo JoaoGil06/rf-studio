@@ -42,6 +42,7 @@ export class UpdateProductUseCase {
       name: validated.name,
       brand: validated.brand,
       color: validated.color,
+      category: validated.category,
       isAvailable: validated.isAvailable,
     });
 
@@ -51,6 +52,7 @@ export class UpdateProductUseCase {
       id: productFound.id,
       name: productFound.name,
       brand: productFound.brand,
+      category: productFound.category.value,
       color: productFound.color,
       isAvailable: productFound.isAvailable,
       createdAt: productFound.createdAt.toISOString(),

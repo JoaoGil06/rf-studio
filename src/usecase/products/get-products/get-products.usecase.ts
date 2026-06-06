@@ -27,6 +27,7 @@ export class GetProductsUseCase {
         id: product.id,
         name: product.name,
         brand: product.brand,
+        category: product.category.value,
         color: product.color,
         isAvailable: product.isAvailable,
         createdAt: product.createdAt.toISOString(),

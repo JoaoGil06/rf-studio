@@ -7,9 +7,10 @@ import type { AppContext } from '../../../context.types.js';
 export interface UpdateProductArgs {
   input: {
     id: string;
-    name?: string | null;
-    brand?: string | null;
-    color?: string | null;
+    name?: string;
+    brand?: string;
+    category?: string;
+    color?: string;
     isAvailable?: boolean;
   };
 }

@@ -7,13 +7,12 @@ describe('ProductFactory', () => {
     name: 'Red Gel Polish',
     brand: 'OPI',
     color: 'red',
+    category: 'nails',
   };
 
   it('create() generates a new UUID', () => {
     const product = ProductFactory.create(baseProps);
-    expect(product.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+    expect(product.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   });
 
   it('create() defaults isAvailable to true when omitted', () => {
@@ -27,13 +26,19 @@ describe('ProductFactory', () => {
   });
 
   it('create() defaults color to null when omitted', () => {
-    const product = ProductFactory.create({ name: 'Base Coat', brand: 'Essie' });
+    const product = ProductFactory.create({ name: 'Base Coat', brand: 'Essie', category: 'nails' });
     expect(product.color).toBeNull();
   });
 
   it('throws InvalidValueError when name is empty', () => {
     expect(() => ProductFactory.create({ ...baseProps, name: '' })).toThrow(InvalidValueError);
     expect(() => ProductFactory.create({ ...baseProps, name: '   ' })).toThrow(InvalidValueError);
+  });
+
+  it('throws InvalidValueError on an invalid category', () => {
+    expect(() => ProductFactory.create({ ...baseProps, category: 'hair' })).toThrow(
+      InvalidValueError,
+    );
   });
 
   it('reconstitute() preserves the provided id and timestamps', () => {
@@ -43,6 +48,7 @@ describe('ProductFactory', () => {
       id,
       name: 'Red Gel Polish',
       brand: 'OPI',
+      category: 'nails',
       color: 'red',
       isAvailable: true,
       createdAt: now,

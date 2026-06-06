@@ -1,11 +1,13 @@
 import { Entity } from '../../@shared/entity/entity.abstract.js';
 import { InvalidValueError } from '../../@shared/errors/invalidValueError.js';
+import { ServiceCategory } from '../../@shared/value-object/service-category/service-category.vo.js';
 import { ProductProps, UpdateProductProps } from './product.entity.types.js';
 
 export class Product extends Entity<ProductProps> {
   private _name: string;
   private _brand: string;
   private _color: string | null;
+  private _category: ServiceCategory;
   private _isAvailable: boolean;
 
   private constructor(props: ProductProps) {
@@ -13,6 +15,7 @@ export class Product extends Entity<ProductProps> {
     this._name = props.name;
     this._brand = props.brand;
     this._color = props.color;
+    this._category = props.category;
     this._isAvailable = props.isAvailable;
   }
 
@@ -28,6 +31,9 @@ export class Product extends Entity<ProductProps> {
   }
   public get color(): string | null {
     return this._color;
+  }
+  public get category(): ServiceCategory {
+    return this._category;
   }
   public get isAvailable(): boolean {
     return this._isAvailable;
@@ -47,6 +53,7 @@ export class Product extends Entity<ProductProps> {
       this._brand = props.brand;
     }
     if (props.color !== undefined) this._color = props.color;
+    if (props.category !== undefined) this._category = new ServiceCategory(props.category);
     if (props.isAvailable !== undefined) this._isAvailable = props.isAvailable;
 
     this._updatedAt = new Date();

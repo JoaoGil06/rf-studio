@@ -10,6 +10,7 @@ const makeProduct = (i: number) =>
     name: `Product ${i}`,
     brand: 'OPI',
     color: 'red',
+    category: 'nails',
     isAvailable: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -47,6 +48,7 @@ describe('GetProductsUseCase', () => {
     expect(result.edges).toHaveLength(1);
     expect(result.edges[0].node.name).toBe('Product 1');
     expect(result.edges[0].node.brand).toBe('OPI');
+    expect(result.edges[0].node.category).toBe('nails');
     expect(result.edges[0].cursor).toBeDefined();
   });
 

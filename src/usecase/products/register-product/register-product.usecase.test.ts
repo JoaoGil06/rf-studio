@@ -21,6 +21,7 @@ const input = {
   name: 'Red Gel Polish',
   brand: 'OPI',
   color: 'red',
+  category: 'nails',
 };
 
 describe('RegisterProductUseCase', () => {
@@ -34,6 +35,7 @@ describe('RegisterProductUseCase', () => {
 
     expect(result.name).toBe('Red Gel Polish');
     expect(result.brand).toBe('OPI');
+    expect(result.category).toBe('nails');
     expect(result.color).toBe('red');
     expect(result.isAvailable).toBe(true);
     expect(result.id).toMatch(/[0-9a-f-]{36}/);
@@ -44,7 +46,7 @@ describe('RegisterProductUseCase', () => {
     vi.mocked(mockRepo.findByNameAndBrand).mockResolvedValue(null);
     const usecase = new RegisterProductUseCase(mockRepo, mockValidation);
 
-    const result = await usecase.execute({ name: 'Base Coat', brand: 'Essie' });
+    const result = await usecase.execute({ name: 'Base Coat', brand: 'Essie', category: 'nails' });
 
     expect(result.isAvailable).toBe(true);
     expect(result.color).toBeNull();

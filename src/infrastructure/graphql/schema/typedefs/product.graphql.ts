@@ -14,6 +14,7 @@ export const productTypeDefs = `#graphql
         id: ID!
         name: String!
         brand: String!
+        category: String!
         color: String
         isAvailable: Boolean!
         createdAt: String!
@@ -22,6 +23,7 @@ export const productTypeDefs = `#graphql
     input RegisterProductInput {
         name: String!
         brand: String!
+        category: String!
         color: String
         isAvailable: Boolean
     }
@@ -46,6 +48,7 @@ export const productTypeDefs = `#graphql
         id: ID!
         name: String
         brand: String
+        category: String
         color: String
         isAvailable: Boolean
     }
