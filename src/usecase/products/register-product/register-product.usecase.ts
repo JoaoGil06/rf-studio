@@ -34,6 +34,7 @@ export class RegisterProductUseCase {
     const product = ProductFactory.create({
       name: validatedInput.name,
       brand: validatedInput.brand,
+      category: validatedInput.category,
       color: validatedInput.color ?? null,
       isAvailable: validatedInput.isAvailable,
     });
@@ -44,6 +45,7 @@ export class RegisterProductUseCase {
       id: product.id,
       name: product.name,
       brand: product.brand,
+      category: product.category.value,
       color: product.color,
       isAvailable: product.isAvailable,
       createdAt: product.createdAt.toISOString(),

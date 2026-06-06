@@ -10,6 +10,7 @@ const makeProduct = () =>
     name: 'Red Gel Polish',
     brand: 'OPI',
     color: 'red',
+    category: 'nails',
     isAvailable: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -36,6 +37,7 @@ describe('GetProductUseCase', () => {
     expect(result.id).toBe('prod-1');
     expect(result.name).toBe('Red Gel Polish');
     expect(result.brand).toBe('OPI');
+    expect(result.category).toBe('nails');
     expect(result.color).toBe('red');
     expect(result.isAvailable).toBe(true);
   });

@@ -7,6 +7,7 @@ export interface RegisterProductArgs {
   input: {
     name: string;
     brand: string;
+    category: string;
     color?: string | null;
     isAvailable?: boolean;
   };
