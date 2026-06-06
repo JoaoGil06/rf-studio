@@ -9,6 +9,7 @@ export const scheduleTypeDefs = `#graphql
         registerSchedule(input: RegisterScheduleInput!): RegisterSchedulePayload!
         updateSchedule(input: UpdateScheduleInput!): UpdateSchedulePayload!
         deleteSchedule(input: DeleteScheduleInput!): DeleteSchedulePayload!
+        completeSchedule(input: CompleteScheduleInput!): CompleteSchedulePayload!
     }
 
     enum ScheduleStatus {
@@ -28,6 +29,7 @@ export const scheduleTypeDefs = `#graphql
         createdAt: String!
         user: User!
         service: Service!
+        products: [Product!]!
     }
 
     type ScheduleEdge {
@@ -67,6 +69,11 @@ export const scheduleTypeDefs = `#graphql
         photo: Upload
     }
 
+    input CompleteScheduleInput {
+        scheduleId: ID!
+        productIds: [ID!]!
+    }
+
     type UpdateScheduleSuccess {
         schedule: Schedule!
     }
@@ -76,6 +83,10 @@ export const scheduleTypeDefs = `#graphql
     }
 
     type RegisterScheduleSuccess {
+        schedule: Schedule!
+    }
+
+    type CompleteScheduleSuccess {
         schedule: Schedule!
     }
 
@@ -90,6 +101,13 @@ export const scheduleTypeDefs = `#graphql
         | ScheduleNotFoundError
         | ServiceNotFoundError
         | ScheduleAlreadyBookedError
+    
+    union CompleteSchedulePayload =
+          CompleteScheduleSuccess
+        | ScheduleNotFoundError
+        | ServiceNotFoundError
+        | ProductNotFoundError
+        | ScheduleNotCompletableError
 
     input DeleteScheduleInput {
         id: ID!

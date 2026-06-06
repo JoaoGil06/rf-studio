@@ -20,6 +20,7 @@ const mockRepo: IProductRepository = {
   findByNameAndBrand: vi.fn(),
   save: vi.fn(),
   findById: vi.fn(),
+  findByIds: vi.fn(),
   findAll: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),

@@ -27,6 +27,10 @@ export const errorTypeDefs = `#graphql
     message: String!
   }
 
+   type ScheduleNotCompletableError {
+    message: String!
+  }
+
   # Products
   type ProductAlreadyExistsError {
     message: String!

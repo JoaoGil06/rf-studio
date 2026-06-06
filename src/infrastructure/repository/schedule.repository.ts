@@ -9,6 +9,7 @@ import { schedules } from '../db/schema/schedules.schema.js';
 import { services } from '../db/schema/services.schema.js';
 import { and, sql, eq, asc, gte, lt, ne } from 'drizzle-orm';
 import { ScheduleFactory } from '../../domain/entity/schedule/factory/schedule.factory.js';
+import { scheduleProducts } from '../db/schema/schedule-products.schema.js';
 
 export class ScheduleRepository implements IScheduleRepository {
   private readonly db: NodePgDatabase;
@@ -158,5 +159,20 @@ export class ScheduleRepository implements IScheduleRepository {
 
   async delete(id: string): Promise<void> {
     await this.db.delete(schedules).where(eq(schedules.id, id));
+  }
+
+  async complete(schedule: Schedule, productIds: string[]): Promise<void> {
+    await this.db.transaction(async (transaction) => {
+      await transaction
+        .update(schedules)
+        .set({ status: schedule.status.value, updatedAt: schedule.updatedAt })
+        .where(eq(schedules.id, schedule.id));
+
+      if (productIds.length > 0) {
+        await transaction
+          .insert(scheduleProducts)
+          .values(productIds.map((productId) => ({ scheduleId: schedule.id, productId })));
+      }
+    });
   }
 }

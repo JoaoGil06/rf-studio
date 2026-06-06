@@ -36,6 +36,7 @@ import { GetProductUseCase } from '../usecase/products/get-product/get-product.u
 import { GetProductsUseCase } from '../usecase/products/get-products/get-products.usecase.js';
 import { UpdateProductUseCase } from '../usecase/products/update-product/update-product.usecase.js';
 import { DeleteProductUseCase } from '../usecase/products/delete-product/delete-product.usecase.js';
+import { CompleteScheduleUseCase } from '../usecase/schedule/complete-schedule/complete-schedule.usecase.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -256,4 +257,18 @@ export const buildDeleteProductUseCase = (): DeleteProductUseCase => {
   const validationAdapter = new ZodAdapter();
 
   return new DeleteProductUseCase(productRepository, validationAdapter);
+};
+
+export const buildCompleteScheduleUseCase = (): CompleteScheduleUseCase => {
+  const scheduleRepository = new ScheduleRepository(db);
+  const serviceRepository = new ServiceRepository(db);
+  const productRepository = new ProductRepository(db);
+  const validationAdapter = new ZodAdapter();
+
+  return new CompleteScheduleUseCase(
+    scheduleRepository,
+    serviceRepository,
+    productRepository,
+    validationAdapter,
+  );
 };

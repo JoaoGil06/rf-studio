@@ -25,6 +25,7 @@ const mockRepo: IScheduleRepository = {
   findInRange: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  complete: vi.fn(),
 };
 
 const mockValidation: IValidationAdapter = {
