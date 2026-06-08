@@ -1,15 +1,18 @@
+import { ScheduleStatusValue } from '../@shared/value-object/schedule-status/schedule-status.vo.js';
 import { Schedule } from '../entity/schedule/schedule.entity.js';
 
 export interface ScheduleListParams {
   limit: number;
   offset: number;
   userId?: string;
+  status?: ScheduleStatusValue;
 }
 
 export interface ScheduleRangeParams {
   from: Date;
   to: Date;
   userId?: string;
+  status?: ScheduleStatusValue;
 }
 
 export interface IScheduleRepository {

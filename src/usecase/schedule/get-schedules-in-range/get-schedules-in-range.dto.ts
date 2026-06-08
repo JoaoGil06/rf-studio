@@ -13,6 +13,7 @@ export interface GetSchedulesInRangeFilterDto {
   year?: number | null;
   month?: number | null;
   weekStart?: Date | null;
+  status?: string | null;
 }
 
 export interface GetSchedulesInRangeInputDto {

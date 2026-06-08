@@ -13,8 +13,6 @@ export function createRoleDataLoader(db: NodePgDatabase): DataLoader<string, Rol
 
     const hashMap = new Map(rows.map((row) => [row.id, row]));
 
-    console.log('[Hash Map]: ', hashMap);
-
     return ids.map((id) => hashMap.get(id) ?? null);
   });
 }

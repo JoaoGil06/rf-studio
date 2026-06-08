@@ -1,3 +1,4 @@
+import { ScheduleStatusValue } from '../../../domain/@shared/value-object/schedule-status/schedule-status.vo.js';
 import { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { ScheduleRangeService } from '../../../domain/service/schedule-range/schedule-range.service.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
@@ -28,10 +29,13 @@ export class GetSchedulesInRangeUseCase {
       weekStart: validatedData.filter.weekStart ?? undefined,
     });
 
+    const status = validatedData.filter.status ?? undefined;
+
     const rows = await this.scheduleRepository.findInRange({
       from,
       to,
       userId: validatedData.filter.userId ?? undefined,
+      status: status as ScheduleStatusValue | undefined,
     });
 
     return rows.map((scheduleRow) => ({

@@ -11,8 +11,6 @@ export function createScheduleProductsDataLoader(
   // Este scheduleIds é o que vem dos parents (dos resolvers de schedule que pedimos products associados)
   // Isto está definido no field resolver de products dentro de schema, chamar este dataloader e passar esses IDS
   return new DataLoader<string, ScheduleProductDto[]>(async (scheduleIds) => {
-    console.log('[Schedule Ids]: ', scheduleIds);
-
     // O innerjoin o que faz é ver os ids em comum entre as tabelas scheduleProducts e Products
     // Retorna esses, os outros ignora
     const rows = await db

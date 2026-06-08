@@ -94,4 +94,12 @@ describe('GetSchedulesUseCase', () => {
 
     expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 6, offset: 0, userId: 'usr-1' });
   });
+
+  it('forwards filter.status to the repository', async () => {
+    vi.mocked(mockRepo.findAll).mockResolvedValue([]);
+    const usecase = new GetSchedulesUseCase(mockRepo);
+    await usecase.execute({ filter: { status: 'completed' }, first: 5 });
+
+    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 6, offset: 0, status: 'completed' });
+  });
 });

@@ -89,6 +89,18 @@ describe('GetSchedulesInRangeUseCase', () => {
     });
   });
 
+  it('forwards filter.status to the repository', async () => {
+    vi.mocked(mockRepo.findInRange).mockResolvedValue([]);
+
+    await buildUsecase().execute({ filter: { year: 2026, status: 'completed' } });
+
+    expect(mockRepo.findInRange).toHaveBeenCalledWith({
+      from: new Date('2026-01-01T00:00:00Z'),
+      to: new Date('2027-01-01T00:00:00Z'),
+      status: 'completed',
+    });
+  });
+
   it('propagates InvalidValueError when the validator rejects the filter', async () => {
     vi.mocked(mockValidation.validate).mockImplementation(() => {
       throw new InvalidValueError('bad filter');
