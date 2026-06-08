@@ -91,12 +91,16 @@ export class ScheduleRepository implements IScheduleRepository {
   }
 
   async findAll(params: ScheduleListParams): Promise<Schedule[]> {
-    const filter = params.userId ? eq(schedules.userId, params.userId) : undefined;
+    const conditions = [];
+    if (params.userId) conditions.push(eq(schedules.userId, params.userId));
+    if (params.status) conditions.push(eq(schedules.status, params.status));
+
+    const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const rows = await this.db
       .select()
       .from(schedules)
-      .where(filter)
+      .where(where)
       .orderBy(asc(schedules.date), asc(schedules.id))
       .limit(params.limit)
       .offset(params.offset);
@@ -120,9 +124,8 @@ export class ScheduleRepository implements IScheduleRepository {
     // LT -> less than | Que o to, seja menor que o schedules.date
     const conditions = [gte(schedules.date, params.from), lt(schedules.date, params.to)];
 
-    if (params.userId) {
-      conditions.push(eq(schedules.userId, params.userId));
-    }
+    if (params.userId) conditions.push(eq(schedules.userId, params.userId));
+    if (params.status) conditions.push(eq(schedules.status, params.status));
 
     const rows = await this.db
       .select()

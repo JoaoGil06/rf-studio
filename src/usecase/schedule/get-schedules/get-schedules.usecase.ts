@@ -1,3 +1,4 @@
+import { ScheduleStatusValue } from '../../../domain/@shared/value-object/schedule-status/schedule-status.vo.js';
 import { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { decodeCursor, encodeCursor } from '../../shared/cursor.js';
 import {
@@ -21,10 +22,13 @@ export class GetSchedulesUseCase {
     const offset = input.after ? decodeCursor(input.after) + 1 : 0;
     const userId = input.filter?.userId ?? undefined;
 
+    const status = input.filter?.status ?? undefined;
+
     const rows = await this.scheduleRepository.findAll({
       limit: first + 1,
       offset,
       userId,
+      status: status as ScheduleStatusValue | undefined,
     });
 
     const hasNextPage = rows.length > first;

@@ -44,6 +44,7 @@ export const scheduleTypeDefs = `#graphql
 
     input SchedulesFilter {
         userId: ID
+        status: ScheduleStatus
     }
 
     input SchedulesRangeFilter {
@@ -51,6 +52,7 @@ export const scheduleTypeDefs = `#graphql
         year: Int
         month: Int
         weekStart: String
+        status: ScheduleStatus
     }
 
     input RegisterScheduleInput {

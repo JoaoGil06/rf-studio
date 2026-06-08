@@ -10,6 +10,7 @@ export const getSchedulesInRangeSchema = z.object({
       year: z.number().int().min(MIN_YEAR).max(MAX_YEAR).nullish(),
       month: z.number().int().min(1).max(12).nullish(),
       weekStart: z.coerce.date().nullish(),
+      status: z.enum(['pending', 'confirmed', 'completed', 'cancelled']).optional(),
     })
     .refine(
       (f) => {

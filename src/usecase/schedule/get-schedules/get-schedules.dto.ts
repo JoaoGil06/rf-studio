@@ -10,6 +10,7 @@ export interface ScheduleNodeDto {
 
 export interface GetSchedulesFilterDto {
   userId?: string | null;
+  status?: string | null;
 }
 
 export interface GetSchedulesInputDto {

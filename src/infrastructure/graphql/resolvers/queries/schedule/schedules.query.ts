@@ -3,7 +3,7 @@ import { InvalidValueError } from '../../../../../domain/@shared/errors/invalidV
 import type { AppContext } from '../../../context.types.js';
 
 export interface GetSchedulesArgs {
-  filter?: { userId?: string | null } | null;
+  filter?: { userId?: string | null; status?: string | null } | null;
   first?: number | null;
   after?: string | null;
 }

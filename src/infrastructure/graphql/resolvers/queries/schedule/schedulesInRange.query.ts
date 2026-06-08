@@ -8,6 +8,7 @@ export interface GetSchedulesInRangeArgs {
     year?: number | null;
     month?: number | null;
     weekStart?: string | null;
+    status?: string | null;
   };
 }
 
@@ -21,6 +22,7 @@ export const resolvers = {
             year: args.filter.year,
             month: args.filter.month,
             weekStart: args.filter.weekStart ? new Date(args.filter.weekStart) : null,
+            status: args.filter.status,
           },
         });
       } catch (error) {
