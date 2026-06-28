@@ -33,5 +33,17 @@ export const resolvers = {
     },
     products: (parent: ScheduleNodeDto, _: unknown, context: AppContext) =>
       context.dataLoaders.scheduleProducts.load(parent.id),
+    discount: (parent: ScheduleNodeDto, _: unknown, context: AppContext) =>
+      context.dataLoaders.scheduleDiscount.load(parent.id),
+    finalPrice: async (parent: ScheduleNodeDto, _: unknown, context: AppContext) => {
+      const [discount, service] = await Promise.all([
+        context.dataLoaders.scheduleDiscount.load(parent.id),
+        context.dataLoaders.service.load(parent.serviceId),
+      ]);
+
+      const percentage = discount?.percentage ?? 0;
+
+      return Number(service?.price) * (1 - percentage / 100);
+    },
   },
 };

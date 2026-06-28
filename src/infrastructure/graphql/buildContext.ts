@@ -8,6 +8,7 @@ import { createRoleDataLoader } from './dataloaders/role/role.dataloader.js';
 import { createUserDataLoader } from './dataloaders/user/user.dataloader.js';
 import { createServiceDataLoader } from './dataloaders/service/service.dataloader.js';
 import { createScheduleProductsDataLoader } from './dataloaders/schedule-products/schedule-products.dataloader.js';
+import { createScheduleDiscountDataLoader } from './dataloaders/schedule-discount/schedule-discount.dataloader.js';
 
 export function buildContext(useCases: AppUseCases, db: NodePgDatabase, jwtAdapter: IJwtAdapter) {
   return async ({ req }: { req: Request }): Promise<AppContext> => {
@@ -31,6 +32,7 @@ export function buildContext(useCases: AppUseCases, db: NodePgDatabase, jwtAdapt
         user: createUserDataLoader(db),
         service: createServiceDataLoader(db),
         scheduleProducts: createScheduleProductsDataLoader(db),
+        scheduleDiscount: createScheduleDiscountDataLoader(db),
       },
     };
   };

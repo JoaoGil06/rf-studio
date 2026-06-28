@@ -7,9 +7,10 @@ import {
 } from '../../domain/repository/schedule-repository.interface.js';
 import { schedules } from '../db/schema/schedules.schema.js';
 import { services } from '../db/schema/services.schema.js';
-import { and, sql, eq, asc, gte, lt, ne } from 'drizzle-orm';
+import { and, sql, eq, asc, gte, lt, ne, notExists } from 'drizzle-orm';
 import { ScheduleFactory } from '../../domain/entity/schedule/factory/schedule.factory.js';
 import { scheduleProducts } from '../db/schema/schedule-products.schema.js';
+import { scheduleDiscounts } from '../db/schema/schedule-discounts.schema.js';
 
 export class ScheduleRepository implements IScheduleRepository {
   private readonly db: NodePgDatabase;
@@ -177,5 +178,32 @@ export class ScheduleRepository implements IScheduleRepository {
           .values(productIds.map((productId) => ({ scheduleId: schedule.id, productId })));
       }
     });
+  }
+
+  async countCompletedForLoyalty(userId: string): Promise<number> {
+    const queryScheduleFromScheduleDiscounts = this.db
+      .select({ one: sql`1` })
+      .from(scheduleDiscounts)
+      .where(
+        and(
+          eq(scheduleDiscounts.scheduleId, schedules.id),
+          eq(scheduleDiscounts.reason, 'loyalty'),
+        ),
+      );
+
+    const rows = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(schedules)
+      .where(
+        and(
+          eq(schedules.userId, userId),
+          eq(schedules.status, 'completed'),
+          notExists(queryScheduleFromScheduleDiscounts),
+        ),
+      );
+
+    const row = rows[0];
+
+    return Number(row?.count ?? 0);
   }
 }

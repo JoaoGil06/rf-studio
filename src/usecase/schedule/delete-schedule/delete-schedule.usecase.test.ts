@@ -28,6 +28,7 @@ const mockRepo: IScheduleRepository = {
   update: vi.fn(),
   delete: vi.fn(),
   complete: vi.fn(),
+  countCompletedForLoyalty: vi.fn(),
 };
 
 const mockValidation: IValidationAdapter = {
