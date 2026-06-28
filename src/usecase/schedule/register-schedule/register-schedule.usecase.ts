@@ -5,8 +5,10 @@ import { IScheduleDiscountRepository } from '../../../domain/repository/schedule
 import { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
+import { DiscountReason } from '../../../domain/service/discount/discount-rule.interface.js';
 import { DiscountService } from '../../../domain/service/discount/discount.service.js';
 import { ScheduleConflictService } from '../../../domain/service/schedule-conflict/schedule-conflict.service.js';
+import { IFeatureFlagProvider } from '../../interfaces/feature-flag-provider.interface.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { RegisterScheduleInputDto, RegisterScheduleOutputDto } from './register-schedule.dto.js';
 import { registerScheduleSchema } from './register-schedule.schema-validator.js';
@@ -18,6 +20,7 @@ export class RegisterScheduleUseCase {
   private readonly serviceRepository: IServiceRepository;
   private readonly validationAdapter: IValidationAdapter;
   private readonly discountService: DiscountService;
+  private readonly featureFlagProvider: IFeatureFlagProvider;
 
   constructor(
     scheduleRepository: IScheduleRepository,
@@ -26,6 +29,7 @@ export class RegisterScheduleUseCase {
     serviceRepository: IServiceRepository,
     validationAdapter: IValidationAdapter,
     discountService: DiscountService,
+    featureFlagProvider: IFeatureFlagProvider,
   ) {
     this.scheduleRepository = scheduleRepository;
     this.userRepository = userRepository;
@@ -33,6 +37,7 @@ export class RegisterScheduleUseCase {
     this.serviceRepository = serviceRepository;
     this.validationAdapter = validationAdapter;
     this.discountService = discountService;
+    this.featureFlagProvider = featureFlagProvider;
   }
 
   async execute(input: RegisterScheduleInputDto): Promise<RegisterScheduleOutputDto> {
@@ -68,25 +73,39 @@ export class RegisterScheduleUseCase {
 
     await this.scheduleRepository.save(schedule);
 
-    const [loyaltyCompletedCount, loyaltyGrantedCount] = await Promise.all([
-      this.scheduleRepository.countCompletedForLoyalty(schedule.userId),
-      this.scheduleDiscountRepository.countByUserAndReason(schedule.userId, 'loyalty'),
-    ]);
+    const enabled = new Set<DiscountReason>();
+    if (await this.featureFlagProvider.isEnabled('loyalty')) enabled.add('loyalty');
+    if (await this.featureFlagProvider.isEnabled('birthday')) enabled.add('birthday');
 
-    const discount = this.discountService.resolveBest({
-      scheduleDate: schedule.date,
-      birthDate: user.birthDate,
-      loyaltyCompletedCount,
-      loyaltyGrantedCount,
-    });
+    if (enabled.size > 0) {
+      let loyaltyCompletedCount = 0;
+      let loyaltyGrantedCount = 0;
 
-    if (discount) {
-      await this.scheduleDiscountRepository.save({
-        scheduleId: schedule.id,
-        userId: schedule.userId,
-        reason: discount.reason,
-        percentage: discount.percentage,
-      });
+      if (enabled.has('loyalty')) {
+        [loyaltyCompletedCount, loyaltyGrantedCount] = await Promise.all([
+          this.scheduleRepository.countCompletedForLoyalty(schedule.userId),
+          this.scheduleDiscountRepository.countByUserAndReason(schedule.userId, 'loyalty'),
+        ]);
+      }
+
+      const discount = this.discountService.resolveBest(
+        {
+          scheduleDate: schedule.date,
+          birthDate: user.birthDate,
+          loyaltyCompletedCount,
+          loyaltyGrantedCount,
+        },
+        enabled,
+      );
+
+      if (discount) {
+        await this.scheduleDiscountRepository.save({
+          scheduleId: schedule.id,
+          userId: schedule.userId,
+          reason: discount.reason,
+          percentage: discount.percentage,
+        });
+      }
     }
 
     return {
