@@ -8,6 +8,7 @@ import type { IScheduleRepository } from '../../../domain/repository/schedule-re
 import type { IScheduleDiscountRepository } from '../../../domain/repository/schedule-discount-repository.interface.js';
 import type { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { DiscountService } from '../../../domain/service/discount/discount.service.js';
+import { IFeatureFlagProvider } from '../../interfaces/feature-flag-provider.interface.js';
 
 const userId = '11111111-1111-1111-1111-111111111111';
 const serviceId = '22222222-2222-2222-2222-222222222222';
@@ -56,6 +57,15 @@ const mockValidation: IValidationAdapter = {
   validate: vi.fn().mockImplementation((_, data) => data),
 };
 
+const mockFeatureFlagProvider = {
+  isEnabled: vi.fn(),
+} satisfies IFeatureFlagProvider;
+
+const flags = (on: Partial<Record<'loyalty' | 'birthday', boolean>>) =>
+  vi
+    .mocked(mockFeatureFlagProvider.isEnabled)
+    .mockImplementation(async (key) => on[key as 'loyalty' | 'birthday'] ?? false);
+
 const input = {
   userId,
   serviceId,
@@ -68,6 +78,7 @@ describe('RegisterScheduleUseCase', () => {
     // No discount by default; individual cases override these counts.
     vi.mocked(mockScheduleRepo.countCompletedForLoyalty).mockResolvedValue(0);
     vi.mocked(mockScheduleDiscountRepo.countByUserAndReason).mockResolvedValue(0);
+    vi.mocked(mockFeatureFlagProvider.isEnabled).mockResolvedValue(true);
   });
 
   const buildUsecase = () =>
@@ -78,6 +89,7 @@ describe('RegisterScheduleUseCase', () => {
       mockServiceRepo,
       mockValidation,
       new DiscountService(),
+      mockFeatureFlagProvider,
     );
 
   it('registers a schedule and returns the output DTO', async () => {
@@ -166,6 +178,46 @@ describe('RegisterScheduleUseCase', () => {
 
     await buildUsecase().execute(input);
 
+    expect(mockScheduleDiscountRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('grants the birthday discount when loyalty is flagged off', async () => {
+    flags({ loyalty: false, birthday: true });
+    vi.mocked(mockUserRepo.findById).mockResolvedValue(birthdayUserStub);
+    vi.mocked(mockServiceRepo.findById).mockResolvedValue(serviceStub);
+    vi.mocked(mockScheduleRepo.findOverlapping).mockResolvedValue([]);
+    vi.mocked(mockScheduleRepo.countCompletedForLoyalty).mockResolvedValue(9);
+
+    await buildUsecase().execute(input);
+
+    expect(mockScheduleRepo.countCompletedForLoyalty).not.toHaveBeenCalled();
+    expect(mockScheduleDiscountRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'birthday', percentage: 10 }),
+    );
+  });
+
+  it('skips all discount work when every flag is off', async () => {
+    flags({ loyalty: false, birthday: false });
+    vi.mocked(mockUserRepo.findById).mockResolvedValue(birthdayUserStub);
+    vi.mocked(mockServiceRepo.findById).mockResolvedValue(serviceStub);
+    vi.mocked(mockScheduleRepo.findOverlapping).mockResolvedValue([]);
+    vi.mocked(mockScheduleRepo.countCompletedForLoyalty).mockResolvedValue(9);
+
+    await buildUsecase().execute(input);
+
+    expect(mockScheduleRepo.countCompletedForLoyalty).not.toHaveBeenCalled();
+    expect(mockScheduleDiscountRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('does not query loyalty counts when loyalty is flagged off', async () => {
+    flags({ loyalty: false, birthday: true });
+    vi.mocked(mockUserRepo.findById).mockResolvedValue(userStub); // no birthday match
+    vi.mocked(mockServiceRepo.findById).mockResolvedValue(serviceStub);
+    vi.mocked(mockScheduleRepo.findOverlapping).mockResolvedValue([]);
+
+    await buildUsecase().execute(input);
+
+    expect(mockScheduleRepo.countCompletedForLoyalty).not.toHaveBeenCalled();
     expect(mockScheduleDiscountRepo.save).not.toHaveBeenCalled();
   });
 });

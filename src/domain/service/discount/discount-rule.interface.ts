@@ -13,5 +13,6 @@ export interface AppliedDiscount {
 }
 
 export interface DiscountRule {
+  readonly reason: DiscountReason;
   evaluate(context: DiscountContext): AppliedDiscount | null;
 }

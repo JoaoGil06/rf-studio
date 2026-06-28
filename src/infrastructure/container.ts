@@ -1,5 +1,11 @@
 import { Pool } from 'pg';
-import { DATABASE_URL, JWT_SECRET, ASSETS_DIR, PUBLIC_BASE_URL } from './constants/env.js';
+import {
+  DATABASE_URL,
+  JWT_SECRET,
+  ASSETS_DIR,
+  PUBLIC_BASE_URL,
+  FEATURE_FLAGS_PATH,
+} from './constants/env.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { UserRepository } from './repository/user.repository.js';
 import { BcryptAdapter } from './adapters/bcrypt.adapter.js';
@@ -39,6 +45,7 @@ import { DeleteProductUseCase } from '../usecase/products/delete-product/delete-
 import { CompleteScheduleUseCase } from '../usecase/schedule/complete-schedule/complete-schedule.usecase.js';
 import { ScheduleDiscountRepository } from './repository/schedule-discount.repository.js';
 import { DiscountService } from '../domain/service/discount/discount.service.js';
+import { JsonFileFeatureFlagProvider } from './adapters/feature-flag.adapter.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -168,6 +175,7 @@ export const buildRegisterScheduleUseCase = (): RegisterScheduleUseCase => {
   const serviceRepository = new ServiceRepository(db);
   const validationAdapter = new ZodAdapter();
   const discountService = new DiscountService();
+  const featureFlagProvider = new JsonFileFeatureFlagProvider(FEATURE_FLAGS_PATH);
 
   return new RegisterScheduleUseCase(
     scheduleRepository,
@@ -176,6 +184,7 @@ export const buildRegisterScheduleUseCase = (): RegisterScheduleUseCase => {
     serviceRepository,
     validationAdapter,
     discountService,
+    featureFlagProvider,
   );
 };
 
