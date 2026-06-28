@@ -37,6 +37,8 @@ import { GetProductsUseCase } from '../usecase/products/get-products/get-product
 import { UpdateProductUseCase } from '../usecase/products/update-product/update-product.usecase.js';
 import { DeleteProductUseCase } from '../usecase/products/delete-product/delete-product.usecase.js';
 import { CompleteScheduleUseCase } from '../usecase/schedule/complete-schedule/complete-schedule.usecase.js';
+import { ScheduleDiscountRepository } from './repository/schedule-discount.repository.js';
+import { DiscountService } from '../domain/service/discount/discount.service.js';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool);
@@ -162,14 +164,18 @@ export const buildDeleteServiceUseCase = (): DeleteServiceUseCase => {
 export const buildRegisterScheduleUseCase = (): RegisterScheduleUseCase => {
   const scheduleRepository = new ScheduleRepository(db);
   const userRepository = new UserRepository(db);
+  const scheduleDiscountRepository = new ScheduleDiscountRepository(db);
   const serviceRepository = new ServiceRepository(db);
   const validationAdapter = new ZodAdapter();
+  const discountService = new DiscountService();
 
   return new RegisterScheduleUseCase(
     scheduleRepository,
     userRepository,
+    scheduleDiscountRepository,
     serviceRepository,
     validationAdapter,
+    discountService,
   );
 };
 

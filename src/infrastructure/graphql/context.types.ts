@@ -29,6 +29,7 @@ import { UpdateProductUseCase } from '../../usecase/products/update-product/upda
 import { DeleteProductUseCase } from '../../usecase/products/delete-product/delete-product.usecase.js';
 import { ScheduleProductDto } from './dataloaders/schedule-products/schedule-products.dataloader.dto.js';
 import { CompleteScheduleUseCase } from '../../usecase/schedule/complete-schedule/complete-schedule.usecase.js';
+import { ScheduleDiscountDto } from './dataloaders/schedule-discount/schedule-discount.dataloader.dto.js';
 
 export interface AppContext {
   currentUser: JwtPayload | null;
@@ -64,6 +65,7 @@ export interface AppContext {
     user: DataLoader<string, UserDataLoaderDto | null>;
     service: DataLoader<string, ServiceDataLoaderDto | null>;
     scheduleProducts: DataLoader<string, ScheduleProductDto[]>;
+    scheduleDiscount: DataLoader<string, ScheduleDiscountDto | null>;
   };
 }
 

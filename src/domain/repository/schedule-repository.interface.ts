@@ -27,4 +27,5 @@ export interface IScheduleRepository {
   delete(id: string): Promise<void>;
   // Isto é o "atomic write (do ACID)" em que fazermos um status UPDATE + join INSERT em uma só transaction
   complete(schedule: Schedule, productIds: string[]): Promise<void>;
+  countCompletedForLoyalty(userId: string): Promise<number>;
 }

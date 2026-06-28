@@ -1,9 +1,11 @@
 import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
 import { ScheduleFactory } from '../../../domain/entity/schedule/factory/schedule.factory.js';
+import { IScheduleDiscountRepository } from '../../../domain/repository/schedule-discount-repository.interface.js';
 import { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
+import { DiscountService } from '../../../domain/service/discount/discount.service.js';
 import { ScheduleConflictService } from '../../../domain/service/schedule-conflict/schedule-conflict.service.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { RegisterScheduleInputDto, RegisterScheduleOutputDto } from './register-schedule.dto.js';
@@ -12,19 +14,25 @@ import { registerScheduleSchema } from './register-schedule.schema-validator.js'
 export class RegisterScheduleUseCase {
   private readonly scheduleRepository: IScheduleRepository;
   private readonly userRepository: IUserRepository;
+  private readonly scheduleDiscountRepository: IScheduleDiscountRepository;
   private readonly serviceRepository: IServiceRepository;
   private readonly validationAdapter: IValidationAdapter;
+  private readonly discountService: DiscountService;
 
   constructor(
     scheduleRepository: IScheduleRepository,
     userRepository: IUserRepository,
+    scheduleDiscountRepository: IScheduleDiscountRepository,
     serviceRepository: IServiceRepository,
     validationAdapter: IValidationAdapter,
+    discountService: DiscountService,
   ) {
     this.scheduleRepository = scheduleRepository;
     this.userRepository = userRepository;
+    this.scheduleDiscountRepository = scheduleDiscountRepository;
     this.serviceRepository = serviceRepository;
     this.validationAdapter = validationAdapter;
+    this.discountService = discountService;
   }
 
   async execute(input: RegisterScheduleInputDto): Promise<RegisterScheduleOutputDto> {
@@ -59,6 +67,27 @@ export class RegisterScheduleUseCase {
     });
 
     await this.scheduleRepository.save(schedule);
+
+    const [loyaltyCompletedCount, loyaltyGrantedCount] = await Promise.all([
+      this.scheduleRepository.countCompletedForLoyalty(schedule.userId),
+      this.scheduleDiscountRepository.countByUserAndReason(schedule.userId, 'loyalty'),
+    ]);
+
+    const discount = this.discountService.resolveBest({
+      scheduleDate: schedule.date,
+      birthDate: user.birthDate,
+      loyaltyCompletedCount,
+      loyaltyGrantedCount,
+    });
+
+    if (discount) {
+      await this.scheduleDiscountRepository.save({
+        scheduleId: schedule.id,
+        userId: schedule.userId,
+        reason: discount.reason,
+        percentage: discount.percentage,
+      });
+    }
 
     return {
       id: schedule.id,

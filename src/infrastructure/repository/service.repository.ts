@@ -4,6 +4,7 @@ import { IServiceRepository } from '../../domain/repository/service-repository.i
 import { services } from '../db/schema/services.schema.js';
 import { and, asc, eq } from 'drizzle-orm';
 import { ServiceFactory } from '../../domain/entity/service/factory/service.factory.js';
+import { ServiceCategoryValue } from '../../domain/@shared/value-object/service-category/service-category.vo.js';
 
 export class ServiceRepository implements IServiceRepository {
   private readonly db: NodePgDatabase;
@@ -55,7 +56,7 @@ export class ServiceRepository implements IServiceRepository {
     const rows = await this.db
       .select()
       .from(services)
-      .where(and(eq(services.name, name), eq(services.category, category)))
+      .where(and(eq(services.name, name), eq(services.category, category as ServiceCategoryValue)))
       .limit(1);
 
     if (rows.length === 0) return null;

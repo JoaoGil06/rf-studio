@@ -18,6 +18,11 @@ export const scheduleTypeDefs = `#graphql
         completed
         cancelled
     }
+    
+    type ScheduleDiscount {
+        reason: String!
+        percentage: Float!
+    }
 
     type Schedule {
         id: ID!
@@ -30,6 +35,8 @@ export const scheduleTypeDefs = `#graphql
         user: User!
         service: Service!
         products: [Product!]!
+        discount: ScheduleDiscount
+        finalPrice: Float!
     }
 
     type ScheduleEdge {

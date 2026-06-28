@@ -43,6 +43,13 @@
       "when": 1780741263270,
       "tag": "0005_handy_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781521837580,
+      "tag": "0006_nervous_joystick",
+      "breakpoints": true
     }
   ]
 }
