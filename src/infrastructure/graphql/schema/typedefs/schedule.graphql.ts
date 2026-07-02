@@ -31,6 +31,7 @@ export const scheduleTypeDefs = `#graphql
         status: ScheduleStatus!
         date: String!
         photoUrl: String
+        tip: Float
         createdAt: String!
         user: User!
         service: Service!
@@ -81,6 +82,7 @@ export const scheduleTypeDefs = `#graphql
     input CompleteScheduleInput {
         scheduleId: ID!
         productIds: [ID!]!
+        tip: Float
     }
 
     type UpdateScheduleSuccess {

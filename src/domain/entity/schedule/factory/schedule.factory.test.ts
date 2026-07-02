@@ -29,6 +29,11 @@ describe('ScheduleFactory', () => {
     expect(schedule.photoUrl).toBeNull();
   });
 
+  it('create() defaults tip to null', () => {
+    const schedule = ScheduleFactory.create(baseProps);
+    expect(schedule.tip).toBeNull();
+  });
+
   it('throws InvalidValueError for an invalid date', () => {
     expect(() => ScheduleFactory.create({ ...baseProps, date: new Date('not-a-date') })).toThrow(
       InvalidValueError,
@@ -43,6 +48,7 @@ describe('ScheduleFactory', () => {
       id,
       status: 'confirmed',
       photoUrl: null,
+      tip: 12.5,
       createdAt: now,
       updatedAt: now,
     });

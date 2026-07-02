@@ -14,6 +14,7 @@ const makeSchedule = () =>
     serviceId: '22222222-2222-2222-2222-222222222222',
     status: 'pending',
     date: new Date('2026-06-01T10:00:00Z'),
+    tip: null,
     photoUrl: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),

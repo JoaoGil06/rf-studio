@@ -13,6 +13,7 @@ export interface ReconstituteScheduleProps {
   status: string;
   date: Date;
   photoUrl: string | null;
+  tip: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

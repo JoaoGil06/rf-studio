@@ -25,6 +25,7 @@ const makeSchedule = (status = 'confirmed') =>
     status,
     date: new Date('2026-06-01T10:00:00Z'),
     photoUrl: null,
+    tip: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
   });
@@ -108,6 +109,7 @@ describe('CompleteScheduleUseCase', () => {
 
     expect(result.id).toBe(SCH_ID);
     expect(result.status).toBe('completed');
+    expect(result.tip).toBeNull();
     expect(mockScheduleRepo.complete).toHaveBeenCalledOnce();
     expect(mockScheduleRepo.complete).toHaveBeenCalledWith(expect.anything(), [
       PROD_ID_1,
@@ -177,6 +179,43 @@ describe('CompleteScheduleUseCase', () => {
 
     await expect(
       buildUsecase().execute({ scheduleId: SCH_ID, productIds: [PROD_ID_1] }),
+    ).rejects.toThrow(InvalidValueError);
+    expect(mockScheduleRepo.complete).not.toHaveBeenCalled();
+  });
+
+  it('persists the provided tip on the entity and returns it', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule('confirmed'));
+    vi.mocked(mockServiceRepo.findById).mockResolvedValue(makeService('nails'));
+    vi.mocked(mockProductRepo.findByIds).mockResolvedValue([makeProduct(PROD_ID_1, 'nails')]);
+
+    const result = await buildUsecase().execute({
+      scheduleId: SCH_ID,
+      productIds: [PROD_ID_1],
+      tip: 7.5,
+    });
+
+    expect(result.tip).toBe(7.5);
+    const completedEntity = vi.mocked(mockScheduleRepo.complete).mock.calls[0][0];
+    expect(completedEntity.tip).toBe(7.5);
+  });
+
+  it('defaults tip to null when none is provided', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule('confirmed'));
+    vi.mocked(mockServiceRepo.findById).mockResolvedValue(makeService('nails'));
+    vi.mocked(mockProductRepo.findByIds).mockResolvedValue([makeProduct(PROD_ID_1, 'nails')]);
+
+    const result = await buildUsecase().execute({ scheduleId: SCH_ID, productIds: [PROD_ID_1] });
+
+    expect(result.tip).toBeNull();
+  });
+
+  it('throws InvalidValueError for a negative tip and does not persist', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(makeSchedule('confirmed'));
+    vi.mocked(mockServiceRepo.findById).mockResolvedValue(makeService('nails'));
+    vi.mocked(mockProductRepo.findByIds).mockResolvedValue([makeProduct(PROD_ID_1, 'nails')]);
+
+    await expect(
+      buildUsecase().execute({ scheduleId: SCH_ID, productIds: [PROD_ID_1], tip: -1 }),
     ).rejects.toThrow(InvalidValueError);
     expect(mockScheduleRepo.complete).not.toHaveBeenCalled();
   });

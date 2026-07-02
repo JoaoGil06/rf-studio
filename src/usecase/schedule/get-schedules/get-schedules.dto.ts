@@ -5,6 +5,7 @@ export interface ScheduleNodeDto {
   status: string;
   date: string;
   photoUrl: string | null;
+  tip: number | null;
   createdAt: string;
 }
 

@@ -5,7 +5,7 @@ import { InvalidValueError } from '../../../../../domain/@shared/errors/invalidV
 import type { AppContext } from '../../../context.types.js';
 
 export interface CompleteScheduleArgs {
-  input: { scheduleId: string; productIds: string[] };
+  input: { scheduleId: string; productIds: string[]; tip: number | null };
 }
 
 const SCHEDULE_NOT_FOUND_KIND = '__scheduleNotFound';
@@ -30,6 +30,7 @@ export const resolvers = {
         const dto = await context.useCases.completeSchedule.execute({
           scheduleId: input.scheduleId,
           productIds: input.productIds,
+          tip: input.tip,
         });
 
         return {
@@ -40,6 +41,7 @@ export const resolvers = {
             status: dto.status,
             date: dto.date,
             photoUrl: dto.photoUrl,
+            tip: dto.tip,
             createdAt: dto.createdAt,
           },
         };

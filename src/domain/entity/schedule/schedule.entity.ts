@@ -9,6 +9,7 @@ export class Schedule extends Entity<ScheduleProps> {
   private _status: ScheduleStatus;
   private _date: Date;
   private _photoUrl: string | null;
+  private _tip: number | null;
 
   private constructor(props: ScheduleProps) {
     super(props.id, props.createdAt, props.updatedAt);
@@ -17,6 +18,7 @@ export class Schedule extends Entity<ScheduleProps> {
     this._status = props.status;
     this._date = props.date;
     this._photoUrl = props.photoUrl;
+    this._tip = props.tip;
   }
 
   public static _instantiate(props: ScheduleProps): Schedule {
@@ -39,6 +41,10 @@ export class Schedule extends Entity<ScheduleProps> {
     return this._photoUrl;
   }
 
+  public get tip(): number | null {
+    return this._tip;
+  }
+
   public updateScheduleDetails(props: UpdateScheduleProps): void {
     if (props.status !== undefined) this._status = new ScheduleStatus(props.status);
     if (props.serviceId !== undefined) this._serviceId = props.serviceId;
@@ -50,6 +56,14 @@ export class Schedule extends Entity<ScheduleProps> {
     }
     if (props.photoUrl !== undefined) this._photoUrl = props.photoUrl;
 
+    this._updatedAt = new Date();
+  }
+
+  public applyTip(tip: number | null): void {
+    if (tip !== null && (!Number.isFinite(tip) || tip < 0)) {
+      throw new InvalidValueError(`Invalid tip: ${String(tip)}`);
+    }
+    this._tip = tip;
     this._updatedAt = new Date();
   }
 }
