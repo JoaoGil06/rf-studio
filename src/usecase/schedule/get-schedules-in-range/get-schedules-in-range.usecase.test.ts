@@ -5,7 +5,7 @@ import { ScheduleFactory } from '../../../domain/entity/schedule/factory/schedul
 import { InvalidValueError } from '../../../domain/@shared/errors/invalidValueError.js';
 import type { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 
-const makeSchedule = (day: number) =>
+const makeSchedule = (day: number, tip: number | null = null) =>
   ScheduleFactory.reconstitute({
     id: `sch-${day}`,
     userId: 'usr-1',
@@ -13,6 +13,7 @@ const makeSchedule = (day: number) =>
     status: 'pending',
     date: new Date(`2026-06-0${day}T10:00:00Z`),
     photoUrl: null,
+    tip,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
   });
@@ -39,7 +40,7 @@ describe('GetSchedulesInRangeUseCase', () => {
   const buildUsecase = () => new GetSchedulesInRangeUseCase(mockRepo, mockValidation);
 
   it('queries the repo with a year window when only year is given', async () => {
-    vi.mocked(mockRepo.findInRange).mockResolvedValue([makeSchedule(1)]);
+    vi.mocked(mockRepo.findInRange).mockResolvedValue([makeSchedule(1, 7.5)]);
 
     const result = await buildUsecase().execute({ filter: { year: 2026 } });
 
@@ -50,6 +51,7 @@ describe('GetSchedulesInRangeUseCase', () => {
     });
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('sch-1');
+    expect(result[0].tip).toBe(7.5);
   });
 
   it('queries the repo with a month window when year + month are given', async () => {

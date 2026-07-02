@@ -21,6 +21,7 @@ export class ScheduleFactory {
       status: new ScheduleStatus(props.status ?? 'pending'),
       date: props.date,
       photoUrl: props.photoUrl ?? null,
+      tip: null,
       createdAt: now,
       updatedAt: now,
     });
@@ -35,6 +36,7 @@ export class ScheduleFactory {
       status: new ScheduleStatus(props.status),
       date: props.date,
       photoUrl: props.photoUrl,
+      tip: props.tip,
       createdAt: props.createdAt,
       updatedAt: props.updatedAt,
     });

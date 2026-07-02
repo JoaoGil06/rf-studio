@@ -4,7 +4,7 @@ import type { IScheduleRepository } from '../../../domain/repository/schedule-re
 import { ScheduleFactory } from '../../../domain/entity/schedule/factory/schedule.factory.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
 
-const makeSchedule = () =>
+const makeSchedule = (tip: number | null = null) =>
   ScheduleFactory.reconstitute({
     id: 'sch-1',
     userId: 'usr-1',
@@ -12,6 +12,7 @@ const makeSchedule = () =>
     status: 'pending',
     date: new Date('2026-06-01T10:00:00Z'),
     photoUrl: null,
+    tip,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
   });
@@ -43,6 +44,7 @@ describe('GetScheduleUseCase', () => {
     expect(result.status).toBe('pending');
     expect(result.date).toBe('2026-06-01T10:00:00.000Z');
     expect(result.photoUrl).toBeNull();
+    expect(result.tip).toBeNull();
   });
 
   it('throws EntityNotFoundError when the schedule does not exist', async () => {
@@ -58,5 +60,14 @@ describe('GetScheduleUseCase', () => {
     await usecase.execute({ id: 'sch-1' });
 
     expect(mockRepo.findById).toHaveBeenCalledWith('sch-1');
+  });
+
+  it('maps a non-null tip onto the output', async () => {
+    vi.mocked(mockRepo.findById).mockResolvedValue(makeSchedule(7.5));
+    const usecase = new GetScheduleUseCase(mockRepo);
+
+    const result = await usecase.execute({ id: 'sch-1' });
+
+    expect(result.tip).toBe(7.5);
   });
 });

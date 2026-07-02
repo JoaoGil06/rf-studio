@@ -1,3 +1,4 @@
+import { ConflictError } from '../../../domain/@shared/errors/conflictError.js';
 import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
 import { InvalidValueError } from '../../../domain/@shared/errors/invalidValueError.js';
 import { IProductRepository } from '../../../domain/repository/product-repository.interface.js';
@@ -35,6 +36,10 @@ export class CompleteScheduleUseCase {
     const schedule = await this.scheduleRepository.findById(validated.scheduleId);
     if (!schedule) throw new EntityNotFoundError(`Schedule not found: ${validated.scheduleId}`);
 
+    if (schedule.status.value === 'completed') {
+      throw new ConflictError(`Schedule already completed: ${validated.scheduleId}`);
+    }
+
     // Verificar se a transição de estado, é válida
     ScheduleStatusService.assertCanTransition(schedule.status.value, 'completed');
 
@@ -61,6 +66,7 @@ export class CompleteScheduleUseCase {
     }
 
     schedule.updateScheduleDetails({ status: 'completed' });
+    schedule.applyTip(validated.tip ?? null);
     await this.scheduleRepository.complete(schedule, uniqueIds);
 
     return {
@@ -70,6 +76,7 @@ export class CompleteScheduleUseCase {
       status: schedule.status.value,
       date: schedule.date.toISOString(),
       photoUrl: schedule.photoUrl,
+      tip: schedule.tip,
       createdAt: schedule.createdAt.toISOString(),
     };
   }

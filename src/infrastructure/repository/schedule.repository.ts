@@ -27,6 +27,7 @@ export class ScheduleRepository implements IScheduleRepository {
       status: schedule.status.value,
       date: schedule.date,
       photoUrl: schedule.photoUrl,
+      tip: schedule.tip !== null ? schedule.tip.toString() : null,
       createdAt: schedule.createdAt,
       updatedAt: schedule.updatedAt,
     });
@@ -50,6 +51,7 @@ export class ScheduleRepository implements IScheduleRepository {
         status: schedules.status,
         date: schedules.date,
         photoUrl: schedules.photoUrl,
+        tip: schedules.tip,
         createdAt: schedules.createdAt,
         updatedAt: schedules.updatedAt,
         durationMinutes: services.durationMinutes,
@@ -66,6 +68,7 @@ export class ScheduleRepository implements IScheduleRepository {
         status: row.status,
         date: row.date,
         photoUrl: row.photoUrl,
+        tip: row.tip !== null ? Number(row.tip) : null,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       }),
@@ -86,6 +89,7 @@ export class ScheduleRepository implements IScheduleRepository {
       status: row.status,
       date: row.date,
       photoUrl: row.photoUrl,
+      tip: row.tip !== null ? Number(row.tip) : null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
@@ -114,6 +118,7 @@ export class ScheduleRepository implements IScheduleRepository {
         status: row.status,
         date: row.date,
         photoUrl: row.photoUrl,
+        tip: row.tip !== null ? Number(row.tip) : null,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       }),
@@ -142,6 +147,7 @@ export class ScheduleRepository implements IScheduleRepository {
         status: row.status,
         date: row.date,
         photoUrl: row.photoUrl,
+        tip: row.tip !== null ? Number(row.tip) : null,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       }),
@@ -169,7 +175,11 @@ export class ScheduleRepository implements IScheduleRepository {
     await this.db.transaction(async (transaction) => {
       await transaction
         .update(schedules)
-        .set({ status: schedule.status.value, updatedAt: schedule.updatedAt })
+        .set({
+          status: schedule.status.value,
+          updatedAt: schedule.updatedAt,
+          tip: schedule.tip !== null ? schedule.tip.toString() : null,
+        })
         .where(eq(schedules.id, schedule.id));
 
       if (productIds.length > 0) {

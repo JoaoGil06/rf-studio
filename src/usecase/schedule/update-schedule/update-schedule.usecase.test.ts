@@ -19,6 +19,7 @@ const schedule = {
   status: 'pending',
   date: new Date('2026-06-01T10:00:00Z'),
   photoUrl: null,
+  tip: null,
   createdAt: new Date('2026-01-01T00:00:00Z'),
   updatedAt: new Date('2026-01-01T00:00:00Z'),
 };
@@ -73,6 +74,7 @@ describe('UpdateScheduleUseCase', () => {
     const result = await buildUsecase().execute({ id: SCH_ID, status: 'confirmed' });
 
     expect(result.status).toBe('confirmed');
+    expect(result.tip).toBeNull();
     expect(mockScheduleRepo.update).toHaveBeenCalledOnce();
     expect(mockServiceRepo.findById).not.toHaveBeenCalled();
     expect(mockScheduleRepo.findOverlapping).not.toHaveBeenCalled();
@@ -164,6 +166,16 @@ describe('UpdateScheduleUseCase', () => {
     expect(mockScheduleRepo.update).toHaveBeenCalledOnce();
   });
 
+  it('passes the stored tip through to the output', async () => {
+    vi.mocked(mockScheduleRepo.findById).mockResolvedValue(
+      ScheduleFactory.reconstitute({ ...schedule, tip: 7.5 }),
+    );
+
+    const result = await buildUsecase().execute({ id: SCH_ID, status: 'confirmed' });
+
+    expect(result.tip).toBe(7.5);
+  });
+
   it('deletes the previous photo when a new one replaces it', async () => {
     const existing = ScheduleFactory.reconstitute({
       id: SCH_ID,
@@ -172,6 +184,7 @@ describe('UpdateScheduleUseCase', () => {
       status: 'pending',
       date: new Date('2026-06-01T10:00:00Z'),
       photoUrl: 'http://localhost:8000/assets/schedules/photos/old.jpg',
+      tip: null,
       createdAt: new Date('2026-01-01T00:00:00Z'),
       updatedAt: new Date('2026-01-01T00:00:00Z'),
     });

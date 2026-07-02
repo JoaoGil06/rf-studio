@@ -1,0 +1,1 @@
+ALTER TABLE "schedules" ADD COLUMN "tip" numeric(10, 2);

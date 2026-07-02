@@ -7,6 +7,7 @@ export interface ScheduleProps {
   status: ScheduleStatus;
   date: Date;
   photoUrl: string | null;
+  tip: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -45,6 +45,7 @@ export class GetSchedulesInRangeUseCase {
       status: scheduleRow.status.value,
       date: scheduleRow.date.toISOString(),
       photoUrl: scheduleRow.photoUrl,
+      tip: scheduleRow.tip,
       createdAt: scheduleRow.createdAt.toISOString(),
     }));
   }

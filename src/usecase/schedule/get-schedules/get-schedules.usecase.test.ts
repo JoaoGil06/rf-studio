@@ -4,7 +4,7 @@ import { encodeCursor } from '../../shared/cursor.js';
 import type { IScheduleRepository } from '../../../domain/repository/schedule-repository.interface.js';
 import { ScheduleFactory } from '../../../domain/entity/schedule/factory/schedule.factory.js';
 
-const makeSchedule = (i: number) =>
+const makeSchedule = (i: number, tip: number | null = null) =>
   ScheduleFactory.reconstitute({
     id: `sch-${i}`,
     userId: 'usr-1',
@@ -12,6 +12,7 @@ const makeSchedule = (i: number) =>
     status: 'pending',
     date: new Date(`2026-06-0${i}T10:00:00Z`),
     photoUrl: null,
+    tip,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
   });
@@ -44,7 +45,7 @@ describe('GetSchedulesUseCase', () => {
   });
 
   it('returns edges with opaque cursors and mapped node fields', async () => {
-    vi.mocked(mockRepo.findAll).mockResolvedValue([makeSchedule(1)]);
+    vi.mocked(mockRepo.findAll).mockResolvedValue([makeSchedule(1, 7.5)]);
     const usecase = new GetSchedulesUseCase(mockRepo);
     const result = await usecase.execute({ first: 1 });
 
@@ -52,6 +53,7 @@ describe('GetSchedulesUseCase', () => {
     expect(result.edges[0].node.id).toBe('sch-1');
     expect(result.edges[0].node.userId).toBe('usr-1');
     expect(result.edges[0].node.status).toBe('pending');
+    expect(result.edges[0].node.tip).toBe(7.5);
     expect(result.edges[0].cursor).toBeDefined();
   });
 

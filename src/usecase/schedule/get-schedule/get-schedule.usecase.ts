@@ -21,6 +21,7 @@ export class GetScheduleUseCase {
       status: schedule.status.value,
       date: schedule.date.toISOString(),
       photoUrl: schedule.photoUrl,
+      tip: schedule.tip,
       createdAt: schedule.createdAt.toISOString(),
     };
   }
