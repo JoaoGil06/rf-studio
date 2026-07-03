@@ -220,6 +220,7 @@ var scheduleTypeDefs = `#graphql
     input CompleteScheduleInput {
         scheduleId: ID!
         productIds: [ID!]!
+        tip: Float
     }
 
     type UpdateScheduleSuccess {
@@ -3689,6 +3690,9 @@ var CompleteScheduleUseCase = class {
     );
     const schedule = await this.scheduleRepository.findById(validated.scheduleId);
     if (!schedule) throw new EntityNotFoundError(`Schedule not found: ${validated.scheduleId}`);
+    if (schedule.status.value === "completed") {
+      throw new ConflictError(`Schedule already completed: ${validated.scheduleId}`);
+    }
     ScheduleStatusService.assertCanTransition(schedule.status.value, "completed");
     const service = await this.serviceRepository.findById(schedule.serviceId);
     if (!service) {
