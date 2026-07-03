@@ -23,7 +23,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: rf_studio_app
     restart: unless-stopped
     env_file:
