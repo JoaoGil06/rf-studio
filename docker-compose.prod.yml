@@ -1,0 +1,87 @@
+name: rf_studio_prod
+
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: rf_studio_traefik
+    restart: unless-stopped
+    command:
+      # Static config comes from the mounted file; these flags override the
+      # env-sensitive ACME bits (see Task 4 note, option 1).
+      - '--configFile=/etc/traefik/traefik.yml'
+      - '--certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/acme.json:/acme.json
+    networks:
+      - web
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rf_studio_app
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    volumes:
+      - assets_data:/app/assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - web
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.rfapp.rule=Host(`${APP_DOMAIN}`)'
+      - 'traefik.http.routers.rfapp.entrypoints=websecure'
+      - 'traefik.http.routers.rfapp.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.rfapp.loadbalancer.server.port=8000'
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: rf_studio_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: rf_studio_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+networks:
+  web:
+  internal:
+
+volumes:
+  pg_data:
+  redis_data:
+  assets_data:

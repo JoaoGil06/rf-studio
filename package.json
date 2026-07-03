@@ -8,6 +8,9 @@
     "build:dev": "docker compose build",
     "start:dev": "docker compose up",
     "dev:watch": "tsx watch --inspect=0.0.0.0:9229 src/main.ts",
+    "start:prod": "docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build",
+    "stop:prod": "docker compose -f docker-compose.prod.yml --env-file .env.prod down",
+    "logs:prod": "docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f",
     "build": "tsup",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
@@ -21,7 +24,7 @@
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
-    "db:seed": "tsx src/infrastructure/db/seeders/index.ts "
+    "db:seed": "tsx src/infrastructure/db/seeders/index.ts"
   },
   "keywords": [],
   "author": "",
