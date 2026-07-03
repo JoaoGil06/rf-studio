@@ -6,10 +6,9 @@ services:
     container_name: rf_studio_traefik
     restart: unless-stopped
     command:
-      # Static config comes from the mounted file; these flags override the
-      # env-sensitive ACME bits (see Task 4 note, option 1).
+      # Static config comes from the mounted file. O email do ACME está
+      # hardcoded no traefik.yml (Traefik não interpola env vars no ficheiro estático).
       - '--configFile=/etc/traefik/traefik.yml'
-      - '--certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}'
     ports:
       - '80:80'
       - '443:443'

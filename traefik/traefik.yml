@@ -21,7 +21,7 @@ providers:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: '${ACME_EMAIL}' # overridden via compose command/env; see Task 5 note
+      email: 'joaogmonteiro06@gmail.com' # literal: Traefik não interpola env vars no ficheiro estático
       storage: /acme.json
       httpChallenge:
         entryPoint: web # HTTP-01 challenge answered on :80
