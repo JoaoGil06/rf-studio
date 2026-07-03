@@ -1,3 +1,12 @@
 node_modules
 dist
 .env
+.env.prod
+.env.example
+.env.prod.example
+traefik/acme.json
+.git
+.github
+.claude
+**/*.test.ts
+coverage

@@ -3,6 +3,11 @@ node_modules/
 CLAUDE.md
 .claude/
 
+
 # Uploaded user content
 /assets/*
 !/assets/.gitkeep
+
+# prd
+.env.prod
+traefik/acme.json

@@ -1,0 +1,31 @@
+# Traefik v3 static configuration
+api:
+  dashboard: false # keep the dashboard off in prod (enable behind auth later)
+
+entryPoints:
+  web:
+    address: ':80'
+    http:
+      redirections: # every :80 request → 301 to :443
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ':443'
+
+providers:
+  docker:
+    exposedByDefault: false # only containers with `traefik.enable=true` are routed
+    # endpoint defaults to the mounted /var/run/docker.sock
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: '${ACME_EMAIL}' # overridden via compose command/env; see Task 5 note
+      storage: /acme.json
+      httpChallenge:
+        entryPoint: web # HTTP-01 challenge answered on :80
+
+log:
+  level: INFO
+accessLog: {}
