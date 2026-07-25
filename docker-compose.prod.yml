@@ -1,33 +1,37 @@
 name: rf_studio_prod
 
+# Single-server production stack for RF-Studio.
+# One host, one domain, one TLS cert. Traefik routes by path:
+#   https://${APP_DOMAIN}/graphql  -> app (API)
+#   https://${APP_DOMAIN}/assets   -> app (uploaded photos)
+#   https://${APP_DOMAIN}/*        -> web (React SPA)
+
 services:
   traefik:
     image: traefik:v3.3
     container_name: rf_studio_traefik
     restart: unless-stopped
     command:
-      # Static config comes from the mounted file; these flags override the
-      # env-sensitive ACME bits (see Task 4 note, option 1).
-      - '--configFile=/etc/traefik/traefik.yml'
-      - '--certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}'
+      - "--configFile=/etc/traefik/traefik.yml"
     ports:
-      - '80:80'
-      - '443:443'
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/acme.json:/acme.json
+      - ./backend/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./backend/traefik/acme.json:/acme.json
     networks:
       - web
 
+  # ---- Backend API (GraphQL + /assets) --------------------------------
   app:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile.prod
     container_name: rf_studio_app
     restart: unless-stopped
     env_file:
-      - .env.prod
+      - ./backend/.env.prod
     volumes:
       - assets_data:/app/assets
     depends_on:
@@ -39,11 +43,32 @@ services:
       - web
       - internal
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.rfapp.rule=Host(`${APP_DOMAIN}`)'
-      - 'traefik.http.routers.rfapp.entrypoints=websecure'
-      - 'traefik.http.routers.rfapp.tls.certresolver=letsencrypt'
-      - 'traefik.http.services.rfapp.loadbalancer.server.port=8000'
+      - "traefik.enable=true"
+      # API + uploaded assets -> this container. Higher priority so these
+      # paths win over the frontend catch-all below.
+      - "traefik.http.routers.rfapi.rule=Host(`${APP_DOMAIN}`) && (PathPrefix(`/graphql`) || PathPrefix(`/assets`))"
+      - "traefik.http.routers.rfapi.entrypoints=websecure"
+      - "traefik.http.routers.rfapi.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.rfapi.priority=100"
+      - "traefik.http.services.rfapi.loadbalancer.server.port=8000"
+
+  # ---- Frontend (React SPA served by nginx) ---------------------------
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: rf_studio_web
+    restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      # Catch-all: everything not claimed by rfapi is the SPA.
+      - "traefik.http.routers.rfweb.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.rfweb.entrypoints=websecure"
+      - "traefik.http.routers.rfweb.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.rfweb.priority=1"
+      - "traefik.http.services.rfweb.loadbalancer.server.port=80"
 
   postgres:
     image: postgres:16-alpine
@@ -56,7 +81,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,7 +95,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
