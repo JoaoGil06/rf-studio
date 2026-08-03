@@ -1,0 +1,84 @@
+name: Deploy
+
+# Corre depois de o CI passar em `main`. Publicar código que não passou nos
+# testes anularia o propósito de ter CI.
+#
+# `workflow_run` lê sempre a versão deste ficheiro que está no branch por
+# omissão, não no commit que o despoletou. Como o CD não usa o código do
+# checkout — é o droplet que faz o pull — isso não nos afecta.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  # Nunca cancelar um deploy a meio: cancelar durante uma migração deixa a base
+  # de dados num estado indeterminado. Deploys ficam em fila.
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to droplet
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      # Sem checkout de propósito: o código nunca passa pelo runner. É o droplet
+      # que o vai buscar ao GitHub com a deploy key. O runner é só o gatilho.
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            echo "==> A sincronizar com origin/main"
+            # reset --hard e não pull: o pull faz merge e pode entrar em
+            # conflito se algum ficheiro foi tocado no servidor.
+            git fetch --prune origin
+            git reset --hard origin/main
+            git log --oneline -1
+
+            echo "==> A reconstruir a stack"
+            docker compose -f docker-compose.prod.yml --env-file backend/.env.prod up -d --build
+
+            echo "==> A limpar imagens órfãs"
+            # Sem isto cada deploy deixa a imagem anterior órfã e o disco enche.
+            # `image prune -f` só remove dangling — NUNCA usar `system prune -af`
+            # nem `builder prune`, que apagam a cache do BuildKit.
+            docker image prune -f
+
+            echo "==> A aguardar healthcheck"
+            for i in $(seq 1 30); do
+              status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' rf_studio_app 2>/dev/null || echo missing)
+
+              if [ "$status" = "none" ]; then
+                echo "==> ERRO: o container rf_studio_app não tem healthcheck definido."
+                echo "    O bloco healthcheck: do serviço app tem de estar em main."
+                exit 1
+              fi
+
+              echo "   tentativa $i/30: $status"
+
+              if [ "$status" = "healthy" ]; then
+                echo "==> Deploy OK"
+                exit 0
+              fi
+
+              if [ "$status" = "unhealthy" ]; then
+                echo "==> Container unhealthy. Últimas 100 linhas:"
+                docker logs --tail 100 rf_studio_app
+                exit 1
+              fi
+
+              sleep 10
+            done
+
+            echo "==> Timeout à espera do healthcheck (5 min). Últimas 100 linhas:"
+            docker logs --tail 100 rf_studio_app
+            exit 1
