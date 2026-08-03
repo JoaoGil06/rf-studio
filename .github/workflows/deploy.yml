@@ -24,6 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
+      # Um secret inexistente expande para string vazia SEM erro, e a falha só
+      # aparece lá dentro com uma mensagem que aponta para o sítio errado
+      # ("missing server host", "can't connect without a private SSH key").
+      # Este passo diz logo qual falta. As expressões devolvem só true/false —
+      # nenhum valor de secret é impresso.
+      - name: Verificar que os secrets existem
+        run: |
+          echo "SSH_HOST:        ${{ secrets.SSH_HOST != '' }}"
+          echo "SSH_USER:        ${{ secrets.SSH_USER != '' }}"
+          echo "SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY != '' }}"
+          echo "DEPLOY_PATH:     ${{ secrets.DEPLOY_PATH != '' }}"
+          if [ "${{ secrets.SSH_HOST == '' || secrets.SSH_USER == '' || secrets.SSH_PRIVATE_KEY == '' || secrets.DEPLOY_PATH == '' }}" = "true" ]; then
+            echo "::error::Falta pelo menos um secret. Ver os false acima."
+            echo "Settings -> Secrets and variables -> Actions -> Repository secrets"
+            exit 1
+          fi
+
       # Sem checkout de propósito: o código nunca passa pelo runner. É o droplet
       # que o vai buscar ao GitHub com a deploy key. O runner é só o gatilho.
       - name: Deploy over SSH
@@ -43,8 +60,16 @@ jobs:
             git reset --hard origin/main
             git log --oneline -1
 
-            echo "==> A reconstruir a stack"
-            docker compose -f docker-compose.prod.yml --env-file backend/.env.prod up -d --build
+            echo "==> A construir as imagens, uma de cada vez"
+            # NÃO usar `up -d --build`: o compose delega no bake, que constrói
+            # app e web em PARALELO. Em 957 MiB isso duplica o pico de memória
+            # e o kernel mata o build ("failed to execute bake: signal: killed").
+            # Sequencial é mais lento mas cabe.
+            docker compose -f docker-compose.prod.yml --env-file backend/.env.prod build app
+            docker compose -f docker-compose.prod.yml --env-file backend/.env.prod build web
+
+            echo "==> A subir a stack"
+            docker compose -f docker-compose.prod.yml --env-file backend/.env.prod up -d
 
             echo "==> A limpar imagens órfãs"
             # Sem isto cada deploy deixa a imagem anterior órfã e o disco enche.
