@@ -56,6 +56,10 @@ export async function startServer() {
   app.use(cors());
   app.use(express.json());
 
+  app.get('/healthz', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
   app.use('/assets', express.static(ASSETS_DIR));
 
   app.use(
