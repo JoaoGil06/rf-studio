@@ -43,6 +43,15 @@ services:
       - ./backend/.env.prod
     volumes:
       - assets_data:/app/assets
+    healthcheck:
+      # `wget` vem do busybox na imagem node:22-alpine — nada a instalar.
+      test: ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:8000/healthz']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # Folga para as migrações correrem sem que as falhas iniciais contem
+      # para o limite de `retries`.
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
