@@ -110,9 +110,7 @@
         "roles_name_unique": {
           "name": "roles_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -176,12 +174,8 @@
           "name": "schedule_discounts_schedule_id_schedules_id_fk",
           "tableFrom": "schedule_discounts",
           "tableTo": "schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["schedule_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -189,12 +183,8 @@
           "name": "schedule_discounts_user_id_users_id_fk",
           "tableFrom": "schedule_discounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -204,9 +194,7 @@
         "schedule_discounts_schedule_id_unique": {
           "name": "schedule_discounts_schedule_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "schedule_id"
-          ]
+          "columns": ["schedule_id"]
         }
       },
       "policies": {},
@@ -257,12 +245,8 @@
           "name": "schedule_products_schedule_id_schedules_id_fk",
           "tableFrom": "schedule_products",
           "tableTo": "schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["schedule_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -270,12 +254,8 @@
           "name": "schedule_products_product_id_products_id_fk",
           "tableFrom": "schedule_products",
           "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -285,10 +265,7 @@
         "schedule_products_schedule_id_product_id_unique": {
           "name": "schedule_products_schedule_id_product_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "schedule_id",
-            "product_id"
-          ]
+          "columns": ["schedule_id", "product_id"]
         }
       },
       "policies": {},
@@ -365,12 +342,8 @@
           "name": "schedules_user_id_users_id_fk",
           "tableFrom": "schedules",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -378,12 +351,8 @@
           "name": "schedules_service_id_services_id_fk",
           "tableFrom": "schedules",
           "tableTo": "services",
-          "columnsFrom": [
-            "service_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["service_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -522,12 +491,8 @@
           "name": "users_role_id_roles_id_fk",
           "tableFrom": "users",
           "tableTo": "roles",
-          "columnsFrom": [
-            "role_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["role_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -537,9 +502,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -551,28 +514,17 @@
     "public.discount_reason": {
       "name": "discount_reason",
       "schema": "public",
-      "values": [
-        "loyalty",
-        "birthday"
-      ]
+      "values": ["loyalty", "birthday"]
     },
     "public.schedule_status": {
       "name": "schedule_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "confirmed",
-        "completed",
-        "cancelled"
-      ]
+      "values": ["pending", "confirmed", "completed", "cancelled"]
     },
     "public.service_category": {
       "name": "service_category",
       "schema": "public",
-      "values": [
-        "nails",
-        "eyebrows"
-      ]
+      "values": ["nails", "eyebrows"]
     }
   },
   "schemas": {},
