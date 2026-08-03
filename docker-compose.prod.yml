@@ -53,6 +53,12 @@ services:
       - internal
     labels:
       - "traefik.enable=true"
+      # Este container está em DUAS redes (web + internal). Sem esta label o
+      # Traefik não sabe por qual o alcançar, pode escolher a `internal` — onde
+      # não está ligado — e os pedidos ficam pendurados até expirar. O serviço
+      # `web` não precisa disto porque só está numa rede.
+      # O nome é <project>_<network>, e o project name está fixo no topo.
+      - "traefik.docker.network=rf_studio_prod_web"
       # API + uploaded assets -> this container. Higher priority so these
       # paths win over the frontend catch-all below.
       - "traefik.http.routers.rfapi.rule=Host(`${APP_DOMAIN}`) && (PathPrefix(`/graphql`) || PathPrefix(`/assets`))"
