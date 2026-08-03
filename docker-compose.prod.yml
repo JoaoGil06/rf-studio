@@ -8,7 +8,14 @@ name: rf_studio_prod
 
 services:
   traefik:
-    image: traefik:v3.3
+    # v3.6+ é obrigatório, não uma actualização de rotina. Até ao v3.6.1 o
+    # cliente Docker do Traefik fixava a API na versão 1.24, que o Docker Engine
+    # recente recusa ("minimum supported API version is 1.40"). O provider docker
+    # morria em ciclo de retry, nenhum router nascia das labels, e o Traefik
+    # respondia 404 a tudo — incluindo ao desafio ACME, pelo que nunca havia
+    # certificado. O v3.6.1 passou a negociar a versão da API com o daemon.
+    # Não descer daqui sem confirmar a versão do Docker no servidor.
+    image: traefik:v3.6
     container_name: rf_studio_traefik
     restart: unless-stopped
     command:
