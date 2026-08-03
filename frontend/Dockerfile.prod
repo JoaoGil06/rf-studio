@@ -1,13 +1,19 @@
 # ---- Build stage: compile the Vite/React app to static files ----
 FROM node:22-alpine AS build
+
+# Versão de pnpm fixa pela mesma razão do backend: `latest` pode rejeitar
+# o lockfile num major novo e partir a produção sem nada ter mudado.
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 WORKDIR /app
 
-# Enable pnpm via corepack
-RUN corepack enable
-
-# Install deps first (better layer caching)
+# Install deps first (better layer caching). A cache mount guarda o store
+# do pnpm entre builds — sem ela, cada alteração ao lockfile volta a
+# descarregar tudo da registry.
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Build the app -> /app/dist
 COPY . .
