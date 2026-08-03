@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Um PR com vários pushes seguidos cancela as execuções antigas — só interessa
+# o estado do último commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      # A versão tem de coincidir com a dos Dockerfile.prod. Versões diferentes
+      # de pnpm podem rejeitar o lockfile no --frozen-lockfile.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test:run # NÃO `pnpm test` — esse abre em watch mode e fica pendurado
+      - run: pnpm build
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    # Espera pelos dois: não vale a pena gastar minutos a construir imagens de
+    # código que nem sequer compila.
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Constrói sem publicar. Na estratégia A o build real acontece no droplet,
+      # portanto esta é a única oportunidade de apanhar um Dockerfile partido
+      # antes de ele estar a bloquear um deploy em produção.
+      - name: Build backend production image
+        run: docker build -f backend/Dockerfile.prod -t rf-studio-app:ci backend
+
+      - name: Build frontend production image
+        run: docker build -f frontend/Dockerfile.prod -t rf-studio-web:ci frontend
