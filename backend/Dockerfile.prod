@@ -1,25 +1,40 @@
-# ---- Build stage ----
-FROM node:22-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# ---- Base: pnpm fixo + store partilhado -----------------------------
+# A versão do pnpm é fixa de propósito. Com `pnpm@latest` um major novo
+# publicado entre dois deploys pode rejeitar o lockfile no `--frozen-lockfile`
+# e partir a produção sem que nada tenha mudado no repositório.
+FROM node:22-alpine AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 WORKDIR /app
 
+# ---- Dependências de produção ---------------------------------------
+# Só `dependencies` — sem vitest, eslint, typescript, tsup nem @types/*.
+# O `drizzle-kit` é dependência de produção (ver package.json): o
+# entrypoint corre `pnpm db:migrate` no arranque.
+FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --prod --frozen-lockfile
+
+# ---- Build ----------------------------------------------------------
+# Corre em paralelo com prod-deps: nenhum depende do outro.
+FROM base AS builder
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm build
 
-# ---- Runtime stage ----
-FROM node:22-alpine AS runtime
-RUN corepack enable && corepack prepare pnpm@latest --activate
-WORKDIR /app
+# ---- Runtime --------------------------------------------------------
+FROM base AS runtime
 ENV NODE_ENV=production
 
-# Full deps so drizzle-kit is available for migrate-on-boot.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY --from=prod-deps /app/node_modules ./node_modules
 
-# App bundle + everything migrations need at runtime.
+# App bundle + tudo o que as migrações precisam em runtime.
 COPY --from=builder /app/dist ./dist
 COPY drizzle.config.ts ./drizzle.config.ts
 COPY src/infrastructure/db/migrations ./src/infrastructure/db/migrations
