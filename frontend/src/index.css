@@ -1,111 +1,90 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+html {
+  --bg: #f7f3ee;
+  --panel: #ffffff;
+  --panel2: #faf6f1;
+  --border: #e4dcd3;
+  --ink: #2b2624;
+  --muted: #7a6d66;
+  --muted2: #665b54;
+  --accent: #b98d6f;
+  --accent-ink: #875d43;
+  --accent-soft: #f1e3d8;
+  --gold: #e8cfa9;
+  --sage: #7d8a6f;
+  --sage-ink: #5d6b50;
+  --sage-soft: #e9ece4;
+  --canc: #736e6b;
+  --closed1: #f3ede6;
+  --closed2: #f7f3ee;
+  --btn-bg: #2b2624;
+  --btn-ink: #e8cfa9;
+  --danger: #a8543f;
+  --shadow: 0 8px 30px rgba(90, 70, 60, 0.14);
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --font-script: 'Great Vibes', cursive;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Jost', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+html[data-theme='dark'] {
+  --bg: #1e1b19;
+  --panel: #282420;
+  --panel2: #26221f;
+  --border: #3a332c;
+  --ink: #ece5dd;
+  --muted: #948980;
+  --muted2: #b3a79d;
+  --accent: #d3ac6b;
+  --accent-ink: #d3ac6b;
+  --accent-soft: rgba(211, 172, 107, 0.16);
+  --gold: #e8cfa9;
+  --sage: #8fa07e;
+  --sage-ink: #a8b997;
+  --sage-soft: rgba(143, 160, 126, 0.16);
+  --canc: #a2968b;
+  --closed1: #211d1a;
+  --closed2: #1e1b19;
+  --btn-bg: #d3ac6b;
+  --btn-ink: #1e1b19;
+  --danger: #e0937c;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
+h2,
+h3 {
+  font-family: var(--font-serif);
   font-weight: 500;
-  color: var(--text-h);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+html.rf-theming,
+html.rf-theming * {
+  transition:
+    background-color 320ms var(--ease),
+    color 320ms var(--ease),
+    border-color 320ms var(--ease),
+    outline-color 320ms var(--ease),
+    fill 320ms var(--ease),
+    box-shadow 320ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.rf-theming,
+  html.rf-theming * {
+    transition: none;
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }
