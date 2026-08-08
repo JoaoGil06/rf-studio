@@ -1,11 +1,17 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { AgendaView } from '../pages/Agenda';
+import { DashboardView } from '../pages/Dashboard';
+import { ClientsView } from '../pages/Clients';
 import { LoginView } from '../pages/Login';
+import { ProductsView } from '../pages/Products';
+import { ReservationsView } from '../pages/Reservations';
+import { ServicesView } from '../pages/Services';
+import { AppLayout } from './AppLayout';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { DEFAULT_SIGNED_IN_PATH, PATHS } from './paths';
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     element: <GuestRoute />,
     children: [
@@ -19,13 +25,40 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: PATHS.agenda,
-        element: <AgendaView />,
-      },
-      {
-        path: '*',
-        element: <Navigate to={DEFAULT_SIGNED_IN_PATH} replace />,
+        element: <AppLayout />,
+        children: [
+          {
+            path: PATHS.agenda,
+            element: <AgendaView />,
+          },
+          {
+            path: PATHS.dashboard,
+            element: <DashboardView />,
+          },
+          {
+            path: PATHS.reservations,
+            element: <ReservationsView />,
+          },
+          {
+            path: PATHS.products,
+            element: <ProductsView />,
+          },
+          {
+            path: PATHS.services,
+            element: <ServicesView />,
+          },
+          {
+            path: PATHS.clients,
+            element: <ClientsView />,
+          },
+          {
+            path: '*',
+            element: <Navigate to={DEFAULT_SIGNED_IN_PATH} replace />,
+          },
+        ],
       },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routes);
