@@ -26,7 +26,7 @@ dist-ssr
 .env
 CLAUDE.md
 .claude/
-.impeccable
+.impeccable/
 docs/
 
 # GraphQL Codegen output — reproduce with `pnpm codegen`

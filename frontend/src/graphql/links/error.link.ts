@@ -1,5 +1,6 @@
 import { CombinedGraphQLErrors, ServerError } from '@apollo/client';
 import { ErrorLink } from '@apollo/client/link/error';
+import { authStorage } from '../../lib/adapters/auth-storage/auth-storage.adapter';
 
 /**
  * Transport-level observation only. Mapping error codes to user-facing pt-PT
@@ -17,6 +18,16 @@ export const errorLink = new ErrorLink(({ error, operation }) => {
     error.errors.forEach(({ message, extensions }) => {
       console.error(`[GraphQL] ${name}: ${message}`, extensions?.code);
     });
+
+    // `requireAuthPlugin` throws a GraphQLError during `didResolveOperation`, so a
+    // rejected token arrives as a 200 with an `errors` array — not an HTTP 401.
+    // Checking `ServerError.is(error) && statusCode === 401` would never fire here.
+    // The link only discards the stale record; it lives outside the router and
+    // cannot navigate. AuthProvider observes the cleared session and ProtectedRoute
+    // performs the redirect.
+    if (error.errors.some((graphQLError) => graphQLError.extensions?.code === 'UNAUTHENTICATED')) {
+      authStorage.clear();
+    }
     return;
   }
 
