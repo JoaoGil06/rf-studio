@@ -1,20 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import {
-  THEME_STORAGE_KEY,
-  THEME_SWEEP_MS,
-  ThemeContext,
-  type Theme,
-  type ThemeContextValue,
-} from './theme.context';
-
-function readStoredTheme(): Theme | null {
-  try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return stored === 'light' || stored === 'dark' ? stored : null;
-  } catch {
-    return null;
-  }
-}
+import { themeStorage } from '../../lib/adapters/theme-storage/theme-storage.adapter';
+import type { Theme } from '../../lib/adapters/theme-storage/theme-storage.interface';
+import { THEME_SWEEP_MS, ThemeContext, type ThemeContextValue } from './theme.context';
 
 function readPreferredTheme(): Theme {
   if (typeof window.matchMedia !== 'function') return 'light';
@@ -26,18 +13,13 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => readStoredTheme() ?? readPreferredTheme());
+  const [theme, setTheme] = useState<Theme>(() => themeStorage.get() ?? readPreferredTheme());
 
   const sweepTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    } catch {
-      // Private mode or quota exhausted — the theme still applies for this
-      // session, it just will not survive a refresh.
-    }
+    themeStorage.set(theme);
   }, [theme]);
 
   useEffect(() => {

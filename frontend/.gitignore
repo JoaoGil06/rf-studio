@@ -26,8 +26,10 @@ dist-ssr
 .env
 CLAUDE.md
 .claude/
-.impeccable
+.impeccable/
 docs/
 
-# GraphQL Codegen output — reproduce with `pnpm codegen`
-src/graphql/generated/
+# `src/graphql/generated/` é versionado de propósito: o build da imagem de
+# produção tem contexto `./frontend` e não alcança `../backend`, logo não pode
+# correr `pnpm codegen`. O CI corre o codegen e falha se houver diferenças —
+# o schema do backend continua a ser a fonte de verdade.

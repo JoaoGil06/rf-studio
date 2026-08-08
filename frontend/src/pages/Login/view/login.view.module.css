@@ -1,0 +1,31 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 24px;
+  /* dvh behind vh: 100vh counts browser chrome that is not on screen. */
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  box-sizing: border-box;
+}
+
+.brand {
+  text-align: center;
+}
+
+.logotype {
+  font-family: var(--font-script);
+  font-size: 56px;
+  line-height: 1.1;
+  color: var(--accent);
+}
+
+.tagline {
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--muted);
+}

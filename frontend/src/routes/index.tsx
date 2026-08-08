@@ -1,14 +1,31 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { AgendaView } from '../pages/Agenda';
-import { PATHS } from './paths';
+import { LoginView } from '../pages/Login';
+import { GuestRoute } from './GuestRoute';
+import { ProtectedRoute } from './ProtectedRoute';
+import { DEFAULT_SIGNED_IN_PATH, PATHS } from './paths';
 
 export const router = createBrowserRouter([
   {
-    path: PATHS.agenda,
-    element: <AgendaView />,
+    element: <GuestRoute />,
+    children: [
+      {
+        path: PATHS.login,
+        element: <LoginView />,
+      },
+    ],
   },
   {
-    path: '*',
-    element: <Navigate to={PATHS.agenda} replace />,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: PATHS.agenda,
+        element: <AgendaView />,
+      },
+      {
+        path: '*',
+        element: <Navigate to={DEFAULT_SIGNED_IN_PATH} replace />,
+      },
+    ],
   },
 ]);

@@ -1,5 +1,6 @@
 import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client';
 import { relayStylePagination } from '@apollo/client/utilities';
+import { authLink } from './links/auth.link';
 import { errorLink } from './links/error.link';
 import { httpLink } from './links/http.link';
 
@@ -19,9 +20,9 @@ export const cache = new InMemoryCache({
   },
 });
 
-// Order is load-bearing: errorLink outermost so it observes every response, and
-// httpLink last. The auth link is inserted between them in login-view-plan.md.
+// Order is load-bearing: errorLink outermost so it observes every response,
+// authLink immediately before httpLink so the header is set last.
 export const client = new ApolloClient({
   cache,
-  link: ApolloLink.from([errorLink, httpLink]),
+  link: ApolloLink.from([errorLink, authLink, httpLink]),
 });

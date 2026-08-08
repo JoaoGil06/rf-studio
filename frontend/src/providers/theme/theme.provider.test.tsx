@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useTheme } from '../../hooks/useTheme';
-import { THEME_STORAGE_KEY, THEME_SWEEP_MS } from './theme.context';
+import { THEME_STORAGE_KEY } from '../../lib/adapters/theme-storage/theme-storage.adapter';
+import { THEME_SWEEP_MS } from './theme.context';
 import { ThemeProvider } from './theme.provider';
 
 function Probe() {
