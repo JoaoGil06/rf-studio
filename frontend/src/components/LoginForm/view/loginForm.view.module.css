@@ -1,9 +1,3 @@
-/*
- * Every value here is a token from DESIGN.md. The card is one of only two things
- * on this screen allowed the Float shadow; hover is colour only — no lift, no
- * scale, no shadow.
- */
-
 .card {
   display: flex;
   flex-direction: column;

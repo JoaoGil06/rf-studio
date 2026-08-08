@@ -60,6 +60,16 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
+
+      # `src/graphql/generated/` está commitado (o build da imagem não alcança o
+      # backend). Regenera e falha se o resultado diferir do que está no repo —
+      # apanha quem mude o schema sem correr `pnpm codegen`.
+      - name: Check GraphQL codegen is up to date
+        run: |
+          pnpm codegen
+          git diff --exit-code --stat src/graphql/generated/ \
+            || { echo "::error::Tipos GraphQL desatualizados. Corre 'pnpm codegen' e faz commit."; exit 1; }
+
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build

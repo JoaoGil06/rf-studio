@@ -46,11 +46,6 @@ const invalidPayload = {
   data: { login: { __typename: 'InvalidCredentialsError', message: 'Invalid Credentials' } },
 };
 
-/**
- * A headless harness, not the View: the ViewModel's form state only exists once
- * `register` is attached to real inputs, so validation and submit cannot be
- * exercised through `renderHook` alone.
- */
 function Harness() {
   const { register, handleSubmit, submit, errors, formError, isSubmitting } = useLoginViewModel();
 

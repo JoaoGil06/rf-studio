@@ -9,12 +9,6 @@ export function LoginForm({ register, errors, onSubmit, formError, isSubmitting 
   const submitLabel = useMemo(() => (isSubmitting ? 'A ENTRAR…' : 'ENTRAR'), [isSubmitting]);
 
   return (
-    /*
-      `noValidate` hands validation to zod: the browser's native bubbles are in the
-      user's UI language, not necessarily pt-PT, and they fire before the resolver
-      ever runs. The button carries `type="submit"` and no `onClick` — the
-      prototype had both, which fires the handler twice in React.
-    */
     <form className={styles.card} onSubmit={onSubmit} noValidate>
       <p className={styles.cardLabel}>ÁREA DE ADMINISTRAÇÃO</p>
 

@@ -5,11 +5,6 @@ import { useForm } from 'react-hook-form';
 import { loginSchema, type LoginFormValues } from '../types/loginForm.types';
 import { LoginForm } from './loginForm.view';
 
-/**
- * No Apollo client, no session, no router — the component takes everything it
- * needs as props. The harness supplies a real `useForm` because `register` has to
- * be attached to real inputs for validation to be observable at all.
- */
 function Harness({
   formError = null,
   isSubmitting = false,
