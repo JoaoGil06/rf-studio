@@ -5,6 +5,7 @@ import type { AppContext } from '../../../context.types.js';
 export interface GetProductsArgs {
   first?: number | null;
   after?: string | null;
+  category?: string | null;
 }
 
 export const resolvers = {

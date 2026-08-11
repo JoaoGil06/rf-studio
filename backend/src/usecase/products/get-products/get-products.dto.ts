@@ -11,6 +11,7 @@ export interface ProductNodeDto {
 export interface GetProductsInputDto {
   first?: number | null;
   after?: string | null;
+  category?: string | null;
 }
 
 export interface GetProductsOutputDto {

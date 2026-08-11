@@ -1,7 +1,10 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import { Product } from '../../domain/entity/product/product.entity.js';
-import { IProductRepository } from '../../domain/repository/product-repository.interface.js';
+import {
+  FindAllProductsParams,
+  IProductRepository,
+} from '../../domain/repository/product-repository.interface.js';
 import { products } from '../db/schema/products.schema.js';
 import { ProductFactory } from '../../domain/entity/product/factory/product.factory.js';
 
@@ -73,10 +76,11 @@ export class ProductRepository implements IProductRepository {
     );
   }
 
-  async findAll(params: { limit: number; offset: number }): Promise<Product[]> {
+  async findAll(params: FindAllProductsParams): Promise<Product[]> {
     const rows = await this.db
       .select()
       .from(products)
+      .where(params.category ? eq(products.category, params.category) : undefined)
       .orderBy(asc(products.createdAt), asc(products.id))
       .limit(params.limit)
       .offset(params.offset);
