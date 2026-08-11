@@ -4,7 +4,7 @@ import { DashboardView } from '../pages/Dashboard';
 import { ClientsView } from '../pages/Clients';
 import { LoginView } from '../pages/Login';
 import { ProductsView } from '../pages/Products';
-import { ReservationsView } from '../pages/Reservations';
+import { SchedulesView } from '../pages/Schedules';
 import { ServicesView } from '../pages/Services';
 import { AppLayout } from './AppLayout';
 import { GuestRoute } from './GuestRoute';
@@ -36,8 +36,8 @@ export const routes: RouteObject[] = [
             element: <DashboardView />,
           },
           {
-            path: PATHS.reservations,
-            element: <ReservationsView />,
+            path: PATHS.schedules,
+            element: <SchedulesView />,
           },
           {
             path: PATHS.products,

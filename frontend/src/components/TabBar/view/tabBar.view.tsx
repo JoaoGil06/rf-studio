@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
-import { NAV_SECTIONS } from '../../../constants/navigation';
+import { NAV_SECTIONS } from '../../../utils/constants/navigation';
 import { PATHS } from '../../../routes/paths';
 import styles from './tabBar.view.module.css';
 

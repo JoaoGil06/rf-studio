@@ -1,9 +1,30 @@
+import { MockedProvider } from '@apollo/client/testing/react';
 import { render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
+import { PRODUCTS_PAGE_SIZE, PRODUCTS_QUERY } from '../../../pages/Products/model/products.model';
 import { AuthContext, type AuthContextValue } from '../../../providers/auth/auth.context';
 import { ThemeContext, type ThemeContextValue } from '../../../providers/theme/theme.context';
 import { PATHS } from '../../paths';
 import { routes } from '../..';
+
+/**
+ * Sections that own a query need a client in context. This file is about the
+ * frame, not about their data, so every request answers with an empty connection.
+ */
+const mocks = [
+  {
+    request: { query: PRODUCTS_QUERY, variables: { first: PRODUCTS_PAGE_SIZE } },
+    result: {
+      data: {
+        products: {
+          __typename: 'ProductConnection',
+          edges: [],
+          pageInfo: { __typename: 'PageInfo', hasNextPage: false, endCursor: null },
+        },
+      },
+    },
+  },
+];
 
 vi.mock('../../../pages/Login', () => ({
   LoginView: () => <span data-testid="login-page">login</span>,
@@ -22,11 +43,13 @@ function renderAt(path: string, session: AuthContextValue = auth) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
 
   return render(
-    <AuthContext.Provider value={session}>
-      <ThemeContext.Provider value={theme}>
-        <RouterProvider router={router} />
-      </ThemeContext.Provider>
-    </AuthContext.Provider>,
+    <MockedProvider mocks={mocks}>
+      <AuthContext.Provider value={session}>
+        <ThemeContext.Provider value={theme}>
+          <RouterProvider router={router} />
+        </ThemeContext.Provider>
+      </AuthContext.Provider>
+    </MockedProvider>,
   );
 }
 
@@ -42,7 +65,7 @@ describe('AppLayout', () => {
   it.each([
     [PATHS.agenda, 'Agenda'],
     [PATHS.dashboard, 'Dashboard'],
-    [PATHS.reservations, 'Reservas'],
+    [PATHS.schedules, 'Reservas'],
     [PATHS.products, 'Produtos'],
     [PATHS.services, 'Serviços'],
     [PATHS.clients, 'Clientes'],

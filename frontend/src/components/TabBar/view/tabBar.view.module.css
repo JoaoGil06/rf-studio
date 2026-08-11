@@ -13,8 +13,6 @@
   background: none;
   text-decoration: none;
   color: var(--muted);
-  /* The same device the topbar uses, rotated onto the top edge: the rule is
-     always there and only comes up in tone, so selecting a tab shifts nothing. */
   border-top: 1.5px solid transparent;
   transition:
     color 160ms var(--ease),
@@ -52,8 +50,6 @@
   }
 }
 
-/* ---- the phone turned sideways ----
-   The tab gives height back; the label does not go under its 9px floor. */
 @media (max-width: 1023px) and (max-height: 540px) {
   .tab {
     min-height: 46px;
@@ -67,11 +63,6 @@
   }
 }
 
-/* ---- the narrow phone: 400px and below ----
-   Both surfaces now carry the same word, and the longest of them (DASHBOARD, 9
-   characters) does not clear a 65px column at 1px tracking. The tracking gives
-   way first — the label is a name and does not shorten, and the type does not go
-   under its 9px floor. See DESIGN.md §Navigation. */
 @media (max-width: 400px) {
   .tabLabel {
     letter-spacing: 0.5px;

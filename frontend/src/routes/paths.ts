@@ -2,7 +2,7 @@ export const PATHS = {
   login: '/login',
   agenda: '/',
   dashboard: '/dashboard',
-  reservations: '/reservations',
+  schedules: '/schedules',
   products: '/products',
   services: '/services',
   clients: '/clients',
