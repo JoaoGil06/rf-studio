@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { NAV_SECTIONS } from '../../../constants/navigation';
+import { NAV_SECTIONS } from '../../../utils/constants/navigation';
 import { PATHS } from '../../../routes/paths';
 import { TabBar } from './tabBar.view';
 
@@ -30,11 +30,6 @@ describe('TabBar', () => {
     expect(screen.getByRole('link', { name: 'CLIENTES' })).toBeInTheDocument();
   });
 
-  /**
-   * A section is named once. If the two surfaces ever drift apart, the phone and
-   * the desk disagree about what one screen is called — this is the assertion
-   * that catches it, rather than the labels being compared by eye.
-   */
   it('carries no label the topbar does not also carry', () => {
     for (const section of NAV_SECTIONS) {
       expect(section.tabLabel).toBe(section.label);

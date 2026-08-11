@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { NAV_SECTIONS } from '../../../constants/navigation';
+import { NAV_SECTIONS } from '../../../utils/constants/navigation';
 import { PATHS } from '../../../routes/paths';
 import { Navbar } from './navbar.view';
 
@@ -90,18 +90,12 @@ describe('Navbar', () => {
       expect(current[0]).toHaveAccessibleName('PRODUTOS');
     });
 
-    /**
-     * PATHS.agenda is '/', which without NavLink's `end` prop is a prefix of
-     * every route — the agenda link would be marked current on all six screens.
-     */
     it('does not mark the agenda as current on another section', () => {
       renderNavbar(PATHS.clients);
 
       const nav = screen.getByRole('navigation', { name: 'Secções' });
 
-      expect(within(nav).getByRole('link', { name: 'AGENDA' })).not.toHaveAttribute(
-        'aria-current',
-      );
+      expect(within(nav).getByRole('link', { name: 'AGENDA' })).not.toHaveAttribute('aria-current');
       expect(within(nav).getByRole('link', { name: 'CLIENTES' })).toHaveAttribute(
         'aria-current',
         'page',

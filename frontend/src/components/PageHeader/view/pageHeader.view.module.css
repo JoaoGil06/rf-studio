@@ -1,0 +1,49 @@
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.whisper {
+  font-family: var(--font-script);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.display {
+  margin: 0;
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  font-size: 46px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+@media (max-width: 900px) {
+  .display {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 620px) {
+  .display {
+    font-size: 30px;
+  }
+
+  .whisper {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 540px) {
+  .whisper {
+    display: none;
+  }
+
+  .display {
+    font-size: 26px;
+  }
+}

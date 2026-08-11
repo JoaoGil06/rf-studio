@@ -1,0 +1,87 @@
+/* The page frame from §Layout. Catalogue views are grid-dense, so they run to the
+   full frame rather than capping at 820px. */
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 22px;
+  padding: 26px 36px 40px;
+  box-sizing: border-box;
+}
+
+/* One declaration, three compositions: four-up at the desk, three-up at the
+   station, one-up in the hand. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.loadError {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+/* The standard panel, not a dashed one: an empty catalogue is a resolved fact,
+   not a record awaiting Rita. */
+.emptyPanel {
+  padding: 22px 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.emptyBody {
+  margin: 6px 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted2);
+}
+
+
+/* The Italic Aside Rule: guidance sounds like Rita talking, not system chrome. */
+.note {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted2);
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 22px 18px 32px;
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding: 18px 14px 28px;
+    gap: 18px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+  }
+}
+
+/* The phone turned sideways: 390px of height with the topbar and tab bar already
+   holding 120 of them. The header gives up its own height in PageHeader's module;
+   here the page frame just stops spending what it has not got. */
+@media (max-width: 1023px) and (max-height: 540px) {
+  .page {
+    padding-top: 14px;
+    gap: 14px;
+  }
+}

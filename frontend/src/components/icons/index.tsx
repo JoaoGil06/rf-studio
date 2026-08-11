@@ -86,6 +86,14 @@ export function MoonIcon({ className }: IconProps) {
   );
 }
 
+export function PlusIcon({ className }: IconProps) {
+  return (
+    <IconShell className={className}>
+      <path d="M12 6.5v11M6.5 12h11" />
+    </IconShell>
+  );
+}
+
 export function SunIcon({ className }: IconProps) {
   return (
     <IconShell className={className}>

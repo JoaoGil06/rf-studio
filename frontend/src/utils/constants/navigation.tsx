@@ -6,8 +6,8 @@ import {
   PersonIcon,
   PolishIcon,
   SparkleIcon,
-} from '../components/icons';
-import { PATHS } from '../routes/paths';
+} from '../../components/icons';
+import { PATHS } from '../../routes/paths';
 
 export interface NavSection {
   key: string;
@@ -33,8 +33,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     icon: ChartIcon,
   },
   {
-    key: 'reservations',
-    path: PATHS.reservations,
+    key: 'schedules',
+    path: PATHS.schedules,
     label: 'RESERVAS',
     tabLabel: 'RESERVAS',
     icon: BellIcon,
