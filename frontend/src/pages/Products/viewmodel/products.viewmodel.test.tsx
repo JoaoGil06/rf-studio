@@ -4,7 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useSearchParams } from 'react-router-dom';
 import { stubIntersectionObserver } from '../../../test/intersectionObserver';
 import { PATHS } from '../../../routes/paths';
-import { PRODUCT_ERROR_MESSAGES, useProductsViewModel } from './products.viewmodel';
+import { PRODUCT_ERROR_MESSAGES } from '../../../utils/constants/productMessages';
+import { useProductsViewModel } from './products.viewmodel';
 
 const registerProductMock = vi.fn();
 const loadMoreMock = vi.fn();
@@ -111,6 +112,7 @@ function Harness() {
       </button>
       <span data-testid="form-error">{formError ?? ''}</span>
       <span data-testid="name-error">{errors.name?.message ?? ''}</span>
+      <span data-testid="color-error">{errors.color?.message ?? ''}</span>
 
       <input aria-label="nome" {...register('name')} />
       <input aria-label="marca" {...register('brand')} />
@@ -336,7 +338,12 @@ describe('useProductsViewModel — submitting', () => {
     });
   });
 
-  it('sends null rather than an empty string when no colour was given', async () => {
+  /**
+   * A colour is required in both directions now, and this is the add side of it.
+   * `updateProduct` has no way to clear a colour — its schema rejects both `null`
+   * and `''` — so the rule that keeps edit honest has to hold here too.
+   */
+  it('sends the colour the form holds, never a null', async () => {
     renderHarness();
 
     await fillAndSubmit({ name: 'Nude Rosé', brand: 'OPI' });
@@ -346,12 +353,52 @@ describe('useProductsViewModel — submitting', () => {
         input: {
           name: 'Nude Rosé',
           brand: 'OPI',
-          color: null,
+          color: '#000000',
           isAvailable: true,
           category: 'nails',
         },
       },
     });
+  });
+
+  /**
+   * `<input type="color">` always displays a colour — `#000000` when it has no
+   * value. If the form started on `''` the field would be invalid while visibly
+   * showing black, which is a validation error against a control that looks fine.
+   */
+  it('starts a verniz on the swatch value the control is already showing', () => {
+    renderHarness();
+
+    expect(screen.getByLabelText('cor')).toHaveValue('#000000');
+  });
+
+  // A shade name is a word, not a hex; prefilling `#000000` into a text field
+  // would be nonsense, so brows genuinely start empty.
+  it('starts a brows product with no colour at all', () => {
+    renderHarness('?categoria=sobrancelhas');
+
+    expect(screen.getByLabelText('cor')).toHaveValue('');
+  });
+
+  // The default is category-dependent and `useForm` captured it on mount, so the
+  // emptying has to be re-derived from whichever tab is active now.
+  it('empties to the new category’s default after the tab changed', async () => {
+    const user = userEvent.setup();
+    renderHarness();
+
+    await user.click(screen.getByRole('button', { name: 'SOBRANCELHAS' }));
+    await user.click(screen.getByRole('button', { name: 'limpar' }));
+
+    expect(screen.getByLabelText('cor')).toHaveValue('');
+  });
+
+  it('rejects an empty colour client-side without firing the mutation', async () => {
+    renderHarness('?categoria=sobrancelhas');
+
+    await fillAndSubmit({ name: 'Castanho médio', brand: 'Anastasia' });
+
+    expect(screen.getByTestId('color-error')).toHaveTextContent('Introduza a cor.');
+    expect(registerProductMock).not.toHaveBeenCalled();
   });
 
   // The signal the View closes the sheet on: reported, not acted upon here.

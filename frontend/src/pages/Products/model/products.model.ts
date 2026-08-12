@@ -13,6 +13,8 @@ export const PRODUCTS_QUERY = graphql(`
         node {
           id
           ...ProductCardFields
+          ...ProductEditFields
+          ...ProductDeleteFields
         }
       }
       pageInfo {

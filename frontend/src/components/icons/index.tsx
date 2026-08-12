@@ -86,6 +86,23 @@ export function MoonIcon({ className }: IconProps) {
   );
 }
 
+export function PencilIcon({ className }: IconProps) {
+  return (
+    <IconShell className={className}>
+      <path d="M15.5 5.5 18.5 8.5M4.5 19.5l1-4L16 5a1.5 1.5 0 0 1 2 0l1 1a1.5 1.5 0 0 1 0 2L8.5 18.5z" />
+    </IconShell>
+  );
+}
+
+/** The prototype's own product-card ✕, redrawn as a stroke on the system shell. */
+export function CloseIcon({ className }: IconProps) {
+  return (
+    <IconShell className={className}>
+      <path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" />
+    </IconShell>
+  );
+}
+
 export function PlusIcon({ className }: IconProps) {
   return (
     <IconShell className={className}>

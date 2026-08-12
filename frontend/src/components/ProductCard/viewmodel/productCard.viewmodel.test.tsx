@@ -81,6 +81,26 @@ describe('useProductCardViewModel', () => {
     expect(result.current?.isAvailable).toBe(false);
   });
 
+  // A grid of 25 cards means 25 pencils and 25 crosses. Naming each one after its
+  // product is what makes the row usable by voice control and by a screen reader.
+  it('names each action after the product it acts on', () => {
+    productMock.mockReturnValue(aProduct());
+
+    const { result } = renderHook(() => useProductCardViewModel('product-1'));
+
+    expect(result.current?.editLabel).toBe('Editar Nude Rosé');
+    expect(result.current?.deleteLabel).toBe('Remover Nude Rosé');
+  });
+
+  it('keeps an accented name intact in both labels', () => {
+    productMock.mockReturnValue(aProduct({ name: 'Café com Leite' }));
+
+    const { result } = renderHook(() => useProductCardViewModel('product-1'));
+
+    expect(result.current?.editLabel).toBe('Editar Café com Leite');
+    expect(result.current?.deleteLabel).toBe('Remover Café com Leite');
+  });
+
   it('drops an unknown category rather than rendering a stray separator', () => {
     productMock.mockReturnValue(aProduct({ category: 'lashes' }));
 

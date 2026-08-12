@@ -1,11 +1,11 @@
-import { CombinedGraphQLErrors } from '@apollo/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
+import { isBadUserInput } from '../../../graphql/errors';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import {
-  PRODUCT_FORM_DEFAULTS,
+  productFormDefaults,
   productSchema,
   type ProductFormValues,
 } from '../../../components/ProductForm/types/productForm.types';
@@ -14,15 +14,9 @@ import {
   PRODUCT_CATEGORIES,
   type ProductCategory,
 } from '../../../utils/constants/productCategories';
+import { PRODUCT_ERROR_MESSAGES } from '../../../utils/constants/productMessages';
 import { findCategoryBySlug } from '../../../utils/helpers/productCategories';
 import { useProductsModel } from '../model/products.model';
-
-export const PRODUCT_ERROR_MESSAGES = {
-  alreadyExists: 'Já existe um produto com este nome e esta marca.',
-  badInput: 'Verifique os dados do produto.',
-  network: 'Não foi possível ligar ao servidor. Tente novamente.',
-  load: 'Não foi possível carregar os produtos.',
-} as const;
 
 export function useProductsViewModel() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,7 +39,7 @@ export function useProductsViewModel() {
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     mode: 'onSubmit',
-    defaultValues: PRODUCT_FORM_DEFAULTS,
+    defaultValues: productFormDefaults(category),
   });
 
   const selectCategory = useCallback(
@@ -64,7 +58,10 @@ export function useProductsViewModel() {
   // here is the wiring — which element the sentinel hangs on, and when it watches.
   const sentinelRef = useInfiniteScroll({ onLoadMore: loadMore, enabled: canLoadMore });
 
-  const resetForm = useCallback(() => reset(PRODUCT_FORM_DEFAULTS), [reset]);
+  const resetForm = useCallback(
+    () => reset(productFormDefaults(category)),
+    [reset, category],
+  );
 
   const submit = useCallback(
     async (values: ProductFormValues): Promise<boolean> => {
@@ -74,7 +71,7 @@ export function useProductsViewModel() {
             input: {
               name: values.name,
               brand: values.brand,
-              color: values.color === '' ? null : values.color,
+              color: values.color,
               isAvailable: values.isAvailable,
               category: category.value, // Injected from the active tab — never asked for on the form.
             },
@@ -97,14 +94,8 @@ export function useProductsViewModel() {
             return false;
         }
       } catch (mutationError) {
-        const isBadUserInput =
-          CombinedGraphQLErrors.is(mutationError) &&
-          mutationError.errors.some(
-            (graphQLError) => graphQLError.extensions?.code === 'BAD_USER_INPUT',
-          );
-
         setError('root', {
-          message: isBadUserInput
+          message: isBadUserInput(mutationError)
             ? PRODUCT_ERROR_MESSAGES.badInput
             : PRODUCT_ERROR_MESSAGES.network,
         });
