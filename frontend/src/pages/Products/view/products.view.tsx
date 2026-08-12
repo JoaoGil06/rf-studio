@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { AddTile } from '../../../components/AddTile';
 import { CategoryTabs } from '../../../components/CategoryTabs';
+import { DeleteProductModal } from '../../../components/DeleteProductModal';
+import { EditProductModal } from '../../../components/EditProductModal';
 import { Loader } from '../../../components/Loader';
 import { Modal } from '../../../components/Modal';
 import { PageHeader } from '../../../components/PageHeader';
@@ -29,8 +31,16 @@ export function ProductsView() {
     isSubmitting,
   } = useProductsViewModel();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const openForm = useCallback(() => setIsFormOpen(true), []);
+  const closeEdit = useCallback(() => setEditingId(null), []);
+  const closeDelete = useCallback(() => setDeletingId(null), []);
+
+  const openForm = useCallback(() => {
+    resetForm();
+    setIsFormOpen(true);
+  }, [resetForm]);
 
   const closeForm = useCallback(() => {
     setIsFormOpen(false);
@@ -87,7 +97,7 @@ export function ProductsView() {
 
       <div className={styles.grid}>
         {productIds.map((id) => (
-          <ProductCard key={id} id={id} />
+          <ProductCard key={id} id={id} onEdit={setEditingId} onDelete={setDeletingId} />
         ))}
 
         {/* Also the pagination sentinel: the tile is the last cell of the grid by
@@ -106,8 +116,13 @@ export function ProductsView() {
           onSubmit={onSubmit}
           formError={formError}
           isSubmitting={isSubmitting}
+          submitLabel="ADICIONAR"
+          busyLabel="A ADICIONAR…"
         />
       </Modal>
+
+      <EditProductModal productId={editingId} onClose={closeEdit} />
+      <DeleteProductModal productId={deletingId} onClose={closeDelete} />
     </main>
   );
 }

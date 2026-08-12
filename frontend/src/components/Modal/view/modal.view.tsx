@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { CloseIcon } from '../../icons';
 import type { ModalProps } from '../types/modal.types';
 import { useModalViewModel } from '../viewmodel/modal.viewmodel';
 import styles from './modal.view.module.css';
@@ -27,7 +28,9 @@ export function Modal({ isOpen, onClose, title, children, closeLabel = 'Fechar' 
             {title}
           </h2>
           <button type="button" className={styles.close} onClick={onClose} aria-label={closeLabel}>
-            <span aria-hidden="true">✕</span>
+            {/* Authored SVG, not a glyph — DESIGN.md §Iconography. The button's
+                aria-label is the accessible name either way. */}
+            <CloseIcon className={styles.closeIcon} />
           </button>
         </div>
 

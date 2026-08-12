@@ -22,6 +22,7 @@ export interface ProductCategory {
   colourControl: 'swatch' | 'text';
   colourLabel: string;
   colourPlaceholder: string;
+  colourDefault: string;
 }
 
 const NAILS: ProductCategory = {
@@ -32,6 +33,7 @@ const NAILS: ProductCategory = {
   colourControl: 'swatch',
   colourLabel: 'Cor do verniz',
   colourPlaceholder: '',
+  colourDefault: '#000000',
 };
 
 const EYEBROWS: ProductCategory = {
@@ -42,6 +44,7 @@ const EYEBROWS: ProductCategory = {
   colourControl: 'text',
   colourLabel: 'Tom',
   colourPlaceholder: 'Ex.: castanho médio',
+  colourDefault: '',
 };
 
 export const PRODUCT_CATEGORIES: readonly ProductCategory[] = [NAILS, EYEBROWS];

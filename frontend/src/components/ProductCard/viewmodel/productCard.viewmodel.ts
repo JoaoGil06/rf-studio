@@ -10,6 +10,12 @@ export const AVAILABILITY_LABELS = {
   unavailable: 'INDISPONÍVEL',
 } as const;
 
+/** The verb half of each action's accessible name; the product supplies the rest. */
+export const ACTION_LABELS = {
+  edit: 'Editar',
+  delete: 'Remover',
+} as const;
+
 export function useProductCardViewModel(id: string): ProductCardViewModel | null {
   const { product } = useProductCardModel(id);
 
@@ -33,6 +39,10 @@ export function useProductCardViewModel(id: string): ProductCardViewModel | null
       metaLabel: [category?.label, availability].filter(Boolean).join(' · '),
       isAvailable: product.isAvailable,
       swatchLabel: product.color ? `Cor: ${product.color}` : 'Sem cor definida',
+      // Naming the buttons after the product is the ViewModel's job: a row of 25
+      // identical "Editar" is unreachable by voice and meaningless to a screen reader.
+      editLabel: `${ACTION_LABELS.edit} ${product.name}`,
+      deleteLabel: `${ACTION_LABELS.delete} ${product.name}`,
     };
   }, [product]);
 }
