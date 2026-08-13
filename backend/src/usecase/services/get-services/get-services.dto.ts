@@ -10,6 +10,7 @@ export interface ServiceNodeDto {
 export interface GetServicesInputDto {
   first?: number | null;
   after?: string | null;
+  category?: string | null;
 }
 
 export interface GetServicesOutputDto {

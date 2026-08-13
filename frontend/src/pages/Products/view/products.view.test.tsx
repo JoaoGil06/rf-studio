@@ -8,7 +8,7 @@ import { UPDATE_PRODUCT_MUTATION } from '../../../components/EditProductModal/mo
 import { createCache } from '../../../graphql/cache';
 import { stubIntersectionObserver } from '../../../test/intersectionObserver';
 import { PATHS } from '../../../routes/paths';
-import { CATEGORY_PARAM } from '../../../utils/constants/productCategories';
+import { CATEGORY_PARAM } from '../../../utils/constants/categories';
 import { PRODUCT_ERROR_MESSAGES } from '../../../utils/constants/productMessages';
 import { findCategoryBySlug } from '../../../utils/helpers/productCategories';
 import {
@@ -57,10 +57,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/**
- * The category the page will query for, resolved with the app's own helper so the
- * mocks cannot drift from what the URL actually means.
- */
 function categoryFor(search: string) {
   return findCategoryBySlug(new URLSearchParams(search).get(CATEGORY_PARAM)).value;
 }
@@ -73,8 +69,6 @@ function renderPage(
 ) {
   const mocks = [
     {
-      // MockedProvider matches on exact variables, so every test that renders a
-      // card is also asserting the query carried the right category.
       request: {
         query: PRODUCTS_QUERY,
         variables: { first: PRODUCTS_PAGE_SIZE, category: categoryFor(search) },
@@ -106,11 +100,6 @@ describe('ProductsView', () => {
     expect(screen.getByRole('button', { name: 'UNHAS' })).toHaveAttribute('aria-pressed', 'false');
   });
 
-  /**
-   * The mock is registered for `category: 'eyebrows'` only. If the page asked for the
-   * whole catalogue — as it did while the filter lived on the client — no mock would
-   * match and this card would never arrive.
-   */
   it('queries for the URL’s category and renders what comes back', async () => {
     renderPage({ data: aConnection([CASTANHO]) }, '?categoria=sobrancelhas');
 
@@ -157,8 +146,6 @@ describe('ProductsView', () => {
     expect(screen.getByText('Nude Rosé')).toBeInTheDocument();
   });
 
-  // Closing is a decision not to add this one: half a product typed and abandoned
-  // must not be waiting inside the sheet the next time it opens.
   it('empties an abandoned form before the sheet is opened again', async () => {
     const user = userEvent.setup();
     renderPage({ data: aConnection([NUDE]) });
@@ -172,11 +159,6 @@ describe('ProductsView', () => {
     expect(screen.getByLabelText('Nome')).toHaveValue('');
   });
 
-  /**
-   * `useForm` captures `defaultValues` on mount, so a tab switch after that would
-   * leave the add form holding the previous category's default — `#000000` sitting
-   * in a brows text field, or an empty required swatch. Opening re-derives it.
-   */
   it('opens the add sheet on the active category’s colour default', async () => {
     const user = userEvent.setup();
     renderPage(
@@ -228,7 +210,6 @@ describe('ProductsView', () => {
             data: { registerProduct: { __typename: 'RegisterProductSuccess', product: LOIRO } },
           },
         },
-        // awaitRefetchQueries: the grid behind the sheet is rebuilt before it closes.
         {
           request: {
             query: PRODUCTS_QUERY,
@@ -278,8 +259,6 @@ describe('ProductsView', () => {
             },
           },
         },
-        // The refetch fires on any answered mutation, rejection included; without a
-        // mock for it `awaitRefetchQueries` would fail and mask the real error copy.
         {
           request: {
             query: PRODUCTS_QUERY,
@@ -314,12 +293,9 @@ describe('ProductsView', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(PRODUCT_ERROR_MESSAGES.load);
     expect(container.textContent).not.toContain('Network request failed');
-    // A failed query is an error, not an empty shelf — the two must not both show.
     expect(screen.queryByText(/^Ainda sem/)).not.toBeInTheDocument();
   });
 
-  // The sentinel unmounting is what ends the paging: with no element left to watch
-  // there is no observer, so nothing can ask for a page that does not exist.
   it('watches nothing once the last page is in', async () => {
     const observers = stubIntersectionObserver();
     renderPage({ data: aConnection([NUDE]) });
@@ -336,8 +312,6 @@ describe('ProductsView', () => {
     expect(observers.some((entry) => entry.target !== null)).toBe(true);
   });
 
-  // Nothing to click and nothing to read: the sentinel says nothing to a screen
-  // reader, so the page must announce the arriving batch some other way.
   it('announces a page on its way, politely', async () => {
     const observers = stubIntersectionObserver();
     renderPage(
@@ -363,13 +337,6 @@ describe('ProductsView', () => {
     expect(await screen.findByText('Bordeaux')).toBeInTheDocument();
   });
 
-  /**
-   * The regression this change exists for. While the filter lived on the client,
-   * switching to an empty tab left `hasNextPage` true: the sentinel sat unmoved at
-   * the top of an empty grid, the observer fired on it again and again, and the page
-   * read the entire catalogue of vernizes before it could say "Ainda sem produto".
-   * With the filter in SQL, one request answers the question.
-   */
   it('says the category is empty after one request, without paging the catalogue', async () => {
     const observers = stubIntersectionObserver();
     const user = userEvent.setup();
@@ -393,17 +360,10 @@ describe('ProductsView', () => {
     await user.click(screen.getByRole('button', { name: 'SOBRANCELHAS' }));
 
     expect(await screen.findByText('Ainda sem produto.')).toBeInTheDocument();
-    /**
-     * The absence of a sentinel is the fix itself: with nothing to observe there is
-     * no second request to make. And were one made anyway it would find no matching
-     * mock and fail this test.
-     */
     expect(observers.filter((entry) => entry.target !== null)).toHaveLength(0);
   });
 
   it('does not claim an empty shelf while the first page is still in flight', () => {
-    // Synchronous on purpose: MockedProvider has not answered yet at this point, so
-    // an empty grid here means "not back", not "nothing there".
     renderPage({ data: aConnection([]) }, '?categoria=sobrancelhas');
 
     expect(screen.queryByText('Ainda sem produto.')).not.toBeInTheDocument();
@@ -429,10 +389,6 @@ describe('ProductsView', () => {
     expect(within(sheet).getByLabelText('Cor do verniz')).toHaveValue('#5b1a2b');
   });
 
-  /**
-   * One sheet serves the whole grid, so re-pointing it is the mechanism — the
-   * prefill has to follow the id rather than stick to whichever card came first.
-   */
   it('re-points the sheet when a different card is edited afterwards', async () => {
     const user = userEvent.setup();
     renderPage({ data: aConnection([NUDE, BORDEAUX]) }, '', [NUDE, BORDEAUX]);
@@ -446,38 +402,37 @@ describe('ProductsView', () => {
     expect(screen.getByLabelText('Nome')).toHaveValue('Bordeaux');
   });
 
-  /**
-   * The point of the whole no-refetch design: `updateProduct` returns the full
-   * Product, Apollo renormalises it by id, and the card re-renders through its own
-   * useFragment. No `Products` mock is registered for a second query — if the page
-   * refetched, there would be no mock to answer it and this test would fail.
-   */
   it('updates the card in the grid without refetching the page', async () => {
     const user = userEvent.setup();
-    renderPage({ data: aConnection([NUDE]) }, '', [NUDE], [
-      {
-        request: {
-          query: UPDATE_PRODUCT_MUTATION,
-          variables: {
-            input: {
-              id: 'p1',
-              name: 'Nude Rosé Escuro',
-              brand: 'OPI',
-              color: '#c9a08a',
-              isAvailable: true,
+    renderPage(
+      { data: aConnection([NUDE]) },
+      '',
+      [NUDE],
+      [
+        {
+          request: {
+            query: UPDATE_PRODUCT_MUTATION,
+            variables: {
+              input: {
+                id: 'p1',
+                name: 'Nude Rosé Escuro',
+                brand: 'OPI',
+                color: '#c9a08a',
+                isAvailable: true,
+              },
+            },
+          },
+          result: {
+            data: {
+              updateProduct: {
+                __typename: 'UpdateProductSuccess',
+                product: aNode('p1', 'Nude Rosé Escuro', 'OPI', 'nails', '#c9a08a'),
+              },
             },
           },
         },
-        result: {
-          data: {
-            updateProduct: {
-              __typename: 'UpdateProductSuccess',
-              product: aNode('p1', 'Nude Rosé Escuro', 'OPI', 'nails', '#c9a08a'),
-            },
-          },
-        },
-      },
-    ]);
+      ],
+    );
 
     await user.click(await screen.findByRole('button', { name: 'Editar Nude Rosé' }));
     await user.clear(screen.getByLabelText('Nome'));
@@ -508,16 +463,19 @@ describe('ProductsView', () => {
     expect(screen.getByText('Nude Rosé')).toBeInTheDocument();
   });
 
-  // evict + gc, then `relayStylePagination`'s `canRead` drops the dangling edge on
-  // the next read. Again: no second `Products` mock, so a refetch would fail here.
   it('takes the card out of the grid when REMOVER is pressed', async () => {
     const user = userEvent.setup();
-    renderPage({ data: aConnection([NUDE, BORDEAUX]) }, '', [NUDE, BORDEAUX], [
-      {
-        request: { query: DELETE_PRODUCT_MUTATION, variables: { input: { id: 'p1' } } },
-        result: { data: { deleteProduct: { __typename: 'DeleteProductSuccess', id: 'p1' } } },
-      },
-    ]);
+    renderPage(
+      { data: aConnection([NUDE, BORDEAUX]) },
+      '',
+      [NUDE, BORDEAUX],
+      [
+        {
+          request: { query: DELETE_PRODUCT_MUTATION, variables: { input: { id: 'p1' } } },
+          result: { data: { deleteProduct: { __typename: 'DeleteProductSuccess', id: 'p1' } } },
+        },
+      ],
+    );
 
     await user.click(await screen.findByRole('button', { name: 'Remover Nude Rosé' }));
     await user.click(screen.getByRole('button', { name: 'REMOVER' }));
@@ -528,12 +486,17 @@ describe('ProductsView', () => {
 
   it('falls back to the empty shelf when the last product of a category goes', async () => {
     const user = userEvent.setup();
-    renderPage({ data: aConnection([NUDE]) }, '', [NUDE], [
-      {
-        request: { query: DELETE_PRODUCT_MUTATION, variables: { input: { id: 'p1' } } },
-        result: { data: { deleteProduct: { __typename: 'DeleteProductSuccess', id: 'p1' } } },
-      },
-    ]);
+    renderPage(
+      { data: aConnection([NUDE]) },
+      '',
+      [NUDE],
+      [
+        {
+          request: { query: DELETE_PRODUCT_MUTATION, variables: { input: { id: 'p1' } } },
+          result: { data: { deleteProduct: { __typename: 'DeleteProductSuccess', id: 'p1' } } },
+        },
+      ],
+    );
 
     await user.click(await screen.findByRole('button', { name: 'Remover Nude Rosé' }));
     await user.click(screen.getByRole('button', { name: 'REMOVER' }));
@@ -541,11 +504,6 @@ describe('ProductsView', () => {
     expect(await screen.findByText('Ainda sem verniz.')).toBeInTheDocument();
   });
 
-  /**
-   * What the `opacity: 0` buttons staying mounted buys. `Modal` restores focus to
-   * whatever was active when it opened; had the action row been conditionally
-   * rendered, its opener would have unmounted and focus would fall to <body>.
-   */
   it('returns focus to the control that opened the sheet', async () => {
     const user = userEvent.setup();
     renderPage({ data: aConnection([NUDE]) }, '', [NUDE]);
@@ -558,7 +516,6 @@ describe('ProductsView', () => {
     await vi.waitFor(() => expect(edit).toHaveFocus());
   });
 
-  // The add flow and the two new sheets share a page and must not share a modal.
   it('leaves the add flow untouched by the two new sheets', async () => {
     const user = userEvent.setup();
     renderPage({ data: aConnection([NUDE]) }, '', [NUDE]);

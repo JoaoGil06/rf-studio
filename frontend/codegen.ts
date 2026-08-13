@@ -51,6 +51,11 @@ const config: CodegenConfig = {
         // Required, not cosmetic: `verbatimModuleSyntax` rejects generated code
         // that imports types without the `type` keyword.
         useTypeImports: true,
+        // Also required, also not cosmetic: `erasableSyntaxOnly` in tsconfig.app.json
+        // bans `enum`, which is what the client preset emits for a schema enum by
+        // default. A string union compiles, and assigns across from the category
+        // descriptor's `value` without a cast.
+        enumsAsTypes: true,
         scalars: { ID: 'string' },
       },
     },

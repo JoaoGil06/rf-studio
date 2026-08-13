@@ -1,7 +1,7 @@
 export const serviceTypeDefs = `#graphql
     type Query {
         service(id: ID!): Service!
-        services(first: Int, after: String): ServiceConnection!
+        services(first: Int, after: String, category: ServiceCategory): ServiceConnection!
     }
 
     type Mutation {

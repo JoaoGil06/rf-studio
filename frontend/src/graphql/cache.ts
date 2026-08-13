@@ -6,6 +6,9 @@ export const typePolicies: TypePolicies = {
     fields: {
       users: relayStylePagination(),
       products: relayStylePagination(['category']),
+      // The key argument is what keeps the two tabs' lists apart: without it,
+      // switching tabs would concatenate eyebrow services onto the nails list.
+      services: relayStylePagination(['category']),
     },
   },
 };
