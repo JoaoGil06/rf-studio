@@ -1,6 +1,9 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Service } from '../../domain/entity/service/service.entity.js';
-import { IServiceRepository } from '../../domain/repository/service-repository.interface.js';
+import {
+  FindAllServicesParams,
+  IServiceRepository,
+} from '../../domain/repository/service-repository.interface.js';
 import { services } from '../db/schema/services.schema.js';
 import { and, asc, eq } from 'drizzle-orm';
 import { ServiceFactory } from '../../domain/entity/service/factory/service.factory.js';
@@ -31,10 +34,11 @@ export class ServiceRepository implements IServiceRepository {
     });
   }
 
-  async findAll(params: { limit: number; offset: number }): Promise<Service[]> {
+  async findAll(params: FindAllServicesParams): Promise<Service[]> {
     const rows = await this.db
       .select()
       .from(services)
+      .where(params.category ? eq(services.category, params.category) : undefined)
       .orderBy(asc(services.createdAt), asc(services.id))
       .limit(params.limit)
       .offset(params.offset);

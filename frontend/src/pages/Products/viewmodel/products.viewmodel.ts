@@ -9,11 +9,8 @@ import {
   productSchema,
   type ProductFormValues,
 } from '../../../components/ProductForm/types/productForm.types';
-import {
-  CATEGORY_PARAM,
-  PRODUCT_CATEGORIES,
-  type ProductCategory,
-} from '../../../utils/constants/productCategories';
+import { CATEGORY_PARAM, type CategoryDescriptor } from '../../../utils/constants/categories';
+import { PRODUCT_CATEGORIES } from '../../../utils/constants/productCategories';
 import { PRODUCT_ERROR_MESSAGES } from '../../../utils/constants/productMessages';
 import { findCategoryBySlug } from '../../../utils/helpers/productCategories';
 import { useProductsModel } from '../model/products.model';
@@ -43,7 +40,7 @@ export function useProductsViewModel() {
   });
 
   const selectCategory = useCallback(
-    (next: ProductCategory) => {
+    (next: CategoryDescriptor) => {
       setSearchParams({ [CATEGORY_PARAM]: next.slug }, { replace: true });
     },
     [setSearchParams],

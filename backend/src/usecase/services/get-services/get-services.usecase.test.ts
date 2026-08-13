@@ -3,6 +3,7 @@ import { GetServicesUseCase } from './get-services.usecase.js';
 import { encodeCursor } from '../../shared/cursor.js';
 import type { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { ServiceFactory } from '../../../domain/entity/service/factory/service.factory.js';
+import { InvalidValueError } from '../../../domain/@shared/errors/invalidValueError.js';
 
 const makeService = (i: number) =>
   ServiceFactory.reconstitute({
@@ -72,7 +73,7 @@ describe('GetServicesUseCase', () => {
     const usecase = new GetServicesUseCase(mockRepo);
     await usecase.execute({ first: 10, after: encodeCursor(4) });
 
-    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 11, offset: 5 });
+    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 11, offset: 5, category: undefined });
   });
 
   it('caps first at MAX_PAGE_SIZE (100)', async () => {
@@ -80,6 +81,43 @@ describe('GetServicesUseCase', () => {
     const usecase = new GetServicesUseCase(mockRepo);
     await usecase.execute({ first: 9999 });
 
-    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 101, offset: 0 });
+    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 101, offset: 0, category: undefined });
+  });
+});
+
+describe('GetServicesUseCase — filtering by category', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('passes a valid category through to the repository', async () => {
+    vi.mocked(mockRepo.findAll).mockResolvedValue([]);
+    const usecase = new GetServicesUseCase(mockRepo);
+    await usecase.execute({ first: 25, category: 'eyebrows' });
+
+    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 26, offset: 0, category: 'eyebrows' });
+  });
+
+  // A client that leaves the variable unset sends `category: null`; that must not
+  // be mistaken for a category named "null".
+  it('treats an explicit null as the whole catalogue', async () => {
+    vi.mocked(mockRepo.findAll).mockResolvedValue([]);
+    const usecase = new GetServicesUseCase(mockRepo);
+    await usecase.execute({ first: 25, category: null });
+
+    expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 26, offset: 0, category: undefined });
+  });
+
+  it('normalises the category through the value object', async () => {
+    vi.mocked(mockRepo.findAll).mockResolvedValue([]);
+    const usecase = new GetServicesUseCase(mockRepo);
+    await usecase.execute({ category: ' NAILS ' });
+
+    expect(mockRepo.findAll).toHaveBeenCalledWith(expect.objectContaining({ category: 'nails' }));
+  });
+
+  it('rejects an unknown category instead of returning an empty catalogue', async () => {
+    const usecase = new GetServicesUseCase(mockRepo);
+
+    await expect(usecase.execute({ category: 'banana' })).rejects.toThrow(InvalidValueError);
+    expect(mockRepo.findAll).not.toHaveBeenCalled();
   });
 });

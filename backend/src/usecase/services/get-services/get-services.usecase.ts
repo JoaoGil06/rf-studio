@@ -1,3 +1,4 @@
+import { ServiceCategory } from '../../../domain/@shared/value-object/service-category/service-category.vo.js';
 import { IServiceRepository } from '../../../domain/repository/service-repository.interface.js';
 import { decodeCursor, encodeCursor } from '../../shared/cursor.js';
 import { GetServicesInputDto, GetServicesOutputDto, ServiceNodeDto } from './get-services.dto.js';
@@ -16,8 +17,13 @@ export class GetServicesUseCase {
     const first = Math.min(input.first ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
     const offset = input.after ? decodeCursor(input.after) + 1 : 0;
 
+    const category =
+      input.category === undefined || input.category === null
+        ? undefined
+        : new ServiceCategory(input.category).value;
+
     // Aqui pede first + 1 que é para saber se existe nextPage
-    const rows = await this.serviceRepository.findAll({ limit: first + 1, offset });
+    const rows = await this.serviceRepository.findAll({ limit: first + 1, offset, category });
 
     const hasNextPage = rows.length > first;
     const items = hasNextPage ? rows.slice(0, first) : rows;

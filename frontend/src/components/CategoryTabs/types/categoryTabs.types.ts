@@ -1,14 +1,14 @@
-import type { ProductCategory } from '../../../utils/constants/productCategories';
+import type { CategoryDescriptor } from '../../../utils/constants/categories';
 
 export interface CategoryTabsProps {
-  categories: readonly ProductCategory[];
+  categories: readonly CategoryDescriptor[];
   activeSlug: string;
-  onSelect: (category: ProductCategory) => void;
+  onSelect: (category: CategoryDescriptor) => void;
   label: string;
 }
 
 export interface CategoryTabProps {
-  category: ProductCategory;
+  category: CategoryDescriptor;
   isActive: boolean;
-  onSelect: (category: ProductCategory) => void;
+  onSelect: (category: CategoryDescriptor) => void;
 }
