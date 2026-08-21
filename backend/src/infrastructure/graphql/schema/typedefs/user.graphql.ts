@@ -1,6 +1,6 @@
 export const userTypeDefs = `#graphql
     type Query {
-        users(first: Int, after: String): UserConnection! 
+        users(first: Int, after: String, role: RoleName): UserConnection! 
         user(id: ID!): User! 
     }
 
@@ -10,6 +10,11 @@ export const userTypeDefs = `#graphql
         logout: LogoutSuccess!
         updateUser(input: UpdateUserInput!): UpdateUserPayload!
         deleteUser(input: DeleteUserInput!): DeleteUserPayload!
+    }
+
+    enum RoleName {
+        manager
+        client
     }
 
     type Role {

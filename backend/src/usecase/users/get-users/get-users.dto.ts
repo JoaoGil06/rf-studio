@@ -1,6 +1,7 @@
 export interface GetUsersInputDto {
   first?: number | null;
   after?: string | null;
+  role?: string | null;
 }
 
 export interface UserNodeDto {

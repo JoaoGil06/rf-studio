@@ -1,3 +1,4 @@
+import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
 import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
 import { decodeCursor, encodeCursor } from '../../shared/cursor.js';
 import { GetUsersInputDto, GetUsersOutputDto, UserNodeDto } from './get-users.dto.js';
@@ -16,8 +17,15 @@ export class GetUsersUseCase {
     const first = Math.min(input.first ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
     const offset = input.after ? decodeCursor(input.after) + 1 : 0;
 
+    let roleId: string | undefined;
+    if (input.role) {
+      const found = await this.userRepository.findRoleIdByName(input.role);
+      if (!found) throw new EntityNotFoundError(`Role '${input.role}' not found`);
+      roleId = found;
+    }
+
     // Aqui pede first + 1 que é para saber se existe nextPage
-    const rows = await this.userRepository.findAll({ limit: first + 1, offset });
+    const rows = await this.userRepository.findAll({ limit: first + 1, offset, roleId });
 
     const hasNextPage = rows.length > first;
     const items = hasNextPage ? rows.slice(0, first) : rows;

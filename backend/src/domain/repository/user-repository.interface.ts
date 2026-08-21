@@ -5,7 +5,7 @@ export interface IUserRepository {
   findRoleIdByName(name: string): Promise<string | null>;
   save(user: User): Promise<void>;
   findById(id: string): Promise<User | null>;
-  findAll(params: { limit: number; offset: number }): Promise<User[]>;
+  findAll(params: { limit: number; offset: number; roleId?: string }): Promise<User[]>;
   update(user: User): Promise<void>;
   delete(id: string): Promise<void>;
 }
