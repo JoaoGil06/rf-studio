@@ -2,7 +2,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { IUserRepository } from '../../domain/repository/user-repository.interface.js';
 import { User } from '../../domain/entity/user/user.entity.js';
 import { users } from '../db/schema/users.schema.js';
-import { asc, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { UserFactory } from '../../domain/entity/user/factory/user.factory.js';
 import { roles } from '../db/schema/roles.schema.js';
 
@@ -53,11 +53,12 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async findAll(params: { limit: number; offset: number }): Promise<User[]> {
+  async findAll(params: { limit: number; offset: number; roleId?: string }): Promise<User[]> {
     const rows = await this.db
       .select()
       .from(users)
-      .orderBy(asc(users.createdAt), asc(users.id))
+      .where(params.roleId ? eq(users.role_id, params.roleId) : undefined)
+      .orderBy(desc(users.createdAt), desc(users.id))
       .limit(params.limit)
       .offset(params.offset);
 

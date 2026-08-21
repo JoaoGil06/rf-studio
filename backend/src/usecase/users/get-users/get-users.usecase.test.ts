@@ -3,6 +3,7 @@ import { GetUsersUseCase } from './get-users.usecase.js';
 import { UserFactory } from '../../../domain/entity/user/factory/user.factory.js';
 import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
 import { encodeCursor } from '../../shared/cursor.js';
+import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFoundError.js';
 
 const makeUser = (i: number) =>
   UserFactory.reconstitute({
@@ -85,5 +86,53 @@ describe('GetUsersUseCase', () => {
     await usecase.execute({ first: 9999 });
 
     expect(mockRepo.findAll).toHaveBeenCalledWith({ limit: 101, offset: 0 });
+  });
+
+  it('does not resolve a role or filter when no role is given', async () => {
+    vi.mocked(mockRepo.findAll).mockResolvedValue([]);
+    const usecase = new GetUsersUseCase(mockRepo);
+    await usecase.execute({ first: 10 });
+
+    expect(mockRepo.findRoleIdByName).not.toHaveBeenCalled();
+    expect(vi.mocked(mockRepo.findAll).mock.calls[0][0].roleId).toBeUndefined();
+  });
+
+  it('resolves the role name to an id and forwards it to findAll', async () => {
+    vi.mocked(mockRepo.findRoleIdByName).mockResolvedValue('client-role-uuid');
+    vi.mocked(mockRepo.findAll).mockResolvedValue([]);
+    const usecase = new GetUsersUseCase(mockRepo);
+    await usecase.execute({ first: 10, role: 'client' });
+
+    expect(mockRepo.findRoleIdByName).toHaveBeenCalledWith('client');
+    expect(mockRepo.findAll).toHaveBeenCalledWith({
+      limit: 11,
+      offset: 0,
+      roleId: 'client-role-uuid',
+    });
+  });
+
+  it('throws EntityNotFoundError when the role is not seeded', async () => {
+    vi.mocked(mockRepo.findRoleIdByName).mockResolvedValue(null);
+    const usecase = new GetUsersUseCase(mockRepo);
+
+    await expect(usecase.execute({ first: 10, role: 'client' })).rejects.toBeInstanceOf(
+      EntityNotFoundError,
+    );
+    expect(mockRepo.findAll).not.toHaveBeenCalled();
+  });
+
+  it('derives hasNextPage from the extra row even when filtering by role', async () => {
+    vi.mocked(mockRepo.findRoleIdByName).mockResolvedValue('client-role-uuid');
+    vi.mocked(mockRepo.findAll).mockResolvedValue([makeUser(1), makeUser(2), makeUser(3)]);
+    const usecase = new GetUsersUseCase(mockRepo);
+    const result = await usecase.execute({ first: 2, role: 'client' });
+
+    expect(mockRepo.findAll).toHaveBeenCalledWith({
+      limit: 3,
+      offset: 0,
+      roleId: 'client-role-uuid',
+    });
+    expect(result.edges).toHaveLength(2);
+    expect(result.pageInfo.hasNextPage).toBe(true);
   });
 });
