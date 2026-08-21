@@ -44,10 +44,12 @@ export const userTypeDefs = `#graphql
 
     # Não é necessário Role aqui porque criamos sempre com "Cliente" por default 
     # Conseguimos ver isto no register-user useCase
+    # A password é opcional: quando omitida, o useCase gera uma aleatória que nunca
+    # é devolvida. Se for enviada, continua a exigir o mínimo de 6 caracteres.
     input RegisterUserInput {
         name: String!
         email: String!
-        password: String!
+        password: String
         phoneNumber: String!
         birthDate: String
     }

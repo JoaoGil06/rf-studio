@@ -10,6 +10,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { UserRepository } from './repository/user.repository.js';
 import { BcryptAdapter } from './adapters/bcrypt.adapter.js';
 import { ZodAdapter } from './adapters/zod.adapter.js';
+import { CryptoPasswordGeneratorAdapter } from './adapters/crypto.adapter.js';
 import { RegisterUserUseCase } from '../usecase/users/register-user/register-user.usecase.js';
 import { GetUsersUseCase } from '../usecase/users/get-users/get-users.usecase.js';
 import DataLoader from 'dataloader';
@@ -54,11 +55,13 @@ export const buildRegisterUserUseCase = (): RegisterUserUseCase => {
   const userRepository = new UserRepository(db);
   const hashAdapter = new BcryptAdapter();
   const validationAdapter = new ZodAdapter();
+  const passwordGenerator = new CryptoPasswordGeneratorAdapter();
 
   const registerUserUseCase = new RegisterUserUseCase(
     userRepository,
     hashAdapter,
     validationAdapter,
+    passwordGenerator,
   );
 
   return registerUserUseCase;

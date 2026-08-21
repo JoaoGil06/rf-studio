@@ -3,6 +3,7 @@ import { EntityNotFoundError } from '../../../domain/@shared/errors/entityNotFou
 import { UserFactory } from '../../../domain/entity/user/factory/user.factory.js';
 import { IUserRepository } from '../../../domain/repository/user-repository.interface.js';
 import { IHashAdapter } from '../../interfaces/hash-adapter.interface.js';
+import { IPasswordGeneratorAdapter } from '../../interfaces/password-generator-adapter.interface.js';
 import { IValidationAdapter } from '../../interfaces/validation-adapter.interface.js';
 import { RegisterUserInputDto, RegisterUserOutputDto } from './register-user.dto.js';
 import { registerUserSchema } from './register-user.schema-validator.js';
@@ -11,15 +12,18 @@ export class RegisterUserUseCase {
   private readonly userRepository: IUserRepository;
   private readonly hashAdapter: IHashAdapter;
   private readonly validationAdapter: IValidationAdapter;
+  private readonly passwordGenerator: IPasswordGeneratorAdapter;
 
   constructor(
     userRepository: IUserRepository,
     hashAdapter: IHashAdapter,
     validationAdapter: IValidationAdapter,
+    passwordGenerator: IPasswordGeneratorAdapter,
   ) {
     this.userRepository = userRepository;
     this.hashAdapter = hashAdapter;
     this.validationAdapter = validationAdapter;
+    this.passwordGenerator = passwordGenerator;
   }
 
   async execute(inputDto: RegisterUserInputDto): Promise<RegisterUserOutputDto> {
@@ -35,7 +39,11 @@ export class RegisterUserUseCase {
     const clientRoleId = await this.userRepository.findRoleIdByName('client');
     if (!clientRoleId) throw new EntityNotFoundError("Role 'client' not found");
 
-    const passwordHash = await this.hashAdapter.hash(validatedData.password);
+    // Password ausente -> a Rita adicionou este cliente a partir da página Clientes.
+    // O valor gerado nunca é devolvido nem registado; a superfície do cliente
+    // é o link ?hash=, não um login com password.
+    const plainPassword = validatedData.password ?? this.passwordGenerator.generate();
+    const passwordHash = await this.hashAdapter.hash(plainPassword);
 
     const user = UserFactory.create({
       roleId: clientRoleId,

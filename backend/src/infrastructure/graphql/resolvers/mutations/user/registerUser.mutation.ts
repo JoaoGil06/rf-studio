@@ -7,7 +7,7 @@ export interface RegisterUserArgs {
   input: {
     name: string;
     email: string;
-    password: string;
+    password?: string | null;
     phoneNumber: string;
     birthDate?: string | null;
   };
