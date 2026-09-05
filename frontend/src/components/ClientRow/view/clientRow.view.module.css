@@ -1,0 +1,63 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.phone,
+.email {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The prototype stacks the row's meta band on a phone rather than letting the
+   email squeeze the telemóvel into a sliver. */
+@media (max-width: 620px) {
+  .row {
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .meta {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
