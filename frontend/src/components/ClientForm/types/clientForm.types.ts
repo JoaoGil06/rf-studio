@@ -2,12 +2,6 @@ import type { FormEventHandler } from 'react';
 import type { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { z } from 'zod';
 
-/**
- * The `max` values are the DB column widths (`name` 100, `email` 150,
- * `phone_number` 20) — catching them here turns a 500-shaped failure into a
- * field error. `min(9)` matches the backend validator exactly; a stricter
- * Portuguese-mobile regex would reject the foreign numbers it accepts.
- */
 export const clientSchema = z.object({
   name: z.string().trim().min(1, 'Introduza o nome.').max(100, 'Máximo 100 caracteres.'),
   email: z.email('Introduza um email válido.').max(150, 'Máximo 150 caracteres.'),
@@ -20,8 +14,6 @@ export const clientSchema = z.object({
 
 export type ClientFormValues = z.infer<typeof clientSchema>;
 
-// A plain `ClientFormValues`, not `DefaultValues<…>`: every field is a string
-// with a real empty value, so there is nothing partial about it.
 export const clientFormDefaults: ClientFormValues = { name: '', email: '', phoneNumber: '' };
 
 export interface ClientFormProps {
@@ -32,4 +24,7 @@ export interface ClientFormProps {
   isSubmitting: boolean;
   submitLabel: string;
   busyLabel: string;
+  // 'bar' is the page's inline add strip, which supplies its own panel chrome.
+  // 'stacked' is hosted inside `Modal`, whose sheet supplies it instead.
+  layout: 'bar' | 'stacked';
 }

@@ -5,6 +5,11 @@ import type { ClientRowViewModel } from '../types/clientRow.types';
 
 export const UNKNOWN_INITIAL = '?';
 
+export const ACTION_LABELS = {
+  edit: 'Editar',
+  delete: 'Remover',
+} as const;
+
 export function useClientRowViewModel(id: string): ClientRowViewModel | null {
   const { client } = useClientRowModel(id);
 
@@ -17,11 +22,11 @@ export function useClientRowViewModel(id: string): ClientRowViewModel | null {
 
     return {
       name: client.name,
-      // The fallback is load-bearing: a name that is only whitespace yields an
-      // empty string, and an empty avatar reads as a rendering fault.
       initial: clientInitial,
       phoneNumber: formatPhoneNumber(client.phoneNumber),
       email: client.email,
+      editLabel: `${ACTION_LABELS.edit} ${client.name}`,
+      deleteLabel: `${ACTION_LABELS.delete} ${client.name}`,
     };
   }, [client]);
 }

@@ -103,3 +103,19 @@
     width: 100%;
   }
 }
+
+.formPlain {
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
+.formPlain .bar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.formPlain .submit {
+  width: 100%;
+}

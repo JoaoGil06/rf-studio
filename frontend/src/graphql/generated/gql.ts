@@ -15,10 +15,14 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  */
 type Documents = {
     "\n  fragment ClientRowFields on User {\n    id\n    name\n    email\n    phoneNumber\n  }\n": typeof types.ClientRowFieldsFragmentDoc,
+    "\n  fragment ClientDeleteFields on User {\n    id\n    name\n  }\n": typeof types.ClientDeleteFieldsFragmentDoc,
+    "\n  mutation DeleteClient($input: DeleteUserInput!) {\n    deleteUser(input: $input) {\n      __typename\n      ... on DeleteUserSuccess {\n        id\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n": typeof types.DeleteClientDocument,
     "\n  fragment ProductDeleteFields on Product {\n    id\n    name\n  }\n": typeof types.ProductDeleteFieldsFragmentDoc,
     "\n  mutation DeleteProduct($input: DeleteProductInput!) {\n    deleteProduct(input: $input) {\n      __typename\n      ... on DeleteProductSuccess {\n        id\n      }\n      ... on ProductNotFoundError {\n        message\n      }\n    }\n  }\n": typeof types.DeleteProductDocument,
     "\n  fragment ServiceDeleteFields on Service {\n    id\n    name\n  }\n": typeof types.ServiceDeleteFieldsFragmentDoc,
     "\n  mutation DeleteService($input: DeleteServiceInput!) {\n    deleteService(input: $input) {\n      __typename\n      ... on DeleteServiceSuccess {\n        id\n      }\n      ... on ServiceNotFoundError {\n        message\n      }\n    }\n  }\n": typeof types.DeleteServiceDocument,
+    "\n  fragment ClientEditFields on User {\n    id\n    name\n    email\n    phoneNumber\n  }\n": typeof types.ClientEditFieldsFragmentDoc,
+    "\n  mutation UpdateClient($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      __typename\n      ... on UpdateUserSuccess {\n        user {\n          id\n          ...ClientRowFields\n          ...ClientEditFields\n          ...ClientDeleteFields\n        }\n      }\n      ... on UserAlreadyExistsError {\n        message\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n": typeof types.UpdateClientDocument,
     "\n  fragment ProductEditFields on Product {\n    id\n    name\n    brand\n    category\n    color\n    isAvailable\n  }\n": typeof types.ProductEditFieldsFragmentDoc,
     "\n  mutation UpdateProduct($input: UpdateProductInput!) {\n    updateProduct(input: $input) {\n      __typename\n      ... on UpdateProductSuccess {\n        product {\n          id\n          ...ProductCardFields\n          ...ProductEditFields\n          ...ProductDeleteFields\n        }\n      }\n      ... on ProductAlreadyExistsError {\n        message\n      }\n      ... on ProductNotFoundError {\n        message\n      }\n    }\n  }\n": typeof types.UpdateProductDocument,
     "\n  fragment ServiceEditFields on Service {\n    id\n    name\n    price\n    durationMinutes\n  }\n": typeof types.ServiceEditFieldsFragmentDoc,
@@ -36,10 +40,14 @@ type Documents = {
 };
 const documents: Documents = {
     "\n  fragment ClientRowFields on User {\n    id\n    name\n    email\n    phoneNumber\n  }\n": types.ClientRowFieldsFragmentDoc,
+    "\n  fragment ClientDeleteFields on User {\n    id\n    name\n  }\n": types.ClientDeleteFieldsFragmentDoc,
+    "\n  mutation DeleteClient($input: DeleteUserInput!) {\n    deleteUser(input: $input) {\n      __typename\n      ... on DeleteUserSuccess {\n        id\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n": types.DeleteClientDocument,
     "\n  fragment ProductDeleteFields on Product {\n    id\n    name\n  }\n": types.ProductDeleteFieldsFragmentDoc,
     "\n  mutation DeleteProduct($input: DeleteProductInput!) {\n    deleteProduct(input: $input) {\n      __typename\n      ... on DeleteProductSuccess {\n        id\n      }\n      ... on ProductNotFoundError {\n        message\n      }\n    }\n  }\n": types.DeleteProductDocument,
     "\n  fragment ServiceDeleteFields on Service {\n    id\n    name\n  }\n": types.ServiceDeleteFieldsFragmentDoc,
     "\n  mutation DeleteService($input: DeleteServiceInput!) {\n    deleteService(input: $input) {\n      __typename\n      ... on DeleteServiceSuccess {\n        id\n      }\n      ... on ServiceNotFoundError {\n        message\n      }\n    }\n  }\n": types.DeleteServiceDocument,
+    "\n  fragment ClientEditFields on User {\n    id\n    name\n    email\n    phoneNumber\n  }\n": types.ClientEditFieldsFragmentDoc,
+    "\n  mutation UpdateClient($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      __typename\n      ... on UpdateUserSuccess {\n        user {\n          id\n          ...ClientRowFields\n          ...ClientEditFields\n          ...ClientDeleteFields\n        }\n      }\n      ... on UserAlreadyExistsError {\n        message\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n": types.UpdateClientDocument,
     "\n  fragment ProductEditFields on Product {\n    id\n    name\n    brand\n    category\n    color\n    isAvailable\n  }\n": types.ProductEditFieldsFragmentDoc,
     "\n  mutation UpdateProduct($input: UpdateProductInput!) {\n    updateProduct(input: $input) {\n      __typename\n      ... on UpdateProductSuccess {\n        product {\n          id\n          ...ProductCardFields\n          ...ProductEditFields\n          ...ProductDeleteFields\n        }\n      }\n      ... on ProductAlreadyExistsError {\n        message\n      }\n      ... on ProductNotFoundError {\n        message\n      }\n    }\n  }\n": types.UpdateProductDocument,
     "\n  fragment ServiceEditFields on Service {\n    id\n    name\n    price\n    durationMinutes\n  }\n": types.ServiceEditFieldsFragmentDoc,
@@ -77,6 +85,14 @@ export function graphql(source: "\n  fragment ClientRowFields on User {\n    id\
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment ClientDeleteFields on User {\n    id\n    name\n  }\n"): (typeof documents)["\n  fragment ClientDeleteFields on User {\n    id\n    name\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteClient($input: DeleteUserInput!) {\n    deleteUser(input: $input) {\n      __typename\n      ... on DeleteUserSuccess {\n        id\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteClient($input: DeleteUserInput!) {\n    deleteUser(input: $input) {\n      __typename\n      ... on DeleteUserSuccess {\n        id\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment ProductDeleteFields on Product {\n    id\n    name\n  }\n"): (typeof documents)["\n  fragment ProductDeleteFields on Product {\n    id\n    name\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -90,6 +106,14 @@ export function graphql(source: "\n  fragment ServiceDeleteFields on Service {\n
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation DeleteService($input: DeleteServiceInput!) {\n    deleteService(input: $input) {\n      __typename\n      ... on DeleteServiceSuccess {\n        id\n      }\n      ... on ServiceNotFoundError {\n        message\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteService($input: DeleteServiceInput!) {\n    deleteService(input: $input) {\n      __typename\n      ... on DeleteServiceSuccess {\n        id\n      }\n      ... on ServiceNotFoundError {\n        message\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment ClientEditFields on User {\n    id\n    name\n    email\n    phoneNumber\n  }\n"): (typeof documents)["\n  fragment ClientEditFields on User {\n    id\n    name\n    email\n    phoneNumber\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateClient($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      __typename\n      ... on UpdateUserSuccess {\n        user {\n          id\n          ...ClientRowFields\n          ...ClientEditFields\n          ...ClientDeleteFields\n        }\n      }\n      ... on UserAlreadyExistsError {\n        message\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateClient($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      __typename\n      ... on UpdateUserSuccess {\n        user {\n          id\n          ...ClientRowFields\n          ...ClientEditFields\n          ...ClientDeleteFields\n        }\n      }\n      ... on UserAlreadyExistsError {\n        message\n      }\n      ... on UserNotFoundError {\n        message\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

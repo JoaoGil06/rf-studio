@@ -12,6 +12,7 @@ interface HarnessProps {
   isSubmitting?: boolean;
   submitLabel?: string;
   busyLabel?: string;
+  layout?: 'bar' | 'stacked';
 }
 
 function Harness({
@@ -19,6 +20,7 @@ function Harness({
   isSubmitting = false,
   submitLabel = 'ADICIONAR',
   busyLabel = 'A ADICIONAR…',
+  layout = 'bar',
 }: HarnessProps) {
   const {
     register,
@@ -41,6 +43,7 @@ function Harness({
         isSubmitting={isSubmitting}
         submitLabel={submitLabel}
         busyLabel={busyLabel}
+        layout={layout}
       />
       <button type="button" onClick={() => reset(clientFormDefaults)}>
         limpar
@@ -70,10 +73,6 @@ describe('ClientForm — the three fields the bar carries', () => {
     expect(screen.getByLabelText('Telemóvel')).toHaveAttribute('type', 'tel');
   });
 
-  /**
-   * `birthDate` is optional in the schema and absent from the prototype: a fourth
-   * field is what tips the bar from one gesture into a form.
-   */
   it('asks for no date of birth and no password', () => {
     render(<Harness />);
 
@@ -81,7 +80,6 @@ describe('ClientForm — the three fields the bar carries', () => {
     expect(screen.queryByLabelText(/palavra-passe|password/i)).not.toBeInTheDocument();
   });
 
-  // Unlike a service catalogue, Rita may well be typing a name her device knows.
   it('lets the device complete a name, an email and a number', () => {
     render(<Harness />);
 
@@ -186,5 +184,38 @@ describe('ClientForm — the submit button', () => {
     render(<Harness />);
 
     expect(screen.getByRole('button', { name: 'ADICIONAR' })).toBeEnabled();
+  });
+});
+
+describe('ClientForm — the stacked layout the edit sheet hosts', () => {
+  it('drops the panel chrome when hosted inside a modal', () => {
+    const { container } = render(<Harness layout="stacked" />);
+
+    expect(container.querySelector('form')?.className).toContain('formPlain');
+  });
+
+  it('keeps the panel chrome when it is the inline add bar', () => {
+    const { container } = render(<Harness layout="bar" />);
+
+    expect(container.querySelector('form')?.className).not.toContain('formPlain');
+  });
+
+  it('carries the same three fields and the same submit in either layout', () => {
+    render(<Harness layout="stacked" submitLabel="GUARDAR" busyLabel="A GUARDAR…" />);
+
+    expect(screen.getByLabelText(NAME_LABEL)).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Telemóvel')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'GUARDAR' })).toBeInTheDocument();
+  });
+
+  it('still validates the same way inside the sheet', async () => {
+    const user = userEvent.setup();
+    render(<Harness layout="stacked" submitLabel="GUARDAR" />);
+
+    await user.click(screen.getByRole('button', { name: 'GUARDAR' }));
+
+    expect(screen.getByText('Introduza o nome.')).toBeInTheDocument();
+    expect(onValid).not.toHaveBeenCalled();
   });
 });

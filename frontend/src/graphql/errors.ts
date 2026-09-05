@@ -6,3 +6,7 @@ export function isBadUserInput(error: unknown): boolean {
     error.errors.some((graphQLError) => graphQLError.extensions?.code === 'BAD_USER_INPUT')
   );
 }
+
+export function isServerRejection(error: unknown): boolean {
+  return CombinedGraphQLErrors.is(error);
+}
