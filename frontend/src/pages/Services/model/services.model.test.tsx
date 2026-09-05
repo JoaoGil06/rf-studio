@@ -1,5 +1,8 @@
 import { NetworkStatus } from '@apollo/client';
 import { act, renderHook } from '@testing-library/react';
+import { SERVICE_DELETE_FRAGMENT } from '../../../components/DeleteServiceModal/model/deleteServiceModal.model';
+import { SERVICE_EDIT_FRAGMENT } from '../../../components/EditServiceModal/model/editServiceModal.model';
+import { createCache } from '../../../graphql/cache';
 import { SERVICES_PAGE_SIZE, SERVICES_QUERY, useServicesModel } from './services.model';
 
 const useQueryMock = vi.fn();
@@ -52,11 +55,6 @@ describe('useServicesModel — the category is a query variable, not a client fi
     );
   });
 
-  /**
-   * Without it `networkStatus` never reaches `fetchMore`, `isLoadingMore` never
-   * turns true, and nothing stops the observer and a click sending the same
-   * cursor twice.
-   */
   it('watches the network status, which is what makes fetchMore observable', () => {
     renderHook(() => useServicesModel('nails'));
 
@@ -161,5 +159,64 @@ describe('useServicesModel — paging through the catalogue', () => {
     expect(result.current.loading).toBe(true);
     expect(result.current.isLoadingMore).toBe(false);
     expect(result.current.canLoadMore).toBe(false);
+  });
+});
+
+describe('SERVICES_QUERY — the fragments the modals depend on', () => {
+  const VARIABLES = { first: SERVICES_PAGE_SIZE, category: 'nails' as const };
+
+  function aNode() {
+    return {
+      __typename: 'Service',
+      id: 's1',
+      name: 'Manicure simples',
+      category: 'nails',
+      price: 15,
+      durationMinutes: 45,
+    };
+  }
+
+  function aConnection() {
+    return {
+      services: {
+        __typename: 'ServiceConnection',
+        edges: [{ __typename: 'ServiceEdge', cursor: 'cursor-s1', node: aNode() }],
+        pageInfo: { __typename: 'PageInfo', hasNextPage: false, endCursor: 'cursor-s1' },
+      },
+    };
+  }
+
+  function aFilledCache() {
+    const cache = createCache();
+    cache.writeQuery({ query: SERVICES_QUERY, variables: VARIABLES, data: aConnection() });
+
+    return cache;
+  }
+
+  it('leaves the edit modal a complete fragment to prefill from', () => {
+    const edit = aFilledCache().readFragment({
+      id: 'Service:s1',
+      fragment: SERVICE_EDIT_FRAGMENT,
+      fragmentName: 'ServiceEditFields',
+    });
+
+    expect(edit).toEqual(
+      expect.objectContaining({
+        id: 's1',
+        name: 'Manicure simples',
+        price: 15,
+        durationMinutes: 45,
+      }),
+    );
+  });
+
+  it('leaves the delete modal a complete fragment to name the service from', () => {
+    const remove = aFilledCache().readFragment({
+      id: 'Service:s1',
+      fragment: SERVICE_DELETE_FRAGMENT,
+      fragmentName: 'ServiceDeleteFields',
+    });
+
+    expect(remove).toEqual(expect.objectContaining({ id: 's1', name: 'Manicure simples' }));
   });
 });

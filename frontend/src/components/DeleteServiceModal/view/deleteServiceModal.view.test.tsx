@@ -1,31 +1,31 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DeleteProductModal } from './deleteProductModal.view';
+import { DeleteServiceModal } from './deleteServiceModal.view';
 
 const confirmMock = vi.fn();
 const viewModelMock = vi.fn();
 
-vi.mock('../viewmodel/deleteProductModal.viewmodel', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../viewmodel/deleteProductModal.viewmodel')>()),
-  useDeleteProductModalViewModel: () => viewModelMock(),
+vi.mock('../viewmodel/deleteServiceModal.viewmodel', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../viewmodel/deleteServiceModal.viewmodel')>()),
+  useDeleteServiceModalViewModel: () => viewModelMock(),
 }));
 
 const onClose = vi.fn();
 
 function aViewModel(overrides: Record<string, unknown> = {}) {
   return {
-    name: 'Nude Rosé',
+    name: 'Manicure simples',
     confirm: confirmMock,
     isDeleting: false,
-    title: 'Remover produto',
+    title: 'Remover serviço',
     keepLabel: 'MANTER',
     removeLabel: 'REMOVER',
     ...overrides,
   };
 }
 
-function renderModal(productId: string | null = 'p1') {
-  return render(<DeleteProductModal productId={productId} onClose={onClose} />);
+function renderModal(serviceId: string | null = 's1') {
+  return render(<DeleteServiceModal serviceId={serviceId} onClose={onClose} />);
 }
 
 beforeEach(() => {
@@ -34,7 +34,7 @@ beforeEach(() => {
   confirmMock.mockResolvedValue(null);
 });
 
-describe('DeleteProductModal', () => {
+describe('DeleteServiceModal', () => {
   it('renders nothing while it is closed', () => {
     const { container } = renderModal(null);
 
@@ -42,7 +42,7 @@ describe('DeleteProductModal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders nothing when the id points at a product the cache no longer holds', () => {
+  it('renders nothing when the id points at a service the cache no longer holds', () => {
     viewModelMock.mockReturnValue(aViewModel({ name: null }));
 
     const { container } = renderModal();
@@ -50,11 +50,11 @@ describe('DeleteProductModal', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('hands the product’s name and the viewmodel’s copy to the dialog', () => {
+  it('hands the service’s name and the viewmodel’s copy to the dialog', () => {
     renderModal();
 
-    const dialog = screen.getByRole('dialog', { name: 'Remover produto' });
-    expect(dialog).toHaveTextContent('Remover Nude Rosé?');
+    const dialog = screen.getByRole('dialog', { name: 'Remover serviço' });
+    expect(dialog).toHaveTextContent('Remover Manicure simples?');
     expect(screen.getByRole('button', { name: 'MANTER' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'REMOVER' })).toBeInTheDocument();
   });

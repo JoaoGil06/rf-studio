@@ -15,7 +15,49 @@ vi.mock('../viewmodel/services.viewmodel', () => ({
   useServicesViewModel: () => viewModelMock(),
 }));
 vi.mock('../../../components/ServiceCard', () => ({
-  ServiceCard: ({ id }: { id: string }) => <div data-testid="service-card">{id}</div>,
+  ServiceCard: ({
+    id,
+    onEdit,
+    onDelete,
+  }: {
+    id: string;
+    onEdit: (id: string) => void;
+    onDelete: (id: string) => void;
+  }) => (
+    <div data-testid="service-card" data-id={id}>
+      <button type="button" onClick={() => onEdit(id)}>{`editar ${id}`}</button>
+      <button type="button" onClick={() => onDelete(id)}>{`remover ${id}`}</button>
+    </div>
+  ),
+}));
+
+vi.mock('../../../components/EditServiceModal', () => ({
+  EditServiceModal: ({ serviceId, onClose }: { serviceId: string | null; onClose: () => void }) =>
+    serviceId ? (
+      <div data-testid="edit-modal">
+        {serviceId}
+        <button type="button" onClick={onClose}>
+          fechar edicao
+        </button>
+      </div>
+    ) : null,
+}));
+vi.mock('../../../components/DeleteServiceModal', () => ({
+  DeleteServiceModal: ({
+    serviceId,
+    onClose,
+  }: {
+    serviceId: string | null;
+    onClose: () => void;
+  }) =>
+    serviceId ? (
+      <div data-testid="delete-modal">
+        {serviceId}
+        <button type="button" onClick={onClose}>
+          fechar remocao
+        </button>
+      </div>
+    ) : null,
 }));
 
 function aViewModel(overrides: Record<string, unknown> = {}) {
@@ -80,10 +122,9 @@ describe('ServicesView', () => {
   it('renders one card per id, in the order the viewmodel gave them', () => {
     renderPage();
 
-    expect(screen.getAllByTestId('service-card').map((card) => card.textContent)).toEqual([
-      's1',
-      's3',
-    ]);
+    expect(
+      screen.getAllByTestId('service-card').map((card) => card.getAttribute('data-id')),
+    ).toEqual(['s1', 's3']);
   });
 
   it('hands a picked tab back to the viewmodel', async () => {
@@ -184,5 +225,69 @@ describe('ServicesView', () => {
     expect(
       screen.getByText('Os serviços ficam disponíveis para associar às reservas ao concluir.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('ServicesView — opening the edit and delete modals', () => {
+  it('keeps both modals shut until a card asks for one', () => {
+    renderPage();
+
+    expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('delete-modal')).not.toBeInTheDocument();
+  });
+
+  it('opens the edit modal on the card that reported, not the first one', async () => {
+    renderPage();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'editar s3' }));
+
+    expect(screen.getByTestId('edit-modal')).toHaveTextContent('s3');
+    expect(screen.queryByTestId('delete-modal')).not.toBeInTheDocument();
+  });
+
+  it('opens the delete modal on the card that reported, not the first one', async () => {
+    renderPage();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'remover s3' }));
+
+    expect(screen.getByTestId('delete-modal')).toHaveTextContent('s3');
+    expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
+  });
+
+  it('clears the id when the edit modal closes, so reopening is a fresh read', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'editar s1' }));
+    await user.click(screen.getByRole('button', { name: 'fechar edicao' }));
+
+    expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
+  });
+
+  it('clears the id when the delete modal closes', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'remover s1' }));
+    await user.click(screen.getByRole('button', { name: 'fechar remocao' }));
+
+    expect(screen.queryByTestId('delete-modal')).not.toBeInTheDocument();
+  });
+
+  it('mounts one edit modal for the whole grid, not one per card', async () => {
+    renderPage({ serviceIds: ['s1', 's3', 's5'] });
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'editar s5' }));
+
+    expect(screen.getAllByTestId('edit-modal')).toHaveLength(1);
+  });
+
+  it('leaves the add sheet alone while a card modal is open', async () => {
+    renderPage();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'editar s1' }));
+
+    expect(screen.getByTestId('edit-modal')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ADICIONAR' })).not.toBeInTheDocument();
   });
 });

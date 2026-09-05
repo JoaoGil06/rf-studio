@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { AddTile } from '../../../components/AddTile';
 import { CategoryTabs } from '../../../components/CategoryTabs';
+import { DeleteServiceModal } from '../../../components/DeleteServiceModal';
+import { EditServiceModal } from '../../../components/EditServiceModal';
 import { Loader } from '../../../components/Loader';
 import { Modal } from '../../../components/Modal';
 import { PageHeader } from '../../../components/PageHeader';
@@ -29,6 +31,12 @@ export function ServicesView() {
   } = useServicesViewModel();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const closeEdit = useCallback(() => setEditingId(null), []);
+  const closeDelete = useCallback(() => setDeletingId(null), []);
 
   const openForm = useCallback(() => {
     resetForm();
@@ -90,11 +98,9 @@ export function ServicesView() {
 
       <div className={styles.grid}>
         {serviceIds.map((id) => (
-          <ServiceCard key={id} id={id} />
+          <ServiceCard key={id} id={id} onEdit={setEditingId} onDelete={setDeletingId} />
         ))}
 
-        {/* Also the pagination sentinel: the tile is the last cell of the grid by
-            design, so approaching it is approaching the end of the list. */}
         <AddTile label={addLabel} onClick={openForm} ref={sentinelRef} />
       </div>
 
@@ -115,6 +121,9 @@ export function ServicesView() {
           busyLabel="A ADICIONAR…"
         />
       </Modal>
+
+      <EditServiceModal serviceId={editingId} onClose={closeEdit} />
+      <DeleteServiceModal serviceId={deletingId} onClose={closeDelete} />
     </main>
   );
 }

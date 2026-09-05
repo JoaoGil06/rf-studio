@@ -7,6 +7,11 @@ import type { ServiceCardViewModel } from '../types/serviceCard.types';
 
 export const UNKNOWN_PRICE = '—';
 
+export const ACTION_LABELS = {
+  edit: 'Editar',
+  delete: 'Remover',
+} as const;
+
 export function useServiceCardViewModel(id: string): ServiceCardViewModel | null {
   const { service } = useServiceCardModel(id);
 
@@ -23,6 +28,8 @@ export function useServiceCardViewModel(id: string): ServiceCardViewModel | null
       initial: service.name.trim().charAt(0).toUpperCase() || '?',
       metaLabel: [category?.label, duration?.toUpperCase()].filter(Boolean).join(' · '),
       price: formatEuros(service.price) ?? UNKNOWN_PRICE,
+      editLabel: `${ACTION_LABELS.edit} ${service.name}`,
+      deleteLabel: `${ACTION_LABELS.delete} ${service.name}`,
     };
   }, [service]);
 }

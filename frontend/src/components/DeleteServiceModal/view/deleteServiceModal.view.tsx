@@ -1,12 +1,12 @@
 import { ConfirmDialog } from '../../ConfirmDialog';
-import type { DeleteProductModalProps } from '../types/deleteProductModal.types';
-import { useDeleteProductModalViewModel } from '../viewmodel/deleteProductModal.viewmodel';
+import type { DeleteServiceModalProps } from '../types/deleteServiceModal.types';
+import { useDeleteServiceModalViewModel } from '../viewmodel/deleteServiceModal.viewmodel';
 
-export function DeleteProductModal({ productId, onClose }: DeleteProductModalProps) {
+export function DeleteServiceModal({ serviceId, onClose }: DeleteServiceModalProps) {
   const { name, confirm, isDeleting, title, keepLabel, removeLabel } =
-    useDeleteProductModalViewModel(productId);
+    useDeleteServiceModalViewModel(serviceId);
 
-  if (!productId || !name) {
+  if (!serviceId || !name) {
     return null;
   }
 
