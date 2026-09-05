@@ -1,4 +1,6 @@
 .card {
+  /* The action row anchors to the card, not the page. */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -7,6 +9,79 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   box-sizing: border-box;
+}
+
+.actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease);
+}
+
+.card:hover .actions,
+.card:focus-within .actions,
+.cardRevealed .actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 99px;
+  cursor: pointer;
+  transition:
+    color 160ms var(--ease),
+    background 160ms var(--ease);
+}
+
+.action:hover {
+  color: var(--accent-ink);
+  background: var(--panel2);
+}
+
+.actionDanger:hover {
+  color: var(--danger);
+  background: var(--panel2);
+}
+
+.actionIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* The Reduced Motion Rule: neutralise animation properties, not just transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .actions {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}
+
+/*
+ * The 44px floor is non-negotiable (§Buttons, "Touch"), and it is why the row is
+ * corner-anchored rather than inline with the content: at 88px wide it would
+ * otherwise displace the name and the meta line.
+ */
+@media (pointer: coarse) {
+  .action {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 
 .initial {

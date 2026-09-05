@@ -3,4 +3,6 @@ export const SERVICE_ERROR_MESSAGES = {
   badInput: 'Verifique os dados do serviço.',
   network: 'Não foi possível ligar ao servidor. Tente novamente.',
   load: 'Não foi possível carregar os serviços.',
+  notFound: 'Este serviço já não existe.',
+  deleteFailed: 'Não foi possível remover o serviço. Tente novamente.',
 } as const;

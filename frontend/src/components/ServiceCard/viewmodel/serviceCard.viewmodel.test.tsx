@@ -107,4 +107,13 @@ describe('useServiceCardViewModel', () => {
 
     expect(result.current?.initial).toBe('?');
   });
+
+  it('names both actions after the service', () => {
+    serviceMock.mockReturnValue(aService());
+
+    const { result } = renderHook(() => useServiceCardViewModel('service-1'));
+
+    expect(result.current?.editLabel).toBe('Editar Manicure simples');
+    expect(result.current?.deleteLabel).toBe('Remover Manicure simples');
+  });
 });

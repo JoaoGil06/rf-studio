@@ -14,6 +14,8 @@ export const SERVICES_QUERY = graphql(`
         node {
           id
           ...ServiceCardFields
+          ...ServiceEditFields
+          ...ServiceDeleteFields
         }
       }
       pageInfo {
