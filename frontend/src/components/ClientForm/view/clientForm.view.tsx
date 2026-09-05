@@ -10,10 +10,16 @@ export function ClientForm({
   isSubmitting,
   submitLabel,
   busyLabel,
+  layout,
 }: ClientFormProps) {
   const label = useMemo(
     () => (isSubmitting ? busyLabel : submitLabel),
     [isSubmitting, busyLabel, submitLabel],
+  );
+
+  const formClassName = useMemo(
+    () => (layout === 'stacked' ? `${styles.form} ${styles.formPlain}` : styles.form),
+    [layout],
   );
 
   const fieldId = useId();
@@ -25,7 +31,7 @@ export function ClientForm({
   const phoneErrorId = `${phoneId}-error`;
 
   return (
-    <form className={styles.form} onSubmit={onSubmit} noValidate>
+    <form className={formClassName} onSubmit={onSubmit} noValidate>
       <div className={styles.bar}>
         <div className={styles.fieldName}>
           <label className={styles.label} htmlFor={nameId}>

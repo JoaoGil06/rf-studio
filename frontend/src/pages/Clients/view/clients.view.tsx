@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ClientForm } from '../../../components/ClientForm';
 import { ClientRow } from '../../../components/ClientRow';
+import { DeleteClientModal } from '../../../components/DeleteClientModal';
+import { EditClientModal } from '../../../components/EditClientModal';
 import { Loader } from '../../../components/Loader';
 import { PageHeader } from '../../../components/PageHeader';
 import { useClientsViewModel } from '../viewmodel/clients.viewmodel';
@@ -21,6 +23,11 @@ export function ClientsView() {
     formError,
     isSubmitting,
   } = useClientsViewModel();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const closeEdit = useCallback(() => setEditingId(null), []);
+  const closeDelete = useCallback(() => setDeletingId(null), []);
 
   const onSubmit = useMemo(
     () =>
@@ -65,6 +72,7 @@ export function ClientsView() {
         isSubmitting={isSubmitting}
         submitLabel="ADICIONAR"
         busyLabel="A ADICIONAR…"
+        layout="bar"
       />
 
       {loadError && renderLoadError()}
@@ -73,7 +81,7 @@ export function ClientsView() {
 
       <div className={styles.list}>
         {clientIds.map((id) => (
-          <ClientRow key={id} id={id} />
+          <ClientRow key={id} id={id} onEdit={setEditingId} onDelete={setDeletingId} />
         ))}
 
         {/* The add bar is at the top of this page, so there is no tile to hang the
@@ -82,6 +90,9 @@ export function ClientsView() {
       </div>
 
       {isLoadingMore && <Loader />}
+
+      <EditClientModal clientId={editingId} onClose={closeEdit} />
+      <DeleteClientModal clientId={deletingId} onClose={closeDelete} />
     </main>
   );
 }

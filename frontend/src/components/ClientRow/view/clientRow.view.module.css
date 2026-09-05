@@ -48,8 +48,6 @@
   overflow-wrap: anywhere;
 }
 
-/* The prototype stacks the row's meta band on a phone rather than letting the
-   email squeeze the telemóvel into a sliver. */
 @media (max-width: 620px) {
   .row {
     gap: 12px;
@@ -59,5 +57,69 @@
   .meta {
     flex-direction: column;
     gap: 2px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease);
+}
+
+.row:hover .actions,
+.row:focus-within .actions,
+.rowRevealed .actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 99px;
+  cursor: pointer;
+  transition:
+    color 160ms var(--ease),
+    background 160ms var(--ease);
+}
+
+.action:hover {
+  color: var(--accent-ink);
+  background: var(--panel2);
+}
+
+.actionDanger:hover {
+  color: var(--danger);
+  background: var(--panel2);
+}
+
+.actionIcon {
+  width: 16px;
+  height: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}
+
+@media (pointer: coarse) {
+  .action {
+    min-width: 44px;
+    min-height: 44px;
   }
 }

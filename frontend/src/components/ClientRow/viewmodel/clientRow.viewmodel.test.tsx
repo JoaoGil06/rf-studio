@@ -63,7 +63,6 @@ describe('useClientRowViewModel', () => {
     expect(result.current?.initial).toBe('M');
   });
 
-  // An empty avatar reads as a rendering fault rather than as a blank name.
   it('falls back to a placeholder for a name that is only whitespace', () => {
     clientMock.mockReturnValue(aClient({ name: '   ' }));
 
@@ -79,5 +78,25 @@ describe('useClientRowViewModel', () => {
 
     expect(result.current?.name).toBe('Maria Silva');
     expect(result.current?.email).toBe('maria@exemplo.pt');
+  });
+});
+
+describe('useClientRowViewModel — the action labels', () => {
+  it('names each action after the client, so a screen reader can tell the rows apart', () => {
+    clientMock.mockReturnValue(aClient());
+
+    const { result } = renderHook(() => useClientRowViewModel('client-1'));
+
+    expect(result.current?.editLabel).toBe('Editar Maria Silva');
+    expect(result.current?.deleteLabel).toBe('Remover Maria Silva');
+  });
+
+  it('carries the untrimmed name into the label exactly as it was stored', () => {
+    clientMock.mockReturnValue(aClient({ name: 'Ana' }));
+
+    const { result } = renderHook(() => useClientRowViewModel('client-1'));
+
+    expect(result.current?.editLabel).toBe('Editar Ana');
+    expect(result.current?.deleteLabel).toBe('Remover Ana');
   });
 });
