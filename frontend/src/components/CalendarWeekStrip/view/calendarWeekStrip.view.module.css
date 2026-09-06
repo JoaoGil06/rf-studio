@@ -1,0 +1,141 @@
+.week {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heads {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.strip {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+.page {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  scroll-snap-align: start;
+}
+
+.cell {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 54px;
+  padding: 7px 0 6px;
+  font: inherit;
+  color: inherit;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--panel2);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease);
+}
+
+.today {
+  outline: 1.5px solid var(--accent-ink);
+}
+
+.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.closed {
+  background: repeating-linear-gradient(-45deg, var(--closed1) 0 8px, var(--closed2) 8px 16px);
+}
+
+.outside {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.number {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--muted2);
+}
+
+.numberLive {
+  color: var(--accent-ink);
+}
+
+.dots {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
+  height: 5px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  flex: none;
+}
+
+.dot[data-status='pending'] {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+
+.dot[data-status='confirmed'] {
+  background: var(--accent);
+}
+
+.dot[data-status='completed'] {
+  background: var(--sage);
+}
+
+@media (max-width: 620px), (max-width: 1023px) and (max-height: 540px) {
+  .week {
+    display: flex;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 540px) {
+  .week {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 359px) {
+  .heads,
+  .page {
+    gap: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}

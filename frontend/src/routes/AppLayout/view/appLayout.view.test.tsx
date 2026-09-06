@@ -1,17 +1,23 @@
 import { MockedProvider } from '@apollo/client/testing/react';
 import { render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
+import { AGENDA_QUERY } from '../../../pages/Agenda/model/agenda.model';
 import { PRODUCTS_PAGE_SIZE, PRODUCTS_QUERY } from '../../../pages/Products/model/products.model';
+import { formatMonthLabel } from '../../../lib/format/date';
+import { monthRefOf } from '../../../lib/date/calendar';
 import { AuthContext, type AuthContextValue } from '../../../providers/auth/auth.context';
 import { ThemeContext, type ThemeContextValue } from '../../../providers/theme/theme.context';
 import { PATHS } from '../../paths';
 import { routes } from '../..';
 
-/**
- * Sections that own a query need a client in context. This file is about the
- * frame, not about their data, so every request answers with an empty connection.
- */
+const THIS_MONTH = monthRefOf(new Date());
+const THIS_MONTH_LABEL = formatMonthLabel(new Date());
+
 const mocks = [
+  {
+    request: { query: AGENDA_QUERY, variables: { filter: THIS_MONTH } },
+    result: { data: { schedulesInRange: [] } },
+  },
   {
     request: { query: PRODUCTS_QUERY, variables: { first: PRODUCTS_PAGE_SIZE } },
     result: {
@@ -59,11 +65,11 @@ describe('AppLayout', () => {
 
     expect(screen.getAllByRole('navigation', { name: 'Secções' })).toHaveLength(2);
     expect(screen.getByRole('button', { name: 'SAIR' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Agenda' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: THIS_MONTH_LABEL })).toBeInTheDocument();
   });
 
   it.each([
-    [PATHS.agenda, 'Agenda'],
+    [PATHS.agenda, THIS_MONTH_LABEL],
     [PATHS.dashboard, 'Dashboard'],
     [PATHS.schedules, 'Reservas'],
     [PATHS.products, 'Produtos'],
@@ -79,7 +85,7 @@ describe('AppLayout', () => {
   it('sends an unknown path back to the agenda', () => {
     renderAt('/nao-existe');
 
-    expect(screen.getByRole('heading', { name: 'Agenda' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: THIS_MONTH_LABEL })).toBeInTheDocument();
   });
 
   it('renders no frame on the login page', () => {
