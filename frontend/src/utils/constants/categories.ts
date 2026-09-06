@@ -5,6 +5,7 @@ export interface CategoryDescriptor {
   value: CategoryValue;
   slug: CategorySlug;
   label: string;
+  title: string;
   noun: string;
 }
 

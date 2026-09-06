@@ -1,0 +1,147 @@
+.month {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.heads {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(96px, auto);
+  gap: 6px;
+  flex: 1;
+}
+
+.day {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--panel2);
+  transition:
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease);
+}
+
+button.day {
+  cursor: pointer;
+}
+
+.today {
+  background: var(--panel);
+  outline: 1.5px solid var(--accent-ink);
+}
+
+.closed {
+  background: repeating-linear-gradient(-45deg, var(--closed1) 0 8px, var(--closed2) 8px 16px);
+}
+
+.outside {
+  opacity: 0.55;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.number {
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.numberToday {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.count {
+  font-size: 9px;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 99px;
+  padding: 1px 6px;
+}
+
+.closedLabel {
+  margin-top: 4px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted2);
+}
+
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.overflow {
+  font-size: 10px;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+@media (min-width: 621px) and (max-width: 1180px) and (min-height: 541px) {
+  .grid {
+    grid-auto-rows: minmax(84px, auto);
+    gap: 5px;
+  }
+
+  .heads {
+    gap: 5px;
+  }
+
+  .selected {
+    border-color: var(--accent);
+  }
+
+  .selected:not(.closed) {
+    background: var(--accent-soft);
+  }
+}
+
+@media (min-width: 621px) and (max-width: 899px) and (min-height: 541px) {
+  .grid {
+    grid-auto-rows: minmax(72px, auto);
+  }
+}
+
+@media (max-width: 620px), (max-width: 1023px) and (max-height: 540px) {
+  .month {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}

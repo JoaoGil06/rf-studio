@@ -103,6 +103,23 @@ export function CloseIcon({ className }: IconProps) {
   );
 }
 
+/** The month arrows. Authored on the system's single 1.25 stroke, never a glyph. */
+export function ChevronLeftIcon({ className }: IconProps) {
+  return (
+    <IconShell className={className}>
+      <path d="M14.5 5.5 8 12l6.5 6.5" />
+    </IconShell>
+  );
+}
+
+export function ChevronRightIcon({ className }: IconProps) {
+  return (
+    <IconShell className={className}>
+      <path d="M9.5 5.5 16 12l-6.5 6.5" />
+    </IconShell>
+  );
+}
+
 export function PlusIcon({ className }: IconProps) {
   return (
     <IconShell className={className}>

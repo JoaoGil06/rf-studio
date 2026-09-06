@@ -6,6 +6,7 @@ const NAILS: ServiceCategory = {
   value: 'nails',
   slug: 'unhas',
   label: 'UNHAS',
+  title: 'Unhas',
   noun: 'serviço',
 };
 
@@ -13,6 +14,7 @@ const EYEBROWS: ServiceCategory = {
   value: 'eyebrows',
   slug: 'sobrancelhas',
   label: 'SOBRANCELHAS',
+  title: 'Sobrancelhas',
   noun: 'serviço',
 };
 

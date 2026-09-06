@@ -1,0 +1,73 @@
+.entry {
+  box-sizing: border-box;
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  transition:
+    background-color 260ms var(--ease),
+    border-color 260ms var(--ease),
+    color 260ms var(--ease);
+}
+
+.dense {
+  composes: entry;
+  display: block;
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.read {
+  composes: entry;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 13px;
+  line-height: 1.35;
+  padding: 9px 12px;
+  border-radius: 6px;
+}
+
+.entry[data-status='pending'] {
+  border: 1px dashed var(--accent);
+  color: var(--accent-ink);
+  font-style: italic;
+}
+
+.entry[data-status='confirmed'] {
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.entry[data-status='completed'] {
+  border-left: 2px solid var(--sage);
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+}
+
+.entry[data-status='cancelled'] {
+  border-left: 2px solid var(--canc);
+  color: var(--canc);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+@media (min-width: 621px) and (max-width: 1180px) and (min-height: 541px) {
+  .dense {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}

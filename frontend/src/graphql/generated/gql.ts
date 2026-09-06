@@ -28,8 +28,10 @@ type Documents = {
     "\n  fragment ServiceEditFields on Service {\n    id\n    name\n    price\n    durationMinutes\n  }\n": typeof types.ServiceEditFieldsFragmentDoc,
     "\n  mutation UpdateService($input: UpdateServiceInput!) {\n    updateService(input: $input) {\n      __typename\n      ... on UpdateServiceSuccess {\n        service {\n          id\n          ...ServiceCardFields\n          ...ServiceEditFields\n          ...ServiceDeleteFields\n        }\n      }\n      ... on ServiceAlreadyExistsError {\n        message\n      }\n      ... on ServiceNotFoundError {\n        message\n      }\n    }\n  }\n": typeof types.UpdateServiceDocument,
     "\n  fragment ProductCardFields on Product {\n    id\n    name\n    brand\n    category\n    color\n    isAvailable\n  }\n": typeof types.ProductCardFieldsFragmentDoc,
+    "\n  fragment ReservationEntryFields on Schedule {\n    id\n    date\n    status\n    user {\n      id\n      name\n    }\n    service {\n      id\n      name\n      category\n    }\n  }\n": typeof types.ReservationEntryFieldsFragmentDoc,
     "\n  fragment ServiceCardFields on Service {\n    id\n    name\n    category\n    price\n    durationMinutes\n  }\n": typeof types.ServiceCardFieldsFragmentDoc,
     "\n  query Ping {\n    users(first: 1) {\n      pageInfo {\n        hasNextPage\n      }\n    }\n  }\n": typeof types.PingDocument,
+    "\n  query Agenda($filter: SchedulesRangeFilter!) {\n    schedulesInRange(filter: $filter) {\n      id\n      date\n      status\n      finalPrice\n      ...ReservationEntryFields\n    }\n  }\n": typeof types.AgendaDocument,
     "\n  query Clients($first: Int, $after: String, $role: RoleName) {\n    users(first: $first, after: $after, role: $role) {\n      edges {\n        cursor\n        node {\n          id\n          ...ClientRowFields\n        }\n      }\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n    }\n  }\n": typeof types.ClientsDocument,
     "\n  mutation RegisterClient($input: RegisterUserInput!) {\n    registerUser(input: $input) {\n      __typename\n      ... on RegisterUserSuccess {\n        user {\n          id\n          ...ClientRowFields\n        }\n      }\n      ... on UserAlreadyExistsError {\n        message\n      }\n    }\n  }\n": typeof types.RegisterClientDocument,
     "\n  mutation Login($input: LoginInput!) {\n    login(input: $input) {\n      __typename\n      ... on LoginSuccess {\n        token\n        user {\n          id\n          name\n          email\n          role {\n            name\n          }\n        }\n      }\n      ... on InvalidCredentialsError {\n        message\n      }\n    }\n  }\n": typeof types.LoginDocument,
@@ -53,8 +55,10 @@ const documents: Documents = {
     "\n  fragment ServiceEditFields on Service {\n    id\n    name\n    price\n    durationMinutes\n  }\n": types.ServiceEditFieldsFragmentDoc,
     "\n  mutation UpdateService($input: UpdateServiceInput!) {\n    updateService(input: $input) {\n      __typename\n      ... on UpdateServiceSuccess {\n        service {\n          id\n          ...ServiceCardFields\n          ...ServiceEditFields\n          ...ServiceDeleteFields\n        }\n      }\n      ... on ServiceAlreadyExistsError {\n        message\n      }\n      ... on ServiceNotFoundError {\n        message\n      }\n    }\n  }\n": types.UpdateServiceDocument,
     "\n  fragment ProductCardFields on Product {\n    id\n    name\n    brand\n    category\n    color\n    isAvailable\n  }\n": types.ProductCardFieldsFragmentDoc,
+    "\n  fragment ReservationEntryFields on Schedule {\n    id\n    date\n    status\n    user {\n      id\n      name\n    }\n    service {\n      id\n      name\n      category\n    }\n  }\n": types.ReservationEntryFieldsFragmentDoc,
     "\n  fragment ServiceCardFields on Service {\n    id\n    name\n    category\n    price\n    durationMinutes\n  }\n": types.ServiceCardFieldsFragmentDoc,
     "\n  query Ping {\n    users(first: 1) {\n      pageInfo {\n        hasNextPage\n      }\n    }\n  }\n": types.PingDocument,
+    "\n  query Agenda($filter: SchedulesRangeFilter!) {\n    schedulesInRange(filter: $filter) {\n      id\n      date\n      status\n      finalPrice\n      ...ReservationEntryFields\n    }\n  }\n": types.AgendaDocument,
     "\n  query Clients($first: Int, $after: String, $role: RoleName) {\n    users(first: $first, after: $after, role: $role) {\n      edges {\n        cursor\n        node {\n          id\n          ...ClientRowFields\n        }\n      }\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n    }\n  }\n": types.ClientsDocument,
     "\n  mutation RegisterClient($input: RegisterUserInput!) {\n    registerUser(input: $input) {\n      __typename\n      ... on RegisterUserSuccess {\n        user {\n          id\n          ...ClientRowFields\n        }\n      }\n      ... on UserAlreadyExistsError {\n        message\n      }\n    }\n  }\n": types.RegisterClientDocument,
     "\n  mutation Login($input: LoginInput!) {\n    login(input: $input) {\n      __typename\n      ... on LoginSuccess {\n        token\n        user {\n          id\n          name\n          email\n          role {\n            name\n          }\n        }\n      }\n      ... on InvalidCredentialsError {\n        message\n      }\n    }\n  }\n": types.LoginDocument,
@@ -137,11 +141,19 @@ export function graphql(source: "\n  fragment ProductCardFields on Product {\n  
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment ReservationEntryFields on Schedule {\n    id\n    date\n    status\n    user {\n      id\n      name\n    }\n    service {\n      id\n      name\n      category\n    }\n  }\n"): (typeof documents)["\n  fragment ReservationEntryFields on Schedule {\n    id\n    date\n    status\n    user {\n      id\n      name\n    }\n    service {\n      id\n      name\n      category\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment ServiceCardFields on Service {\n    id\n    name\n    category\n    price\n    durationMinutes\n  }\n"): (typeof documents)["\n  fragment ServiceCardFields on Service {\n    id\n    name\n    category\n    price\n    durationMinutes\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query Ping {\n    users(first: 1) {\n      pageInfo {\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query Ping {\n    users(first: 1) {\n      pageInfo {\n        hasNextPage\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Agenda($filter: SchedulesRangeFilter!) {\n    schedulesInRange(filter: $filter) {\n      id\n      date\n      status\n      finalPrice\n      ...ReservationEntryFields\n    }\n  }\n"): (typeof documents)["\n  query Agenda($filter: SchedulesRangeFilter!) {\n    schedulesInRange(filter: $filter) {\n      id\n      date\n      status\n      finalPrice\n      ...ReservationEntryFields\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
