@@ -18,3 +18,5 @@ export const SCHEDULE_STATUSES: readonly ScheduleStatusDescriptor[] = [
 ];
 
 export const DEFAULT_SCHEDULE_STATUS: ScheduleStatusDescriptor = PENDING;
+
+export const BOOKING_STATUS: ScheduleStatus = 'pending';

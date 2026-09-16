@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
+import { BOOKING_COPY, SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
 import { useAgendaViewModel } from './agenda.viewmodel';
 
 const modelMock = vi.fn();
@@ -32,24 +32,49 @@ function aSchedule(overrides: Partial<Record<string, unknown>> = {}) {
     date: new Date(2026, 8, 12, 10, 0).toISOString(),
     status: 'confirmed',
     finalPrice: 25,
+    service: { durationMinutes: 30 },
     ...overrides,
   };
 }
 
-function aModelState(
-  schedules: unknown[] = [],
-  overrides: { error?: Error; loading?: boolean } = {},
-) {
-  return { schedules, loading: overrides.loading ?? false, error: overrides.error };
+function aClient(id: string, name: string) {
+  return { node: { id, name } };
+}
+
+function aService(id: string, name: string, category: string, price: number, durationMinutes = 30) {
+  return { node: { id, name, category, price, durationMinutes } };
+}
+
+interface ModelOverrides {
+  error?: Error;
+  loading?: boolean;
+  clients?: unknown[];
+  services?: unknown[];
+  hasMoreClients?: boolean;
+}
+
+function aModelState(schedules: unknown[] = [], overrides: ModelOverrides = {}) {
+  return {
+    schedules,
+    clients: overrides.clients ?? [],
+    hasMoreClients: overrides.hasMoreClients ?? false,
+    services: overrides.services ?? [],
+    loading: overrides.loading ?? false,
+    error: overrides.error,
+  };
 }
 
 function wrapper({ children }: { children: ReactNode }) {
   return <MemoryRouter>{children}</MemoryRouter>;
 }
 
-function renderViewModel(search = '?mes=2026-09', schedules: unknown[] = []) {
+function renderViewModel(
+  search = '?mes=2026-09',
+  schedules: unknown[] = [],
+  overrides: ModelOverrides = {},
+) {
   searchString = search;
-  modelMock.mockReturnValue(aModelState(schedules));
+  modelMock.mockReturnValue(aModelState(schedules, overrides));
 
   return renderHook(() => useAgendaViewModel(), { wrapper });
 }
@@ -269,9 +294,9 @@ describe('useAgendaViewModel — the selected day', () => {
   it('lays the studio day out in half hours whether or not anything is booked', () => {
     const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12');
 
-    expect(result.current.daySlots).toHaveLength(14);
+    expect(result.current.daySlots).toHaveLength(23);
     expect(result.current.daySlots[0]?.time).toBe('09:00');
-    expect(result.current.daySlots.at(-1)?.time).toBe('17:30');
+    expect(result.current.daySlots.at(-1)?.time).toBe('22:00');
   });
 
   it('files a reservation into the slot for its hour', () => {
@@ -282,6 +307,27 @@ describe('useAgendaViewModel — the selected day', () => {
     expect(ten?.reservationIds).toEqual(['schedule-1']);
   });
 
+  it('marks the hours a long service runs through, so the pane never calls them free', () => {
+    const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12', [
+      aSchedule({ service: { durationMinutes: 90 } }),
+    ]);
+
+    const at = (time: string) => result.current.daySlots.find((slot) => slot.time === time);
+
+    expect(at('10:00')?.isCovered).toBe(false);
+    expect(at('10:30')?.isCovered).toBe(true);
+    expect(at('11:00')?.isCovered).toBe(true);
+    expect(at('11:30')?.isCovered).toBe(false);
+  });
+
+  it('leaves a cancelled reservation covering nothing at all', () => {
+    const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12', [
+      aSchedule({ status: 'cancelled', service: { durationMinutes: 90 } }),
+    ]);
+
+    expect(result.current.daySlots.find((slot) => slot.time === '10:30')?.isCovered).toBe(false);
+  });
+
   it('adds a slot the studio grid does not have', () => {
     const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12', [
       aSchedule({ date: new Date(2026, 8, 12, 13, 0).toISOString() }),
@@ -289,7 +335,7 @@ describe('useAgendaViewModel — the selected day', () => {
 
     const times = result.current.daySlots.map((slot) => slot.time);
 
-    expect(times).toHaveLength(15);
+    expect(times).toHaveLength(24);
     expect(times.indexOf('13:00')).toBe(times.indexOf('11:30') + 1);
   });
 
@@ -381,5 +427,119 @@ describe('useAgendaViewModel — the legend and the load failure', () => {
     const { result } = renderViewModel('?mes=2026-09');
 
     expect(result.current.loadError).toBeNull();
+  });
+});
+
+describe('useAgendaViewModel — the booking pickers', () => {
+  it('sorts the client picker by name in pt-PT collation, not by creation order', () => {
+    const { result } = renderViewModel('?mes=2026-09', [], {
+      clients: [aClient('c1', 'Zulmira'), aClient('c2', 'Ângela'), aClient('c3', 'Ana')],
+    });
+
+    expect(result.current.clientOptions.map((option) => option.name)).toEqual([
+      'Ana',
+      'Ângela',
+      'Zulmira',
+    ]);
+  });
+
+  it('groups services under their category title and drops an empty category', () => {
+    const { result } = renderViewModel('?mes=2026-09', [], {
+      services: [aService('s1', 'Manicure', 'nails', 15)],
+    });
+
+    expect(result.current.serviceGroups).toHaveLength(1);
+    expect(result.current.serviceGroups[0]?.label).toBe('Unhas');
+  });
+
+  it('writes the price beside the service name, so two similar names read apart', () => {
+    const { result } = renderViewModel('?mes=2026-09', [], {
+      services: [aService('s1', 'Manicure', 'nails', 15)],
+    });
+
+    expect(result.current.serviceGroups[0]?.options[0]?.label).toBe('Manicure · 15,00 €');
+  });
+
+  it('reports the truncation note only when the book ran past one page', () => {
+    const whole = renderViewModel('?mes=2026-09', [], { hasMoreClients: false });
+
+    expect(whole.result.current.clientsTruncatedNote).toBeNull();
+
+    const truncated = renderViewModel('?mes=2026-09', [], { hasMoreClients: true });
+
+    expect(truncated.result.current.clientsTruncatedNote).toBe(BOOKING_COPY.clientsTruncated);
+  });
+});
+
+describe('useAgendaViewModel — the bookable days', () => {
+  it('hands the sheet the spans the day already holds, not just their start times', () => {
+    const { result } = renderViewModel('?mes=2026-09', [
+      aSchedule({ service: { durationMinutes: 90 } }),
+    ]);
+
+    const day = result.current.bookingDays['2026-09-12'];
+
+    expect(day?.label).toBe('sábado, 12 de Setembro');
+    expect(day?.addLabel).toBe(`${BOOKING_COPY.addOn} sábado, 12 de Setembro`);
+    // 10:00 for an hour and a half, so the chair is held until 11:30.
+    expect(day?.busy).toEqual([{ startMinutes: 10 * 60, endMinutes: 11 * 60 + 30 }]);
+  });
+
+  it('holds an off-grid hour too — 13:00 is a real thing Rita can have booked', () => {
+    const { result } = renderViewModel('?mes=2026-09', [
+      aSchedule({ date: new Date(2026, 8, 12, 13, 0).toISOString() }),
+    ]);
+
+    expect(result.current.bookingDays['2026-09-12']?.busy).toEqual([
+      { startMinutes: 13 * 60, endMinutes: 13 * 60 + 30 },
+    ]);
+  });
+
+  it('does not let a cancelled reservation hold its hour', () => {
+    const { result } = renderViewModel('?mes=2026-09', [aSchedule({ status: 'cancelled' })]);
+
+    expect(result.current.bookingDays['2026-09-12']?.busy).toEqual([]);
+  });
+
+  it('holds one grid slot for a reservation whose service lost its duration', () => {
+    const { result } = renderViewModel('?mes=2026-09', [
+      aSchedule({ service: { durationMinutes: 0 } }),
+    ]);
+
+    expect(result.current.bookingDays['2026-09-12']?.busy).toEqual([
+      { startMinutes: 10 * 60, endMinutes: 10 * 60 + 30 },
+    ]);
+  });
+
+  it('offers no booking day for a closed day or a day outside the month', () => {
+    const { result } = renderViewModel('?mes=2026-09');
+
+    // 13 September 2026 is a Sunday; 31 August rides in the grid from the month before.
+    expect(result.current.bookingDays['2026-09-13']).toBeUndefined();
+    expect(result.current.bookingDays['2026-08-31']).toBeUndefined();
+  });
+
+  it('names the day the pane is open at, so the pane head can book it', () => {
+    const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12');
+
+    expect(result.current.selectedBookingDay?.key).toBe('2026-09-12');
+  });
+
+  it('offers the pane nothing to book when the selected day is closed', () => {
+    const { result } = renderViewModel('?mes=2026-09&dia=2026-09-13');
+
+    expect(result.current.selectedBookingDay).toBeNull();
+  });
+
+  it('names a bookable month cell by its booking label and leaves a closed one unnamed', () => {
+    const { result } = renderViewModel('?mes=2026-09');
+
+    const saturday = result.current.monthDays.find((day) => day.key === '2026-09-12');
+    const sunday = result.current.monthDays.find((day) => day.key === '2026-09-13');
+
+    expect(saturday?.canAdd).toBe(true);
+    expect(saturday?.addLabel).toBe(`${BOOKING_COPY.addOn} sábado, 12 de Setembro`);
+    expect(sunday?.canAdd).toBe(false);
+    expect(sunday?.addLabel).toBe('');
   });
 });

@@ -1,6 +1,7 @@
 export interface DaySlot {
   time: string;
   reservationIds: readonly string[];
+  isCovered: boolean;
 }
 
 export interface DayPaneProps {
@@ -8,6 +9,8 @@ export interface DayPaneProps {
   countLabel: string;
   isClosed: boolean;
   slots: readonly DaySlot[];
+  addLabel: string | null;
+  onAddReservation: () => void;
 }
 
 export interface DaySlotRowProps {

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
+import { AGENDA_COPY, SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
 import { AgendaView } from './agenda.view';
 
 const viewModelMock = vi.fn();
@@ -19,28 +19,68 @@ vi.mock('../../../components/CalendarWeekStrip', () => ({
 }));
 
 vi.mock('../../../components/DayPane', () => ({
-  DayPane: ({ dayLabel }: { dayLabel: string | null }) => (
-    <div data-testid="day-pane">{dayLabel}</div>
+  DayPane: ({
+    dayLabel,
+    addLabel,
+    onAddReservation,
+  }: {
+    dayLabel: string | null;
+    addLabel: string | null;
+    onAddReservation: () => void;
+  }) => (
+    <div data-testid="day-pane">
+      {dayLabel}
+      {addLabel && (
+        <button type="button" onClick={onAddReservation}>
+          {addLabel}
+        </button>
+      )}
+    </div>
   ),
+}));
+
+vi.mock('../../../components/NewReservationModal', () => ({
+  NewReservationModal: ({
+    day,
+    truncatedNote,
+    onClose,
+  }: {
+    day: { key: string; label: string } | null;
+    truncatedNote: string | null;
+    onClose: () => void;
+  }) =>
+    day ? (
+      <div data-testid="booking-sheet" data-day={day.key}>
+        <span data-testid="booking-truncated">{truncatedNote ?? ''}</span>
+        <button type="button" onClick={onClose}>
+          fechar reserva
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock('../../../components/CalendarMonthGrid', () => ({
   CalendarMonthGrid: ({
     days,
-    isDaySelectable,
+    cellAction,
     onSelectDay,
+    onAddDay,
   }: {
     days: { key: string }[];
-    isDaySelectable: boolean;
+    cellAction: 'select' | 'add';
     onSelectDay: (key: string) => void;
+    onAddDay: (key: string) => void;
   }) => (
-    <div data-testid="month-grid" data-selectable={String(isDaySelectable)}>
-      {isDaySelectable &&
-        days.map((day) => (
-          <button key={day.key} type="button" onClick={() => onSelectDay(day.key)}>
-            {day.key}
-          </button>
-        ))}
+    <div data-testid="month-grid" data-cell-action={cellAction}>
+      {days.map((day) => (
+        <button
+          key={day.key}
+          type="button"
+          onClick={() => (cellAction === 'add' ? onAddDay(day.key) : onSelectDay(day.key))}
+        >
+          {day.key}
+        </button>
+      ))}
     </div>
   ),
 }));
@@ -62,6 +102,23 @@ function aViewModel(overrides: Record<string, unknown> = {}) {
     dayCountLabel: '1 RESERVA',
     isSelectedDayClosed: false,
     daySlots: [],
+    clientOptions: [{ id: 'c1', name: 'Ana' }],
+    serviceGroups: [{ label: 'Unhas', options: [{ id: 's1', label: 'Manicure · 15,00 €' }] }],
+    clientsTruncatedNote: null,
+    bookingDays: {
+      '2026-09-12': {
+        key: '2026-09-12',
+        label: 'sábado, 12 de Setembro',
+        addLabel: 'Nova reserva em sábado, 12 de Setembro',
+        slots: [{ time: '09:00', isTaken: false }],
+      },
+    },
+    selectedBookingDay: {
+      key: '2026-09-12',
+      label: 'sábado, 12 de Setembro',
+      addLabel: 'Nova reserva em sábado, 12 de Setembro',
+      slots: [{ time: '09:00', isTaken: false }],
+    },
     stats: { reservations: '12', pending: '3', revenue: '1.250,00 €' },
     statuses: [
       { value: 'pending', label: 'Pendente' },
@@ -159,18 +216,86 @@ describe('AgendaView — the three compositions', () => {
     );
   });
 
-  it('makes no day cell selectable away from the station', () => {
+  it('makes the day cell book where there is no pane to open', () => {
     render(<AgendaView />);
 
-    expect(screen.getByTestId('month-grid')).toHaveAttribute('data-selectable', 'false');
+    expect(screen.getByTestId('month-grid')).toHaveAttribute('data-cell-action', 'add');
   });
 
-  it('makes day cells selectable at the station', () => {
+  it('makes the day cell open the day at the station', () => {
     mediaQueryMock.mockReturnValue(true);
 
     render(<AgendaView />);
 
-    expect(screen.getByTestId('month-grid')).toHaveAttribute('data-selectable', 'true');
+    expect(screen.getByTestId('month-grid')).toHaveAttribute('data-cell-action', 'select');
+  });
+
+  it('shows the desk hint and the pane hint, and lets the stylesheet choose', () => {
+    render(<AgendaView />);
+
+    expect(screen.getByText(AGENDA_COPY.hintDesk)).toBeInTheDocument();
+    expect(screen.getByText(AGENDA_COPY.hintPane)).toBeInTheDocument();
+  });
+});
+
+describe('AgendaView — the booking sheet', () => {
+  it('keeps the sheet shut until a day is asked for', () => {
+    render(<AgendaView />);
+
+    expect(screen.queryByTestId('booking-sheet')).not.toBeInTheDocument();
+  });
+
+  it('opens the sheet at the cell it was clicked on when there is no pane', async () => {
+    const user = userEvent.setup();
+    render(<AgendaView />);
+
+    await user.click(screen.getByRole('button', { name: '2026-09-12' }));
+
+    expect(screen.getByTestId('booking-sheet')).toHaveAttribute('data-day', '2026-09-12');
+  });
+
+  it('opens the sheet at the day the pane is showing', async () => {
+    mediaQueryMock.mockReturnValue(true);
+
+    const user = userEvent.setup();
+    render(<AgendaView />);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Nova reserva em sábado, 12 de Setembro' }),
+    );
+
+    expect(screen.getByTestId('booking-sheet')).toHaveAttribute('data-day', '2026-09-12');
+  });
+
+  it('offers the pane nothing to book on a day that cannot be booked', () => {
+    viewModelMock.mockReturnValue(aViewModel({ selectedBookingDay: null }));
+
+    render(<AgendaView />);
+
+    expect(
+      screen.queryByRole('button', { name: 'Nova reserva em sábado, 12 de Setembro' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('closes the sheet without booking', async () => {
+    const user = userEvent.setup();
+    render(<AgendaView />);
+
+    await user.click(screen.getByRole('button', { name: '2026-09-12' }));
+    await user.click(screen.getByRole('button', { name: 'fechar reserva' }));
+
+    expect(screen.queryByTestId('booking-sheet')).not.toBeInTheDocument();
+  });
+
+  it('passes the truncation note down to the sheet', async () => {
+    viewModelMock.mockReturnValue(aViewModel({ clientsTruncatedNote: 'só as primeiras' }));
+
+    const user = userEvent.setup();
+    render(<AgendaView />);
+
+    await user.click(screen.getByRole('button', { name: '2026-09-12' }));
+
+    expect(screen.getByTestId('booking-truncated')).toHaveTextContent('só as primeiras');
   });
 });
 

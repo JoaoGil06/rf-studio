@@ -154,3 +154,33 @@ describe('Modal', () => {
     expect(document.body.style.overflow).not.toBe('hidden');
   });
 });
+
+describe('Modal — the whisper', () => {
+  it('names the dialog by the whisper and the title together', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} whisper="nova reserva" title="sábado, 12 de Setembro">
+        <input aria-label="hora" />
+      </Modal>,
+    );
+
+    expect(
+      screen.getByRole('dialog', { name: 'nova reserva sábado, 12 de Setembro' }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not hide the whisper from assistive tech, because here it carries the meaning', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} whisper="nova reserva" title="sábado, 12 de Setembro">
+        <input aria-label="hora" />
+      </Modal>,
+    );
+
+    expect(screen.getByText('nova reserva')).not.toHaveAttribute('aria-hidden');
+  });
+
+  it('leaves a sheet without a whisper named by its title alone', () => {
+    renderModal();
+
+    expect(screen.getByRole('dialog', { name: 'Novo verniz' })).toBeInTheDocument();
+  });
+});

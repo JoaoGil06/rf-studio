@@ -1,3 +1,5 @@
+export type CellAction = 'select' | 'add';
+
 export interface MonthGridDay {
   key: string;
   dayOfMonth: number;
@@ -9,16 +11,20 @@ export interface MonthGridDay {
   reservationIds: readonly string[];
   overflow: number;
   description: string;
+  canAdd: boolean;
+  addLabel: string;
 }
 
 export interface CalendarMonthGridProps {
   days: readonly MonthGridDay[];
-  isDaySelectable: boolean;
+  cellAction: CellAction;
   onSelectDay: (key: string) => void;
+  onAddDay: (key: string) => void;
 }
 
 export interface MonthDayCellProps {
   day: MonthGridDay;
-  isSelectable: boolean;
+  cellAction: CellAction;
   onSelect: (key: string) => void;
+  onAdd: (key: string) => void;
 }

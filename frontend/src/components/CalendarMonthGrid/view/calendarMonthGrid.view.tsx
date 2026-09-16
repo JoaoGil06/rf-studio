@@ -5,7 +5,7 @@ import { ReservationEntry } from '../../ReservationEntry';
 import type { CalendarMonthGridProps, MonthDayCellProps } from '../types/calendarMonthGrid.types';
 import styles from './calendarMonthGrid.view.module.css';
 
-function MonthDayCell({ day, isSelectable, onSelect }: MonthDayCellProps) {
+function MonthDayCell({ day, cellAction, onSelect, onAdd }: MonthDayCellProps) {
   const className = useMemo(() => {
     const parts = [styles.day];
 
@@ -31,7 +31,15 @@ function MonthDayCell({ day, isSelectable, onSelect }: MonthDayCellProps) {
     [day.isToday],
   );
 
+  const isAdding = useMemo(() => cellAction === 'add', [cellAction]);
+
+  const isInteractive = useMemo(
+    () => (isAdding ? day.canAdd : !day.isOutsideMonth),
+    [isAdding, day.canAdd, day.isOutsideMonth],
+  );
+
   const handleSelect = useCallback(() => onSelect(day.key), [onSelect, day.key]);
+  const handleAdd = useCallback(() => onAdd(day.key), [onAdd, day.key]);
 
   const body = (
     <>
@@ -56,14 +64,16 @@ function MonthDayCell({ day, isSelectable, onSelect }: MonthDayCellProps) {
     </>
   );
 
-  if (isSelectable && !day.isOutsideMonth) {
+  if (isInteractive) {
     return (
       <button
         type="button"
         className={className}
-        aria-label={day.description}
-        aria-pressed={day.isSelected}
-        onClick={handleSelect}
+        aria-label={isAdding ? day.addLabel : day.description}
+        // A booking target is not a toggle, and `aria-pressed` on it would say the
+        // cell holds a state it does not.
+        aria-pressed={isAdding ? undefined : day.isSelected}
+        onClick={isAdding ? handleAdd : handleSelect}
       >
         {body}
       </button>
@@ -73,7 +83,12 @@ function MonthDayCell({ day, isSelectable, onSelect }: MonthDayCellProps) {
   return <div className={className}>{body}</div>;
 }
 
-export function CalendarMonthGrid({ days, isDaySelectable, onSelectDay }: CalendarMonthGridProps) {
+export function CalendarMonthGrid({
+  days,
+  cellAction,
+  onSelectDay,
+  onAddDay,
+}: CalendarMonthGridProps) {
   return (
     <div className={styles.month}>
       {/* The cells carry their own accessible names, so the heads are decoration. */}
@@ -88,8 +103,9 @@ export function CalendarMonthGrid({ days, isDaySelectable, onSelectDay }: Calend
           <MonthDayCell
             key={day.key}
             day={day}
-            isSelectable={isDaySelectable}
+            cellAction={cellAction}
             onSelect={onSelectDay}
+            onAdd={onAddDay}
           />
         ))}
       </div>

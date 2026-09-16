@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { MonthGridDay } from '../types/calendarMonthGrid.types';
+import type { CellAction, MonthGridDay } from '../types/calendarMonthGrid.types';
 import { CalendarMonthGrid } from './calendarMonthGrid.view';
 
 vi.mock('../../ReservationEntry', () => ({
@@ -10,6 +10,8 @@ vi.mock('../../ReservationEntry', () => ({
 }));
 
 function aDay(overrides: Partial<MonthGridDay> = {}): MonthGridDay {
+  const canAdd = !(overrides.isOutsideMonth ?? false) && !(overrides.isClosed ?? false);
+
   return {
     key: '2026-09-12',
     dayOfMonth: 12,
@@ -21,15 +23,23 @@ function aDay(overrides: Partial<MonthGridDay> = {}): MonthGridDay {
     reservationIds: [],
     overflow: 0,
     description: '12 de Setembro, sem reservas',
+    canAdd,
+    addLabel: 'Nova reserva em 12 de Setembro',
     ...overrides,
   };
 }
 
 const onSelectDay = vi.fn();
+const onAddDay = vi.fn();
 
-function renderGrid(days: MonthGridDay[], isDaySelectable = false) {
+function renderGrid(days: MonthGridDay[], cellAction: CellAction = 'add') {
   return render(
-    <CalendarMonthGrid days={days} isDaySelectable={isDaySelectable} onSelectDay={onSelectDay} />,
+    <CalendarMonthGrid
+      days={days}
+      cellAction={cellAction}
+      onSelectDay={onSelectDay}
+      onAddDay={onAddDay}
+    />,
   );
 }
 
@@ -94,7 +104,7 @@ describe('CalendarMonthGrid — days outside the month', () => {
   });
 
   it('is never a control, even where cells select', () => {
-    renderGrid([aDay({ isOutsideMonth: true })], true);
+    renderGrid([aDay({ isOutsideMonth: true })], 'select');
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
@@ -107,31 +117,57 @@ describe('CalendarMonthGrid — days outside the month', () => {
 });
 
 describe('CalendarMonthGrid — the cell changes job with the composition', () => {
-  it('renders no buttons where days are not selectable', () => {
-    renderGrid([aDay(), aDay({ key: '2026-09-13', dayOfMonth: 13 })], false);
+  it('books the cell it is clicked on when the desk has no pane to open', async () => {
+    renderGrid([aDay()], 'add');
+
+    await userEvent.setup().click(screen.getByRole('button'));
+
+    expect(onAddDay).toHaveBeenCalledWith('2026-09-12');
+    expect(onSelectDay).not.toHaveBeenCalled();
+  });
+
+  it('names an adding cell by its booking label, not by its reservation count', () => {
+    renderGrid([aDay()], 'add');
+
+    expect(
+      screen.getByRole('button', { name: 'Nova reserva em 12 de Setembro' }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not claim an adding cell holds a pressed state', () => {
+    renderGrid([aDay({ isSelected: true })], 'add');
+
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-pressed');
+  });
+
+  it('leaves a closed day and an outside-month day uninteractive while adding', () => {
+    renderGrid(
+      [
+        aDay({ key: 'a', dayOfMonth: 1, isClosed: true }),
+        aDay({ key: 'b', dayOfMonth: 2, isOutsideMonth: true }),
+      ],
+      'add',
+    );
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('renders a named button per day where they are', () => {
-    renderGrid([aDay()], true);
+  it('still selects, and still reports pressed, at the station', async () => {
+    renderGrid([aDay({ isSelected: true })], 'select');
 
-    expect(
-      screen.getByRole('button', { name: '12 de Setembro, sem reservas' }),
-    ).toBeInTheDocument();
-  });
+    const cell = screen.getByRole('button', { name: '12 de Setembro, sem reservas' });
 
-  it('reports the day key it was given, and nothing derived', async () => {
-    renderGrid([aDay()], true);
+    expect(cell).toHaveAttribute('aria-pressed', 'true');
 
-    await userEvent.setup().click(screen.getByRole('button'));
+    await userEvent.setup().click(cell);
 
     expect(onSelectDay).toHaveBeenCalledWith('2026-09-12');
+    expect(onAddDay).not.toHaveBeenCalled();
   });
 
-  it('marks the selected cell as pressed', () => {
-    renderGrid([aDay({ isSelected: true })], true);
+  it('still opens a closed day at the station, because looking is not booking', () => {
+    renderGrid([aDay({ isClosed: true })], 'select');
 
-    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button')).toBeInTheDocument();
   });
 });

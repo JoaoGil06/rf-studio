@@ -4,6 +4,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  whisper?: string;
   children: ReactNode;
   closeLabel?: string;
 }

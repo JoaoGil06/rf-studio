@@ -4,15 +4,20 @@ import type { ModalProps } from '../types/modal.types';
 import { useModalViewModel } from '../viewmodel/modal.viewmodel';
 import styles from './modal.view.module.css';
 
-export function Modal({ isOpen, onClose, title, children, closeLabel = 'Fechar' }: ModalProps) {
-  const { sheetRef, titleId, handleScrimClick } = useModalViewModel({ isOpen, onClose });
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  whisper,
+  children,
+  closeLabel = 'Fechar',
+}: ModalProps) {
+  const { sheetRef, titleId, whisperId, handleScrimClick } = useModalViewModel({ isOpen, onClose });
 
   if (!isOpen) {
     return null;
   }
 
-  // Through a portal so the sheet is never trapped by an ancestor's stacking
-  // context or overflow — the grid it is opened from is a scrolling container.
   return createPortal(
     <div className={styles.scrim} onClick={handleScrimClick}>
       <div
@@ -20,16 +25,21 @@ export function Modal({ isOpen, onClose, title, children, closeLabel = 'Fechar' 
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={titleId}
+        aria-labelledby={whisper ? `${whisperId} ${titleId}` : titleId}
         tabIndex={-1}
       >
         <div className={styles.head}>
-          <h2 className={styles.title} id={titleId}>
-            {title}
-          </h2>
+          <div className={styles.heading}>
+            {whisper && (
+              <div className={styles.whisper} id={whisperId}>
+                {whisper}
+              </div>
+            )}
+            <h2 className={styles.title} id={titleId}>
+              {title}
+            </h2>
+          </div>
           <button type="button" className={styles.close} onClick={onClose} aria-label={closeLabel}>
-            {/* Authored SVG, not a glyph — DESIGN.md §Iconography. The button's
-                aria-label is the accessible name either way. */}
             <CloseIcon className={styles.closeIcon} />
           </button>
         </div>
