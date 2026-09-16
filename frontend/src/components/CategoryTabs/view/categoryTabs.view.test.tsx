@@ -52,3 +52,24 @@ describe('CategoryTabs', () => {
     expect(screen.getByRole('group', { name: GROUP_LABEL })).toBeInTheDocument();
   });
 });
+
+describe('CategoryTabs — any { slug, label } descriptor', () => {
+  const PENDING_TAB = { slug: 'pendentes', label: 'PENDENTES' };
+  const CANCELLED_TAB = { slug: 'canceladas', label: 'CANCELADAS' };
+
+  it('hands back the caller’s own object, not a copy', async () => {
+    const onSelect = vi.fn();
+    render(
+      <CategoryTabs
+        categories={[PENDING_TAB, CANCELLED_TAB]}
+        activeSlug="pendentes"
+        onSelect={onSelect}
+        label="Estado das reservas"
+      />,
+    );
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'CANCELADAS' }));
+
+    expect(onSelect.mock.calls[0]?.[0]).toBe(CANCELLED_TAB);
+  });
+});

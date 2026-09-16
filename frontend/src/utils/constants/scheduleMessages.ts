@@ -1,3 +1,5 @@
+import type { ScheduleStatus } from '../../graphql/generated/graphql';
+
 export const SCHEDULE_ERROR_MESSAGES = {
   load: 'Não foi possível carregar a agenda. Tente novamente.',
   network: 'Não foi possível ligar ao servidor. Tente novamente.',
@@ -47,3 +49,29 @@ export const BOOKING_COPY = {
   addOn: 'Nova reserva em',
   clientsTruncated: 'A lista mostra as primeiras clientes. Procure a restante em Clientes.',
 } as const;
+
+export const SCHEDULES_COPY = {
+  whisper: 'estados das',
+  title: 'Reservas',
+  tabsLabel: 'Estado das reservas',
+  load: 'Não foi possível carregar as reservas. Tente novamente.',
+} as const;
+
+export const SCHEDULES_EMPTY: Record<ScheduleStatus, { title: string; body: string }> = {
+  pending: {
+    title: 'Nada à espera de si',
+    body: 'Sem reservas pendentes. Quando chegar um contacto novo, aparece aqui.',
+  },
+  confirmed: {
+    title: 'Sem reservas confirmadas',
+    body: 'As reservas que confirmar ficam aqui até serem concluídas.',
+  },
+  completed: {
+    title: 'Ainda sem reservas concluídas',
+    body: 'Cada reserva que concluir fica registada aqui.',
+  },
+  cancelled: {
+    title: 'Sem reservas canceladas',
+    body: 'Uma reserva cancelada continua registada aqui — o livro não apaga.',
+  },
+};

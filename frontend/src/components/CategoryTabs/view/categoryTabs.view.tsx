@@ -1,8 +1,16 @@
 import { useCallback, useMemo } from 'react';
-import type { CategoryTabProps, CategoryTabsProps } from '../types/categoryTabs.types';
+import type {
+  CategoryTabProps,
+  CategoryTabsProps,
+  TabDescriptor,
+} from '../types/categoryTabs.types';
 import styles from './categoryTabs.view.module.css';
 
-function CategoryTab({ category, isActive, onSelect }: CategoryTabProps) {
+function CategoryTab<T extends TabDescriptor>({
+  category,
+  isActive,
+  onSelect,
+}: CategoryTabProps<T>) {
   const className = useMemo(
     () => (isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab),
     [isActive],
@@ -17,7 +25,12 @@ function CategoryTab({ category, isActive, onSelect }: CategoryTabProps) {
   );
 }
 
-export function CategoryTabs({ categories, activeSlug, onSelect, label }: CategoryTabsProps) {
+export function CategoryTabs<T extends TabDescriptor>({
+  categories,
+  activeSlug,
+  onSelect,
+  label,
+}: CategoryTabsProps<T>) {
   return (
     <div className={styles.group} role="group" aria-label={label}>
       {categories.map((category) => (

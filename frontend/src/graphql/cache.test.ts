@@ -66,3 +66,77 @@ describe('the users cache policy', () => {
     expect(idsOf(cache.readQuery({ query: USERS, variables: browse }))).toEqual(['a', 'b']);
   });
 });
+
+const SCHEDULES = gql`
+  query SchedulesCachePolicy($first: Int, $after: String, $filter: SchedulesFilter) {
+    schedules(first: $first, after: $after, filter: $filter) {
+      edges {
+        cursor
+        node {
+          id
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+const aSchedulesPage = (ids: readonly string[]) => ({
+  schedules: {
+    __typename: 'ScheduleConnection',
+    edges: ids.map((id) => ({
+      __typename: 'ScheduleEdge',
+      cursor: `cursor-${id}`,
+      node: { __typename: 'Schedule', id },
+    })),
+    pageInfo: {
+      __typename: 'PageInfo',
+      hasNextPage: true,
+      endCursor: `cursor-${ids[ids.length - 1] ?? ''}`,
+    },
+  },
+});
+
+const scheduleIdsOf = (result: unknown) =>
+  (result as { schedules: { edges: { node: { id: string } }[] } }).schedules.edges.map(
+    (edge) => edge.node.id,
+  );
+
+describe('the schedules cache policy', () => {
+  it('keeps each status tab in a list of its own', () => {
+    const cache = createCache();
+    const pending = { first: 25, filter: { status: 'pending' } };
+    const cancelled = { first: 25, filter: { status: 'cancelled' } };
+
+    cache.writeQuery({ query: SCHEDULES, variables: pending, data: aSchedulesPage(['p1', 'p2']) });
+    cache.writeQuery({ query: SCHEDULES, variables: cancelled, data: aSchedulesPage(['c1']) });
+
+    expect(scheduleIdsOf(cache.readQuery({ query: SCHEDULES, variables: pending }))).toEqual([
+      'p1',
+      'p2',
+    ]);
+    expect(scheduleIdsOf(cache.readQuery({ query: SCHEDULES, variables: cancelled }))).toEqual([
+      'c1',
+    ]);
+  });
+
+  it('merges the pages of one tab rather than storing each cursor apart', () => {
+    const cache = createCache();
+    const pending = { first: 25, filter: { status: 'pending' } };
+
+    cache.writeQuery({ query: SCHEDULES, variables: pending, data: aSchedulesPage(['p1']) });
+    cache.writeQuery({
+      query: SCHEDULES,
+      variables: { ...pending, after: 'cursor-p1' },
+      data: aSchedulesPage(['p2']),
+    });
+
+    expect(scheduleIdsOf(cache.readQuery({ query: SCHEDULES, variables: pending }))).toEqual([
+      'p1',
+      'p2',
+    ]);
+  });
+});
