@@ -1,4 +1,10 @@
-import { WEEKDAY_HEADS, formatDayLabel, formatMonthLabel, formatSpokenDate } from './date';
+import {
+  WEEKDAY_HEADS,
+  formatDayLabel,
+  formatDayMonth,
+  formatMonthLabel,
+  formatSpokenDate,
+} from './date';
 
 const SEPTEMBER_12 = new Date(2026, 8, 12);
 
@@ -25,6 +31,27 @@ describe('formatDayLabel', () => {
 describe('formatSpokenDate', () => {
   it('names the whole date, for a control whose visible label is a number', () => {
     expect(formatSpokenDate(SEPTEMBER_12)).toBe('sábado, 12 de Setembro de 2026');
+  });
+});
+
+describe('formatDayMonth', () => {
+  it('reads as the prototype’s fmtD: day, capital month, no year this year', () => {
+    expect(formatDayMonth(SEPTEMBER_12, 2026)).toBe('12 Setembro');
+  });
+
+  it('carries the year when the date is not in the reference year', () => {
+    expect(formatDayMonth(SEPTEMBER_12, 2027)).toBe('12 Setembro 2026');
+  });
+
+  it('does not zero-pad a single-digit day', () => {
+    expect(formatDayMonth(new Date(2026, 2, 3), 2026)).toBe('3 Março');
+  });
+
+  it('never carries a “de” or a numeric month', () => {
+    const label = formatDayMonth(SEPTEMBER_12, 2026);
+
+    expect(label).not.toContain('de');
+    expect(label).not.toContain('/');
   });
 });
 

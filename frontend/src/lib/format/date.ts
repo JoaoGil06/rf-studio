@@ -10,6 +10,7 @@ const SPOKEN = new Intl.DateTimeFormat('pt-PT', {
   month: 'long',
   year: 'numeric',
 });
+const DAY_MONTH = new Intl.DateTimeFormat('pt-PT', { day: 'numeric', month: 'long' });
 
 const capitalise = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -34,4 +35,15 @@ export function formatDayLabel(date: Date): string {
 export function formatSpokenDate(date: Date): string {
   return withCapitalMonth(SPOKEN, date);
 }
+
+export function formatDayMonth(date: Date, referenceYear: number): string {
+  const parts = DAY_MONTH.formatToParts(date);
+  const day = parts.find((part) => part.type === 'day')?.value ?? '';
+  const month = capitalise(parts.find((part) => part.type === 'month')?.value ?? '');
+  const dayMonth = `${day} ${month}`;
+  const year = date.getFullYear();
+
+  return year === referenceYear ? dayMonth : `${dayMonth} ${year}`;
+}
+
 export const WEEKDAY_HEADS: readonly string[] = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];

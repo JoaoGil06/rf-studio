@@ -25,6 +25,13 @@ export const typePolicies: TypePolicies = {
       // The booking picker passes no category at all, so it is already a
       // bucket of its own and needs nothing here.
       services: relayStylePagination(['category']),
+      /**
+       * `filter` is `{ status }` — each Reservas tab is its own list. Without a
+       * policy Apollo keys by every argument, `after` included, and `fetchMore`
+       * would store each page apart instead of merging them. `schedulesInRange`
+       * is a plain array keyed by its own arguments and needs nothing.
+       */
+      schedules: relayStylePagination(['filter']),
     },
   },
 };
