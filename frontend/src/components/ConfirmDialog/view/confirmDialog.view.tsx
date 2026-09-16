@@ -12,6 +12,9 @@ export function ConfirmDialog({
   isBusy,
   onClose,
   onConfirm,
+  verb = 'Remover',
+  consequence,
+  tone = 'danger',
 }: ConfirmDialogProps) {
   const [error, setError] = useState<string | null>(null);
 
@@ -26,14 +29,19 @@ export function ConfirmDialog({
   }, [onConfirm, onClose]);
 
   const keepClassName = useMemo(() => `${styles.pill} ${styles.pillKeep}`, []);
-  const removeClassName = useMemo(() => `${styles.pill} ${styles.pillRemove}`, []);
+  const actClassName = useMemo(
+    () => (tone === 'primary' ? styles.primary : `${styles.pill} ${styles.pillRemove}`),
+    [tone],
+  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className={styles.body}>
         <p className={styles.question}>
-          Remover <b className={styles.name}>{name}</b>?
+          {verb} <b className={styles.name}>{name}</b>?
         </p>
+
+        {consequence && <p className={styles.consequence}>{consequence}</p>}
 
         {error && (
           <p className={styles.error} role="alert">
@@ -45,12 +53,7 @@ export function ConfirmDialog({
           <button type="button" className={keepClassName} onClick={onClose} disabled={isBusy}>
             {keepLabel}
           </button>
-          <button
-            type="button"
-            className={removeClassName}
-            onClick={handleConfirm}
-            disabled={isBusy}
-          >
+          <button type="button" className={actClassName} onClick={handleConfirm} disabled={isBusy}>
             {removeLabel}
           </button>
         </div>

@@ -115,7 +115,7 @@ export function BookingForm({
           </option>
           {slots.map((slot) => (
             <option key={slot.time} value={slot.time} disabled={slot.isTaken}>
-              {slot.isTaken ? `${slot.time} — ${BOOKING_COPY.takenSuffix}` : slot.time}
+              {slot.label}
             </option>
           ))}
         </select>

@@ -104,6 +104,91 @@ describe('ConfirmDialog', () => {
     expect(screen.getByRole('button', { name: 'MANTER' })).toBeDisabled();
   });
 
+  it('asks with the caller’s verb when one is given', () => {
+    render(
+      <ConfirmDialog
+        isOpen
+        title="Confirmar reserva"
+        name="Maria Silva, 12 Setembro às 10:00"
+        keepLabel="VOLTAR"
+        removeLabel="CONFIRMAR"
+        isBusy={false}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        verb="Confirmar a reserva de"
+      />,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Confirmar reserva' })).toHaveTextContent(
+      'Confirmar a reserva de Maria Silva, 12 Setembro às 10:00?',
+    );
+  });
+
+  it('says nothing beneath the question unless the caller names a consequence', () => {
+    const { unmount } = renderDialog();
+    expect(screen.queryByText(/fica registada/)).not.toBeInTheDocument();
+
+    unmount();
+    render(
+      <ConfirmDialog
+        isOpen
+        title="Cancelar reserva"
+        name="Maria Silva"
+        keepLabel="MANTER"
+        removeLabel="SIM, CANCELAR"
+        isBusy={false}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        consequence="A reserva fica registada como cancelada."
+      />,
+    );
+
+    expect(screen.getByText('A reserva fica registada como cancelada.')).toBeInTheDocument();
+  });
+
+  it('keeps the destructive pill by default and swaps it for the primary button on request', () => {
+    const { unmount } = renderDialog();
+    expect(screen.getByRole('button', { name: 'REMOVER' }).className).toContain('pillRemove');
+
+    unmount();
+    render(
+      <ConfirmDialog
+        isOpen
+        title="Confirmar reserva"
+        name="Maria Silva"
+        keepLabel="VOLTAR"
+        removeLabel="CONFIRMAR"
+        isBusy={false}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        tone="primary"
+      />,
+    );
+
+    const act = screen.getByRole('button', { name: 'CONFIRMAR' });
+    expect(act.className).toContain('primary');
+    expect(act.className).not.toContain('pillRemove');
+  });
+
+  it('does not hand first focus to a primary action either', () => {
+    render(
+      <ConfirmDialog
+        isOpen
+        title="Confirmar reserva"
+        name="Maria Silva"
+        keepLabel="VOLTAR"
+        removeLabel="CONFIRMAR"
+        isBusy={false}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        tone="primary"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'CONFIRMAR' })).not.toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus();
+  });
+
   it('carries whatever labels the caller supplies, so a second entity can reword them', () => {
     renderDialog({ title: 'Remover serviço', name: 'Manicure Russa' });
 

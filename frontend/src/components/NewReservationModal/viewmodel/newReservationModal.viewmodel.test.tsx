@@ -1,7 +1,7 @@
 import { CombinedGraphQLErrors } from '@apollo/client';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
+import { BOOKING_COPY, SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
 import type { BookingDay, ServiceOptionGroup } from '../../BookingForm/types/bookingForm.types';
 import { useNewReservationModalViewModel } from './newReservationModal.viewmodel';
 
@@ -56,7 +56,12 @@ function Harness({ day }: { day: BookingDay | null }) {
       <span data-testid="time-locked">{String(isTimeLocked)}</span>
       <ul data-testid="slots">
         {slots.map((slot) => (
-          <li key={slot.time} data-time={slot.time} data-taken={String(slot.isTaken)} />
+          <li
+            key={slot.time}
+            data-time={slot.time}
+            data-taken={String(slot.isTaken)}
+            data-label={slot.label}
+          />
         ))}
       </ul>
 
@@ -246,6 +251,43 @@ describe('useNewReservationModalViewModel — the hours it offers', () => {
     }
 
     expect(slotAt('11:30')).toHaveAttribute('data-taken', 'false');
+  });
+
+  it('offers the lunch hours like any other', async () => {
+    const user = userEvent.setup();
+    render(<Harness day={SATURDAY} />);
+
+    await user.selectOptions(screen.getByLabelText('servico'), 's1');
+
+    for (const time of ['12:00', '12:30', '13:00', '13:30']) {
+      expect(slotAt(time)).toHaveAttribute('data-taken', 'false');
+      expect(slotAt(time)).toHaveAttribute('data-label', time);
+    }
+  });
+
+  it('calls an hour inside an appointment its continuation', async () => {
+    const user = userEvent.setup();
+    render(<Harness day={{ ...SATURDAY, busy: [{ startMinutes: 600, endMinutes: 690 }] }} />);
+
+    await user.selectOptions(screen.getByLabelText('servico'), 's1');
+
+    for (const time of ['10:00', '10:30', '11:00']) {
+      expect(slotAt(time)).toHaveAttribute('data-label', `${time} — ${BOOKING_COPY.coveredSuffix}`);
+    }
+  });
+
+  it('calls a free hour the service does not fit into before the next one “sem tempo”', async () => {
+    const user = userEvent.setup();
+    render(<Harness day={{ ...SATURDAY, busy: [{ startMinutes: 600, endMinutes: 630 }] }} />);
+
+    await user.selectOptions(screen.getByLabelText('servico'), 's2');
+
+    for (const time of ['09:00', '09:30']) {
+      expect(slotAt(time)).toHaveAttribute('data-taken', 'true');
+      expect(slotAt(time)).toHaveAttribute('data-label', `${time} — ${BOOKING_COPY.noTimeSuffix}`);
+    }
+    expect(slotAt('10:00')).toHaveAttribute('data-label', `10:00 — ${BOOKING_COPY.coveredSuffix}`);
+    expect(slotAt('10:30')).toHaveAttribute('data-label', '10:30');
   });
 
   it('offers an hour that runs past closing, since studio hours are not the rule', async () => {

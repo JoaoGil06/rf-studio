@@ -211,7 +211,7 @@
   .list {
     display: grid;
     grid-auto-flow: column;
-    grid-template-rows: repeat(8, auto);
+    grid-template-rows: repeat(9, auto);
     grid-auto-columns: minmax(0, 1fr);
     column-gap: 26px;
     align-content: start;

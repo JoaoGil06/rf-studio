@@ -35,6 +35,7 @@ export interface ServiceOptionGroup {
 
 export interface BookingSlot {
   time: string;
+  label: string;
   isTaken: boolean;
 }
 

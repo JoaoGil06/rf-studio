@@ -8,16 +8,14 @@ export interface SlotRange {
 export const STUDIO_SLOT_MINUTES = 30;
 
 /**
- * 09:00–12:00 and 14:00–22:00. The midday gap is real (PRODUCT.md) and the two
- * halves are why the day list can be set as two ruled columns when the phone is
- * sideways.
+ * 09:00–22:00, one unbroken range. The lunch hours (12:00–13:30) are bookable like
+ * any other — PRODUCT.md §Operating Context, *Day shape*.
  *
- * `endMinutes` is exclusive, so the afternoon range runs to 22:00 *inclusive* by
- * ending one slot past it — 22:00 is an hour Rita takes, not the moment she stops.
+ * `endMinutes` is exclusive, so the range runs to 22:00 *inclusive* by ending one
+ * slot past it — 22:00 is an hour Rita takes, not the moment she stops.
  */
 export const STUDIO_HOURS: readonly SlotRange[] = [
-  { startMinutes: 9 * 60, endMinutes: 12 * 60 },
-  { startMinutes: 14 * 60, endMinutes: 22 * 60 + STUDIO_SLOT_MINUTES },
+  { startMinutes: 9 * 60, endMinutes: 22 * 60 + STUDIO_SLOT_MINUTES },
 ];
 
 /**

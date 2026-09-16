@@ -33,3 +33,19 @@
     min-height: 44px;
   }
 }
+
+@media (max-width: 620px) {
+  .group {
+    column-gap: 10px;
+  }
+
+  .tab {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+}
+@media (max-width: 359px) {
+  .tab {
+    font-size: 9px;
+  }
+}

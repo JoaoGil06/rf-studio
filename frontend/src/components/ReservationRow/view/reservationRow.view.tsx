@@ -1,8 +1,36 @@
-import type { ReservationRowProps } from '../types/reservationRow.types';
+import { useCallback } from 'react';
+import type {
+  ReservationActionPillProps,
+  ReservationRowProps,
+} from '../types/reservationRow.types';
 import { useReservationRowViewModel } from '../viewmodel/reservationRow.viewmodel';
 import styles from './reservationRow.view.module.css';
 
-export function ReservationRow({ id }: ReservationRowProps) {
+function ReservationActionPill({
+  id,
+  kind,
+  label,
+  accessibleLabel,
+  isDanger,
+  onAction,
+}: ReservationActionPillProps) {
+  const handleClick = useCallback(() => onAction(id, kind), [onAction, id, kind]);
+
+  return (
+    <button
+      type="button"
+      className={styles.action}
+      data-kind={kind}
+      data-danger={isDanger}
+      aria-label={accessibleLabel}
+      onClick={handleClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+export function ReservationRow({ id, onAction }: ReservationRowProps) {
   const row = useReservationRowViewModel(id);
 
   if (!row) {
@@ -21,6 +49,22 @@ export function ReservationRow({ id }: ReservationRowProps) {
       </div>
 
       <span className={styles.when}>{row.when}</span>
+
+      {row.actions.length > 0 && (
+        <div className={styles.actions}>
+          {row.actions.map((action) => (
+            <ReservationActionPill
+              key={action.kind}
+              id={id}
+              kind={action.kind}
+              label={action.label}
+              accessibleLabel={action.accessibleLabel}
+              isDanger={action.isDanger}
+              onAction={onAction}
+            />
+          ))}
+        </div>
+      )}
     </article>
   );
 }

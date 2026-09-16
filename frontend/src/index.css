@@ -1,4 +1,6 @@
 html {
+  color-scheme: light;
+
   --bg: #f7f3ee;
   --panel: #ffffff;
   --panel2: #faf6f1;
@@ -32,6 +34,8 @@ html {
 }
 
 html[data-theme='dark'] {
+  color-scheme: dark;
+
   --bg: #1e1b19;
   --panel: #282420;
   --panel2: #26221f;
@@ -52,9 +56,6 @@ html[data-theme='dark'] {
   --btn-bg: #d3ac6b;
   --btn-ink: #1e1b19;
   --danger: #e0937c;
-  /* On paper the veil greys the card down; on the dark theme greying it *up*
-     would read as emphasis, so it takes the page's own ground instead and the
-     card recedes toward the background. */
   --veil: color-mix(in srgb, var(--bg) 62%, transparent);
   --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }

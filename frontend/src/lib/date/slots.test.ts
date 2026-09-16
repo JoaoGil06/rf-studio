@@ -1,6 +1,7 @@
 import {
   buildSlots,
   coveredSlotTimes,
+  isSlotCovered,
   isSlotTaken,
   mergeSlotTimes,
   minutesOfDay,
@@ -180,5 +181,26 @@ describe('coveredSlotTimes', () => {
 
   it('covers nothing at all when nothing is booked', () => {
     expect(coveredSlotTimes(buildSlots(DAY, 30), []).size).toBe(0);
+  });
+});
+
+describe('isSlotCovered', () => {
+  const busy = [{ startMinutes: 10 * 60, endMinutes: 11 * 60 + 30 }];
+
+  it('covers the appointment’s own start and the hours it runs through', () => {
+    expect(isSlotCovered('10:00', busy)).toBe(true);
+    expect(isSlotCovered('11:00', busy)).toBe(true);
+  });
+
+  it('does not cover the hour the appointment ends on', () => {
+    expect(isSlotCovered('11:30', busy)).toBe(false);
+  });
+
+  it('does not cover a free hour before it, even one too short for anything', () => {
+    expect(isSlotCovered('09:30', busy)).toBe(false);
+  });
+
+  it('covers nothing for a malformed key', () => {
+    expect(isSlotCovered('10h', busy)).toBe(false);
   });
 });
