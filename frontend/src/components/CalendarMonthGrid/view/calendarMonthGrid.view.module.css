@@ -48,6 +48,11 @@ button.day {
   cursor: pointer;
 }
 
+button.day:hover,
+button.day:focus-visible {
+  border-color: var(--accent);
+}
+
 .today {
   background: var(--panel);
   outline: 1.5px solid var(--accent-ink);

@@ -8,13 +8,16 @@ export interface SlotRange {
 export const STUDIO_SLOT_MINUTES = 30;
 
 /**
- * 09:00–12:00 and 14:00–17:30. The midday gap is real (PRODUCT.md) and the two
+ * 09:00–12:00 and 14:00–22:00. The midday gap is real (PRODUCT.md) and the two
  * halves are why the day list can be set as two ruled columns when the phone is
- * sideways. `endMinutes` is exclusive, so the afternoon's last slot is 17:30.
+ * sideways.
+ *
+ * `endMinutes` is exclusive, so the afternoon range runs to 22:00 *inclusive* by
+ * ending one slot past it — 22:00 is an hour Rita takes, not the moment she stops.
  */
 export const STUDIO_HOURS: readonly SlotRange[] = [
   { startMinutes: 9 * 60, endMinutes: 12 * 60 },
-  { startMinutes: 14 * 60, endMinutes: 18 * 60 },
+  { startMinutes: 14 * 60, endMinutes: 22 * 60 + STUDIO_SLOT_MINUTES },
 ];
 
 /**

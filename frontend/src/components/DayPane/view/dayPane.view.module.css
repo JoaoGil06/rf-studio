@@ -19,6 +19,57 @@
   font-weight: 500;
 }
 
+.headEnd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 160ms var(--ease),
+    border-color 160ms var(--ease);
+}
+
+.add:hover,
+.add:focus-visible {
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.addIcon {
+  width: 12px;
+  height: 12px;
+}
+
+@media (pointer: coarse) {
+  .add {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}
+
 .count {
   font-size: 9px;
   letter-spacing: 2px;
@@ -65,6 +116,10 @@
   color: var(--muted);
 }
 
+.timeCovered {
+  color: var(--muted2);
+}
+
 .entries {
   display: flex;
   flex-direction: column;
@@ -81,6 +136,18 @@
   font-style: italic;
   font-size: 15px;
   color: var(--muted);
+}
+
+.covered {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-left: 1px solid var(--border);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted2);
 }
 
 @media (min-width: 621px) and (max-width: 1180px) and (min-height: 541px) {

@@ -1,0 +1,108 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.note {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 160ms var(--ease);
+}
+
+.select:hover {
+  border-color: var(--accent-ink);
+}
+
+.select:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.select:disabled:hover {
+  border-color: var(--border);
+}
+
+.field .note {
+  margin-top: 6px;
+}
+
+.fieldError {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.formError {
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.submit {
+  padding: 12px 22px;
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--accent-ink);
+}
+
+.submit:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* The sheet is opened on a propped tablet as often as at a desk. */
+@media (pointer: coarse) {
+  .select,
+  .submit {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select,
+  .submit {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}

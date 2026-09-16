@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { AGENDA_QUERY, useAgendaModel } from './agenda.model';
+import { AGENDA_QUERY, PICKER_PAGE_SIZE, useAgendaModel } from './agenda.model';
 
 const useQueryMock = vi.fn();
 
@@ -9,10 +9,18 @@ vi.mock('@apollo/client/react', () => ({
 
 function aQueryResult(overrides: { schedules?: unknown[]; loading?: boolean; error?: Error } = {}) {
   return {
-    data:
-      overrides.schedules === undefined
-        ? { schedulesInRange: [{ id: 'schedule-1' }] }
-        : { schedulesInRange: overrides.schedules },
+    data: {
+      schedulesInRange:
+        overrides.schedules === undefined ? [{ id: 'schedule-1' }] : overrides.schedules,
+      users: {
+        edges: [{ node: { id: 'client-1', name: 'Ana' } }],
+        pageInfo: { hasNextPage: false },
+      },
+      services: {
+        edges: [{ node: { id: 'service-1', name: 'Manicure', category: 'nails', price: 15 } }],
+        pageInfo: { hasNextPage: false },
+      },
+    },
     loading: overrides.loading ?? false,
     error: overrides.error,
   };
@@ -24,11 +32,11 @@ beforeEach(() => {
 });
 
 describe('useAgendaModel — one request, one month', () => {
-  it('asks for the viewed month by year and month, and nothing else', () => {
+  it('asks for one picker-sized page of clients and services alongside the month', () => {
     renderHook(() => useAgendaModel({ year: 2026, month: 9 }));
 
     expect(useQueryMock).toHaveBeenCalledWith(AGENDA_QUERY, {
-      variables: { filter: { year: 2026, month: 9 } },
+      variables: { filter: { year: 2026, month: 9 }, pickerSize: PICKER_PAGE_SIZE },
     });
   });
 
@@ -68,6 +76,25 @@ describe('useAgendaModel — one request, one month', () => {
 
     expect(result.current.schedules).toEqual([]);
     expect(result.current.loading).toBe(true);
+  });
+
+  it('reports an empty book rather than undefined before the query lands', () => {
+    useQueryMock.mockReturnValue({ data: undefined, loading: true, error: undefined });
+
+    const { result } = renderHook(() => useAgendaModel({ year: 2026, month: 9 }));
+
+    expect(result.current.clients).toEqual([]);
+    expect(result.current.services).toEqual([]);
+    expect(result.current.hasMoreClients).toBe(false);
+  });
+
+  it('hands the picker its two lists straight through', () => {
+    const { result } = renderHook(() => useAgendaModel({ year: 2026, month: 9 }));
+
+    expect(result.current.clients).toEqual([{ node: { id: 'client-1', name: 'Ana' } }]);
+    expect(result.current.services).toEqual([
+      { node: { id: 'service-1', name: 'Manicure', category: 'nails', price: 15 } },
+    ]);
   });
 
   it('passes a load failure up for the viewmodel to translate', () => {

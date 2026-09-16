@@ -24,6 +24,7 @@ function focusableWithin(sheet: HTMLElement | null): HTMLElement[] {
 export function useModalViewModel({ isOpen, onClose }: UseModalViewModelParams) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
+  const whisperId = useId();
 
   useEffect(() => {
     if (!isOpen) {
@@ -84,5 +85,5 @@ export function useModalViewModel({ isOpen, onClose }: UseModalViewModelParams) 
     [onClose],
   );
 
-  return { sheetRef, titleId, handleScrimClick };
+  return { sheetRef, titleId, whisperId, handleScrimClick };
 }

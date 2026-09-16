@@ -58,6 +58,21 @@
   gap: 16px;
 }
 
+.heading {
+  min-width: 0;
+}
+
+.whisper {
+  font-family: var(--font-script);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.heading .title {
+  margin-top: 2px;
+}
+
 .title {
   margin: 0;
   font-family: var(--font-serif);

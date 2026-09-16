@@ -1,7 +1,10 @@
+import { useCallback, useMemo, useState } from 'react';
 import { CalendarMonthGrid } from '../../../components/CalendarMonthGrid';
+import type { CellAction } from '../../../components/CalendarMonthGrid/types/calendarMonthGrid.types';
 import { CalendarWeekStrip } from '../../../components/CalendarWeekStrip';
 import { DayPane } from '../../../components/DayPane';
 import { Loader } from '../../../components/Loader';
+import { NewReservationModal } from '../../../components/NewReservationModal';
 import { ChevronLeftIcon, ChevronRightIcon } from '../../../components/icons';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { STATION_QUERY } from '../../../utils/constants/compositions';
@@ -23,6 +26,11 @@ export function AgendaView() {
     dayCountLabel,
     isSelectedDayClosed,
     daySlots,
+    clientOptions,
+    serviceGroups,
+    clientsTruncatedNote,
+    bookingDays,
+    selectedBookingDay,
     stats,
     statuses,
     isLoading,
@@ -30,6 +38,22 @@ export function AgendaView() {
   } = useAgendaViewModel();
 
   const isStation = useMediaQuery(STATION_QUERY);
+
+  const [bookingDayKey, setBookingDayKey] = useState<string | null>(null);
+
+  const closeBooking = useCallback(() => setBookingDayKey(null), []);
+
+  const bookingDay = useMemo(
+    () => (bookingDayKey ? (bookingDays[bookingDayKey] ?? null) : null),
+    [bookingDayKey, bookingDays],
+  );
+
+  const openSelectedDayBooking = useCallback(
+    () => setBookingDayKey(selectedBookingDay?.key ?? null),
+    [selectedBookingDay],
+  );
+
+  const cellAction = useMemo<CellAction>(() => (isStation ? 'select' : 'add'), [isStation]);
 
   return (
     <main className={styles.page}>
@@ -96,14 +120,32 @@ export function AgendaView() {
 
       <div className={styles.body}>
         <CalendarWeekStrip weeks={weeks} selectedKey={selectedKey} onSelectDay={selectDay} />
-        <CalendarMonthGrid days={monthDays} isDaySelectable={isStation} onSelectDay={selectDay} />
+        <CalendarMonthGrid
+          days={monthDays}
+          cellAction={cellAction}
+          onSelectDay={selectDay}
+          onAddDay={setBookingDayKey}
+        />
         <DayPane
           dayLabel={dayLabel}
           countLabel={dayCountLabel}
           isClosed={isSelectedDayClosed}
           slots={daySlots}
+          addLabel={selectedBookingDay?.addLabel ?? null}
+          onAddReservation={openSelectedDayBooking}
         />
       </div>
+
+      <p className={styles.hintDesk}>{AGENDA_COPY.hintDesk}</p>
+      <p className={styles.hintPane}>{AGENDA_COPY.hintPane}</p>
+
+      <NewReservationModal
+        day={bookingDay}
+        clients={clientOptions}
+        serviceGroups={serviceGroups}
+        truncatedNote={clientsTruncatedNote}
+        onClose={closeBooking}
+      />
     </main>
   );
 }
