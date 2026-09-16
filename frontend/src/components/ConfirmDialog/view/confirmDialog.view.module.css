@@ -20,6 +20,14 @@
   color: var(--ink);
 }
 
+.consequence {
+  margin: -8px 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+}
+
 .actions {
   display: flex;
   gap: 8px;
@@ -58,7 +66,25 @@
   background: var(--danger);
 }
 
-.pill:disabled {
+.primary {
+  padding: 8px 18px;
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--accent-ink);
+}
+
+.pill:disabled,
+.primary:disabled {
   cursor: default;
   opacity: 0.7;
 }
@@ -70,7 +96,8 @@
 }
 
 @media (pointer: coarse) {
-  .pill {
+  .pill,
+  .primary {
     min-height: 44px;
   }
 }

@@ -14,6 +14,7 @@ export const SCHEDULES_QUERY = graphql(`
         node {
           id
           ...ReservationRowFields
+          ...ReservationStatusFields
         }
       }
       pageInfo {

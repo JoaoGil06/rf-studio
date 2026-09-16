@@ -2,8 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { isBadUserInput } from '../../../graphql/errors';
-import { buildSlots, isSlotTaken, toLocalDateTime } from '../../../lib/date/slots';
-import { SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
+import {
+  buildSlots,
+  isSlotCovered,
+  isSlotTaken,
+  toLocalDateTime,
+  type TimeSpan,
+} from '../../../lib/date/slots';
+import { BOOKING_COPY, SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
 import { BOOKING_STATUS } from '../../../utils/constants/scheduleStatuses';
 import { STUDIO_HOURS, STUDIO_SLOT_MINUTES } from '../../../utils/constants/studioHours';
 import {
@@ -15,6 +21,18 @@ import {
   type ServiceOptionGroup,
 } from '../../BookingForm/types/bookingForm.types';
 import { useNewReservationModalModel } from '../model/newReservationModal.model';
+
+function toBookingSlot(time: string, held: number, busy: readonly TimeSpan[]): BookingSlot {
+  if (isSlotCovered(time, busy)) {
+    return { time, label: `${time} — ${BOOKING_COPY.coveredSuffix}`, isTaken: true };
+  }
+
+  if (isSlotTaken(time, held, busy)) {
+    return { time, label: `${time} — ${BOOKING_COPY.noTimeSuffix}`, isTaken: true };
+  }
+
+  return { time, label: time, isTaken: false };
+}
 
 export function useNewReservationModalViewModel(
   day: BookingDay | null,
@@ -73,10 +91,9 @@ export function useNewReservationModalViewModel(
       return [];
     }
 
-    return buildSlots(STUDIO_HOURS, STUDIO_SLOT_MINUTES).map((time) => ({
-      time,
-      isTaken: isSlotTaken(time, held, day.busy),
-    }));
+    return buildSlots(STUDIO_HOURS, STUDIO_SLOT_MINUTES).map((time) =>
+      toBookingSlot(time, held, day.busy),
+    );
   }, [day, held]);
 
   const isTimeLocked = useMemo(() => held === null, [held]);

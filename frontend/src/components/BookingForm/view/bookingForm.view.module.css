@@ -43,6 +43,81 @@
   border-color: var(--accent-ink);
 }
 
+@supports (appearance: base-select) {
+  @media (pointer: fine) {
+    .select,
+    .select::picker(select) {
+      appearance: base-select;
+    }
+
+    .select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .select::picker-icon {
+      color: var(--muted);
+    }
+
+    .select::picker(select) {
+      margin-top: 4px;
+      padding: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      max-height: min(320px, 50vh);
+    }
+
+    .select option {
+      padding: 8px 10px;
+      border-radius: 3px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    .select option::checkmark {
+      display: none;
+    }
+
+    .select option:hover,
+    .select option:focus-visible {
+      background: var(--panel2);
+      outline: none;
+    }
+
+    .select option:checked {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+
+    .select option:disabled {
+      color: var(--muted);
+      background: none;
+    }
+
+    .select optgroup {
+      padding: 8px 10px 4px;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .select optgroup option {
+      letter-spacing: normal;
+      text-transform: none;
+    }
+  }
+}
+
 .select:disabled {
   color: var(--muted);
   cursor: not-allowed;

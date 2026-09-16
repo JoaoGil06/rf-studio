@@ -72,8 +72,8 @@ beforeEach(() => {
     formError: null,
     isSaving: false,
     slots: [
-      { time: '09:00', isTaken: false },
-      { time: '09:30', isTaken: true },
+      { time: '09:00', label: '09:00', isTaken: false },
+      { time: '09:30', label: '09:30 — continuação', isTaken: true },
     ],
     isTimeLocked: false,
   });

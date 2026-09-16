@@ -16,9 +16,10 @@ import { BookingForm } from './bookingForm.view';
 const onValid = vi.fn();
 
 const SLOTS: BookingSlot[] = [
-  { time: '09:00', isTaken: false },
-  { time: '09:30', isTaken: true },
-  { time: '10:00', isTaken: false },
+  { time: '09:00', label: '09:00', isTaken: false },
+  { time: '09:30', label: `09:30 — ${BOOKING_COPY.noTimeSuffix}`, isTaken: true },
+  { time: '10:00', label: '10:00', isTaken: false },
+  { time: '10:30', label: `10:30 — ${BOOKING_COPY.coveredSuffix}`, isTaken: true },
 ];
 
 const CLIENTS: ClientOption[] = [
@@ -95,9 +96,12 @@ describe('BookingForm — the hour', () => {
     expect(screen.getByRole('option', { name: '09:00' })).toBeEnabled();
     expect(screen.getByRole('option', { name: '10:00' })).toBeEnabled();
 
-    const taken = screen.getByRole('option', { name: `09:30 — ${BOOKING_COPY.takenSuffix}` });
-
-    expect(taken).toBeDisabled();
+    expect(
+      screen.getByRole('option', { name: `09:30 — ${BOOKING_COPY.noTimeSuffix}` }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('option', { name: `10:30 — ${BOOKING_COPY.coveredSuffix}` }),
+    ).toBeDisabled();
   });
 
   it('starts on the placeholder rather than guessing an hour', () => {

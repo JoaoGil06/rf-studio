@@ -1,3 +1,5 @@
+import type { ConfirmTone } from '../../../utils/constants/reservationActions';
+
 export interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
@@ -7,4 +9,7 @@ export interface ConfirmDialogProps {
   isBusy: boolean;
   onClose: () => void;
   onConfirm: () => Promise<string | null>;
+  verb?: string;
+  consequence?: string;
+  tone?: ConfirmTone;
 }

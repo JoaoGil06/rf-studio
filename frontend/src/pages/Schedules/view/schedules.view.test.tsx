@@ -12,7 +12,40 @@ vi.mock('../viewmodel/schedules.viewmodel', () => ({
 }));
 
 vi.mock('../../../components/ReservationRow', () => ({
-  ReservationRow: ({ id }: { id: string }) => <div data-testid="reservation-row">{id}</div>,
+  ReservationRow: ({
+    id,
+    onAction,
+  }: {
+    id: string;
+    onAction: (id: string, kind: 'confirm' | 'cancel') => void;
+  }) => (
+    <div data-testid="reservation-row">
+      {id}
+      <button type="button" onClick={() => onAction(id, 'cancel')}>
+        cancelar {id}
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock('../../../components/ReservationStatusModal', () => ({
+  ReservationStatusModal: ({
+    scheduleId,
+    kind,
+    onClose,
+  }: {
+    scheduleId: string | null;
+    kind: string | null;
+    onClose: () => void;
+  }) =>
+    scheduleId ? (
+      <div data-testid="status-modal">
+        {scheduleId}:{kind}
+        <button type="button" onClick={onClose}>
+          fechar
+        </button>
+      </div>
+    ) : null,
 }));
 
 function aViewModel(overrides: Record<string, unknown> = {}) {
@@ -83,10 +116,9 @@ describe('SchedulesView — the queue', () => {
   it('renders one row per id, in the order the viewmodel gave them', () => {
     renderPage();
 
-    expect(screen.getAllByTestId('reservation-row').map((row) => row.textContent)).toEqual([
-      's1',
-      's4',
-    ]);
+    expect(
+      screen.getAllByTestId('reservation-row').map((row) => row.firstChild?.textContent),
+    ).toEqual(['s1', 's4']);
   });
 
   it('shows the tab’s own empty panel once the request has settled on nothing', () => {
@@ -123,5 +155,31 @@ describe('SchedulesView — the queue', () => {
     renderPage({ isLoadingMore: true });
 
     expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SchedulesView — confirming a change of state', () => {
+  it('asks nothing until a row reports an action', () => {
+    renderPage();
+
+    expect(screen.queryByTestId('status-modal')).not.toBeInTheDocument();
+  });
+
+  it('opens the dialog for the row and the action that were pressed', async () => {
+    renderPage();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'cancelar s4' }));
+
+    expect(screen.getByTestId('status-modal')).toHaveTextContent('s4:cancel');
+  });
+
+  it('closes the dialog when it says it is done', async () => {
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'cancelar s1' }));
+    await user.click(screen.getByRole('button', { name: 'fechar' }));
+
+    expect(screen.queryByTestId('status-modal')).not.toBeInTheDocument();
   });
 });

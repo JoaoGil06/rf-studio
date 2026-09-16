@@ -294,9 +294,24 @@ describe('useAgendaViewModel — the selected day', () => {
   it('lays the studio day out in half hours whether or not anything is booked', () => {
     const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12');
 
-    expect(result.current.daySlots).toHaveLength(23);
+    expect(result.current.daySlots).toHaveLength(27);
     expect(result.current.daySlots[0]?.time).toBe('09:00');
     expect(result.current.daySlots.at(-1)?.time).toBe('22:00');
+  });
+
+  it('keeps the lunch hours in the day', () => {
+    const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12');
+
+    const times = result.current.daySlots.map((slot) => slot.time);
+
+    expect(times.slice(times.indexOf('11:30'), times.indexOf('14:00') + 1)).toEqual([
+      '11:30',
+      '12:00',
+      '12:30',
+      '13:00',
+      '13:30',
+      '14:00',
+    ]);
   });
 
   it('files a reservation into the slot for its hour', () => {
@@ -330,13 +345,13 @@ describe('useAgendaViewModel — the selected day', () => {
 
   it('adds a slot the studio grid does not have', () => {
     const { result } = renderViewModel('?mes=2026-09&dia=2026-09-12', [
-      aSchedule({ date: new Date(2026, 8, 12, 13, 0).toISOString() }),
+      aSchedule({ date: new Date(2026, 8, 12, 13, 15).toISOString() }),
     ]);
 
     const times = result.current.daySlots.map((slot) => slot.time);
 
-    expect(times).toHaveLength(24);
-    expect(times.indexOf('13:00')).toBe(times.indexOf('11:30') + 1);
+    expect(times).toHaveLength(28);
+    expect(times.indexOf('13:15')).toBe(times.indexOf('13:00') + 1);
   });
 
   it('counts what the day holds, in tracked capitals', () => {

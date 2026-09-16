@@ -122,4 +122,49 @@ describe('useReservationRowViewModel', () => {
       'Pendente — Maria Silva · Unhas, Gel, sábado, 12 de Setembro de 2026 às 10:00',
     );
   });
+
+  it('offers confirm then cancel on a pending reservation, naming each for assistive tech', () => {
+    reservationMock.mockReturnValue(aReservation());
+
+    const actions = renderRow().result.current?.actions ?? [];
+
+    expect(actions.map((action) => action.kind)).toEqual(['confirm', 'cancel']);
+    expect(actions.map((action) => action.label)).toEqual(['CONFIRMAR', 'CANCELAR']);
+    expect(actions[0]?.accessibleLabel).toBe(
+      'Confirmar reserva de Maria Silva, sábado, 12 de Setembro de 2026 às 10:00',
+    );
+    expect(actions[1]?.accessibleLabel).toBe(
+      'Cancelar reserva de Maria Silva, sábado, 12 de Setembro de 2026 às 10:00',
+    );
+  });
+
+  it('marks only cancel as destructive', () => {
+    reservationMock.mockReturnValue(aReservation());
+
+    const actions = renderRow().result.current?.actions ?? [];
+
+    expect(actions.map((action) => action.isDanger)).toEqual([false, true]);
+  });
+
+  it('offers only cancel on a confirmed reservation', () => {
+    reservationMock.mockReturnValue(aReservation({ status: 'confirmed' }));
+
+    expect(renderRow().result.current?.actions.map((action) => action.kind)).toEqual(['cancel']);
+  });
+
+  it.each(['completed', 'cancelled'] as const)('offers nothing on a %s reservation', (status) => {
+    reservationMock.mockReturnValue(aReservation({ status }));
+
+    expect(renderRow().result.current?.actions).toEqual([]);
+  });
+
+  it('offers nothing on a status it cannot read, even though the badge falls back to Pendente', () => {
+    reservationMock.mockReturnValue(
+      aReservation({
+        status: 'no-show' as unknown as ReservationRowFieldsFragment['status'],
+      }),
+    );
+
+    expect(renderRow().result.current?.actions).toEqual([]);
+  });
 });

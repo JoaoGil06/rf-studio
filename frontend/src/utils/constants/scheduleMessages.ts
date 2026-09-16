@@ -8,6 +8,9 @@ export const SCHEDULE_ERROR_MESSAGES = {
   timeTaken: 'Essa hora deixou de estar livre. Escolha outra.',
   clientNotFound: 'Esta cliente já não existe.',
   serviceNotFound: 'Este serviço já não existe.',
+  notFound: 'Esta reserva já não existe.',
+  statusChanged: 'Esta reserva já tinha mudado de estado. A lista foi atualizada.',
+  statusFailed: 'Não foi possível mudar o estado da reserva. Tente novamente.',
 } as const;
 
 export const AGENDA_COPY = {
@@ -42,7 +45,8 @@ export const BOOKING_COPY = {
   serviceLabel: 'Serviço',
   choosePlaceholder: '— escolher —',
   timeLockedPlaceholder: '— escolha primeiro o serviço —',
-  takenSuffix: 'ocupado',
+  coveredSuffix: 'continuação',
+  noTimeSuffix: 'sem tempo entre serviços',
   submit: 'CRIAR RESERVA',
   busy: 'A CRIAR…',
   addAction: 'Nova reserva',

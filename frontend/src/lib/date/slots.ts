@@ -134,6 +134,12 @@ export function isSlotTaken(
 const coversMinute = (span: TimeSpan, minute: number) =>
   minute >= span.startMinutes && minute < span.endMinutes;
 
+export function isSlotCovered(slot: string, busy: readonly TimeSpan[]): boolean {
+  const startMinutes = toMinutes(slot);
+
+  return startMinutes !== null && busy.some((interval) => coversMinute(interval, startMinutes));
+}
+
 /**
  * The grid times a booked appointment runs *through* — its own start included.
  * The day pane reads these: an hour inside someone else's manicure is not `livre`.
@@ -145,9 +151,7 @@ export function coveredSlotTimes(
   const covered = new Set<string>();
 
   for (const time of gridTimes) {
-    const startMinutes = toMinutes(time);
-
-    if (startMinutes !== null && busy.some((interval) => coversMinute(interval, startMinutes))) {
+    if (isSlotCovered(time, busy)) {
       covered.add(time);
     }
   }
