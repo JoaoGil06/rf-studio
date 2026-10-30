@@ -1,5 +1,6 @@
 import { useId, useMemo } from 'react';
 import { BOOKING_COPY } from '../../../utils/constants/scheduleMessages';
+import { ServicePicker } from '../../ServicePicker';
 import type { BookingFormProps } from '../types/bookingForm.types';
 import styles from './bookingForm.view.module.css';
 
@@ -13,6 +14,10 @@ export function BookingForm({
   isTimeLocked,
   clients,
   serviceGroups,
+  chosenServices,
+  serviceSummary,
+  onAddService,
+  onRemoveService,
   truncatedNote,
   submitLabel,
   busyLabel,
@@ -33,42 +38,23 @@ export function BookingForm({
   const serviceId = `${fieldId}-service`;
   const timeErrorId = `${timeId}-error`;
   const clientErrorId = `${clientId}-error`;
-  const serviceErrorId = `${serviceId}-error`;
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
       <p className={styles.note}>{BOOKING_COPY.pendingNote}</p>
 
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor={serviceId}>
-          {BOOKING_COPY.serviceLabel}
-        </label>
-        <select
-          className={styles.select}
-          id={serviceId}
-          aria-invalid={errors.serviceId ? true : undefined}
-          aria-describedby={errors.serviceId ? serviceErrorId : undefined}
-          {...register('serviceId')}
-        >
-          <option value="" disabled hidden>
-            {BOOKING_COPY.choosePlaceholder}
-          </option>
-          {serviceGroups.map((group) => (
-            <optgroup key={group.label} label={group.label}>
-              {group.options.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        {errors.serviceId && (
-          <span className={styles.fieldError} id={serviceErrorId}>
-            {errors.serviceId.message}
-          </span>
-        )}
-      </div>
+      <ServicePicker
+        id={serviceId}
+        label={BOOKING_COPY.serviceLabel}
+        placeholder={BOOKING_COPY.addServicePlaceholder}
+        groups={serviceGroups}
+        chosen={chosenServices}
+        removeVerb={BOOKING_COPY.removeServiceVerb}
+        summary={serviceSummary}
+        error={errors.serviceIds?.message}
+        onAdd={onAddService}
+        onRemove={onRemoveService}
+      />
 
       <div className={styles.field}>
         <label className={styles.label} htmlFor={clientId}>

@@ -492,6 +492,14 @@ describe('useAgendaViewModel — the booking pickers', () => {
     expect(result.current.serviceGroups[0]?.options[0]?.label).toBe('Manicure · 15,00 €');
   });
 
+  it('carries the price as a number, for the booking sheet’s running total', () => {
+    const { result } = renderViewModel('?mes=2026-09', [], {
+      services: [aService('s1', 'Manicure', 'nails', 15)],
+    });
+
+    expect(result.current.serviceGroups[0]?.options[0]?.price).toBe(15);
+  });
+
   it('reports the truncation note only when the book ran past one page', () => {
     const whole = renderViewModel('?mes=2026-09', [], { hasMoreClients: false });
 

@@ -9,11 +9,13 @@ import {
   type BookingFormValues,
   type BookingSlot,
   type ClientOption,
+  type ServiceOption,
   type ServiceOptionGroup,
 } from '../types/bookingForm.types';
 import { BookingForm } from './bookingForm.view';
 
 const onValid = vi.fn();
+const onRemoveService = vi.fn();
 
 const SLOTS: BookingSlot[] = [
   { time: '09:00', label: '09:00', isTaken: false },
@@ -27,14 +29,21 @@ const CLIENTS: ClientOption[] = [
   { id: 'c2', name: 'Beatriz Sousa' },
 ];
 
+const MANICURE: ServiceOption = {
+  id: 's1',
+  label: 'Manicure simples · 15,00 €',
+  durationMinutes: 90,
+  price: 15,
+};
+
 const SERVICE_GROUPS: ServiceOptionGroup[] = [
   {
     label: 'Unhas',
-    options: [{ id: 's1', label: 'Manicure simples · 15,00 €', durationMinutes: 90 }],
+    options: [MANICURE],
   },
   {
     label: 'Sobrancelhas',
-    options: [{ id: 's2', label: 'Design · 10,00 €', durationMinutes: 30 }],
+    options: [{ id: 's2', label: 'Design · 10,00 €', durationMinutes: 30, price: 10 }],
   },
 ];
 
@@ -46,6 +55,8 @@ interface HarnessProps {
   isTimeLocked?: boolean;
   clients?: readonly ClientOption[];
   serviceGroups?: readonly ServiceOptionGroup[];
+  chosenServices?: readonly ServiceOption[];
+  serviceSummary?: string | null;
 }
 
 function Harness({
@@ -56,10 +67,14 @@ function Harness({
   isTimeLocked = false,
   clients = CLIENTS,
   serviceGroups = SERVICE_GROUPS,
+  chosenServices = [],
+  serviceSummary = null,
 }: HarnessProps) {
   const {
     register,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -78,6 +93,10 @@ function Harness({
       isTimeLocked={isTimeLocked}
       clients={clients}
       serviceGroups={serviceGroups}
+      chosenServices={chosenServices}
+      serviceSummary={serviceSummary}
+      onAddService={(id) => setValue('serviceIds', [...getValues('serviceIds'), id])}
+      onRemoveService={onRemoveService}
       truncatedNote={truncatedNote}
       submitLabel={BOOKING_COPY.submit}
       busyLabel={BOOKING_COPY.busy}
@@ -136,14 +155,14 @@ describe('BookingForm — the hour', () => {
 });
 
 describe('BookingForm — the placeholder is not an answer', () => {
-  it('offers the placeholder in none of the three lists', () => {
+  it('offers the placeholder in neither of the single-answer lists', () => {
     const { container } = render(<Harness />);
 
     const placeholders = Array.from(container.querySelectorAll('option')).filter(
       (option) => option.textContent === BOOKING_COPY.choosePlaceholder,
     );
 
-    expect(placeholders).toHaveLength(3);
+    expect(placeholders).toHaveLength(2);
 
     for (const placeholder of placeholders) {
       expect(placeholder).toBeDisabled();
@@ -186,6 +205,21 @@ describe('BookingForm — the two pickers', () => {
     expect(groups).toEqual(['Unhas', 'Sobrancelhas']);
   });
 
+  it('passes the chosen services through to the picker', async () => {
+    render(<Harness chosenServices={[MANICURE]} serviceSummary="1 reserva" />);
+
+    expect(screen.getByRole('listitem')).toHaveTextContent(MANICURE.label);
+    expect(screen.getByText('1 reserva')).toBeInTheDocument();
+
+    await userEvent.setup().click(
+      screen.getByRole('button', {
+        name: `${BOOKING_COPY.removeServiceVerb} ${MANICURE.label}`,
+      }),
+    );
+
+    expect(onRemoveService).toHaveBeenCalledWith('s1');
+  });
+
   it('renders the truncation note only when the book did not fit', () => {
     const { rerender } = render(<Harness />);
 
@@ -221,8 +255,20 @@ describe('BookingForm — submitting', () => {
     expect(onValid.mock.calls[0]?.[0]).toEqual({
       time: '10:00',
       userId: 'c2',
-      serviceId: 's1',
+      serviceIds: ['s1'],
     });
+  });
+
+  it('requires at least one service', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.selectOptions(screen.getByLabelText(BOOKING_COPY.timeLabel), '10:00');
+    await user.selectOptions(screen.getByLabelText(BOOKING_COPY.clientLabel), 'c2');
+    await user.click(screen.getByRole('button', { name: BOOKING_COPY.submit }));
+
+    expect(onValid).not.toHaveBeenCalled();
+    expect(screen.getByText('Escolha pelo menos um serviço.')).toBeInTheDocument();
   });
 
   it('names each field error to its own control', async () => {
@@ -236,7 +282,7 @@ describe('BookingForm — submitting', () => {
     for (const [label, message] of [
       [BOOKING_COPY.timeLabel, 'Escolha a hora.'],
       [BOOKING_COPY.clientLabel, 'Escolha a cliente.'],
-      [BOOKING_COPY.serviceLabel, 'Escolha o serviço.'],
+      [BOOKING_COPY.serviceLabel, 'Escolha pelo menos um serviço.'],
     ] as const) {
       const field = screen.getByLabelText(label);
 
