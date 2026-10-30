@@ -29,6 +29,7 @@ export function groupSchedulesByDay(
       time: toSlotKey(date),
       status: schedule.status,
       finalPrice: schedule.finalPrice,
+      tip: schedule.tip ?? null,
       durationMinutes: schedule.service.durationMinutes,
     });
 

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { CategoryTabs } from '../../../components/CategoryTabs';
+import { CompleteReservationModal } from '../../../components/CompleteReservationModal';
 import { Loader } from '../../../components/Loader';
 import { PageHeader } from '../../../components/PageHeader';
 import { ReservationRow } from '../../../components/ReservationRow';
@@ -25,6 +26,9 @@ export function SchedulesView() {
     isLoading,
     isLoadingMore,
     loadError,
+    productOptions,
+    hasMoreProducts,
+    isLoadingProducts,
   } = useSchedulesViewModel();
 
   const [openAction, setOpenAction] = useState<OpenAction | null>(null);
@@ -35,8 +39,18 @@ export function SchedulesView() {
   );
   const closeAction = useCallback(() => setOpenAction(null), []);
 
-  const openScheduleId = useMemo(() => openAction?.id ?? null, [openAction]);
-  const openKind = useMemo(() => openAction?.kind ?? null, [openAction]);
+  const statusKind = useMemo(
+    () => (openAction && openAction.kind !== 'complete' ? openAction.kind : null),
+    [openAction],
+  );
+  const statusScheduleId = useMemo(
+    () => (statusKind ? (openAction?.id ?? null) : null),
+    [statusKind, openAction],
+  );
+  const completingId = useMemo(
+    () => (openAction?.kind === 'complete' ? openAction.id : null),
+    [openAction],
+  );
 
   const isEmpty = useMemo(
     () => !isLoading && !loadError && reservationIds.length === 0,
@@ -81,7 +95,21 @@ export function SchedulesView() {
 
       {isLoadingMore && <Loader />}
 
-      <ReservationStatusModal scheduleId={openScheduleId} kind={openKind} onClose={closeAction} />
+      <ReservationStatusModal
+        scheduleId={statusScheduleId}
+        kind={statusKind}
+        onClose={closeAction}
+      />
+
+      {completingId && (
+        <CompleteReservationModal
+          scheduleId={completingId}
+          productOptions={productOptions}
+          hasMoreProducts={hasMoreProducts}
+          isLoadingProducts={isLoadingProducts}
+          onClose={closeAction}
+        />
+      )}
     </main>
   );
 }

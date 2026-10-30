@@ -1,0 +1,199 @@
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 160ms var(--ease);
+}
+
+.select:hover {
+  border-color: var(--accent-ink);
+}
+
+@supports (appearance: base-select) {
+  @media (pointer: fine) {
+    .select,
+    .select::picker(select) {
+      appearance: base-select;
+    }
+
+    .select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .select::picker-icon {
+      color: var(--muted);
+    }
+
+    .select::picker(select) {
+      margin-top: 4px;
+      padding: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      max-height: min(320px, 50vh);
+    }
+
+    .select option {
+      padding: 8px 10px;
+      border-radius: 3px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    .select option::checkmark {
+      display: none;
+    }
+
+    .select option:hover,
+    .select option:focus-visible {
+      background: var(--panel2);
+      outline: none;
+    }
+
+    .select option:checked {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+
+    .select optgroup {
+      padding: 8px 10px 4px;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .select optgroup option {
+      letter-spacing: normal;
+      text-transform: none;
+    }
+  }
+}
+
+.select:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.select:disabled:hover {
+  border-color: var(--border);
+}
+
+.fieldError {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chosen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--panel2);
+  border-radius: 6px;
+}
+
+/* DESIGN.md §The Colour Swatch — 14px inline in a booking. */
+.swatch {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.tone {
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.remove {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 99px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 160ms var(--ease);
+}
+
+.remove:hover {
+  color: var(--danger);
+}
+
+.removeIcon {
+  width: 14px;
+  height: 14px;
+}
+
+@media (pointer: coarse) {
+  .select {
+    min-height: 44px;
+  }
+
+  .remove {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select,
+  .remove {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}

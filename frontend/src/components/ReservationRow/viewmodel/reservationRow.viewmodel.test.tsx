@@ -19,6 +19,7 @@ function aReservation(
     date: SEPTEMBER_12_AT_10,
     status: 'pending' as const,
     finalPrice: 35,
+    tip: null,
     user: { id: 'client-1', name: 'Maria Silva' },
     service: { id: 'service-1', name: 'Gel', category: 'nails' as const },
     ...overrides,
@@ -146,10 +147,41 @@ describe('useReservationRowViewModel', () => {
     expect(actions.map((action) => action.isDanger)).toEqual([false, true]);
   });
 
-  it('offers only cancel on a confirmed reservation', () => {
+  it('offers complete then cancel on a confirmed reservation', () => {
     reservationMock.mockReturnValue(aReservation({ status: 'confirmed' }));
 
-    expect(renderRow().result.current?.actions.map((action) => action.kind)).toEqual(['cancel']);
+    const actions = renderRow().result.current?.actions ?? [];
+
+    expect(actions.map((action) => action.kind)).toEqual(['complete', 'cancel']);
+    expect(actions.map((action) => action.label)).toEqual(['CONCLUIR', 'CANCELAR']);
+    expect(actions.map((action) => action.isDanger)).toEqual([false, true]);
+    expect(actions[0]?.accessibleLabel).toBe(
+      'Concluir reserva de Maria Silva, sábado, 12 de Setembro de 2026 às 10:00',
+    );
+  });
+
+  it('adds the tip beside the settled price, and to the row’s description', () => {
+    reservationMock.mockReturnValue(aReservation({ status: 'completed', tip: 5 }));
+
+    const row = renderRow().result.current;
+    const title = `Maria Silva · Unhas · ${formatEuros(35) ?? ''} + ${formatEuros(5) ?? ''} de gorjeta`;
+
+    expect(row?.title).toBe(title);
+    expect(row?.description).toContain(title);
+  });
+
+  it.each([null, 0])('says nothing about a tip of %j', (tip) => {
+    reservationMock.mockReturnValue(aReservation({ status: 'completed', tip }));
+
+    expect(renderRow().result.current?.title).toBe(
+      `Maria Silva · Unhas · ${formatEuros(35) ?? ''}`,
+    );
+  });
+
+  it('never shows a tip before the reservation is concluded', () => {
+    reservationMock.mockReturnValue(aReservation({ status: 'confirmed', tip: 5 }));
+
+    expect(renderRow().result.current?.title).toBe('Maria Silva · Unhas');
   });
 
   it.each(['completed', 'cancelled'] as const)('offers nothing on a %s reservation', (status) => {

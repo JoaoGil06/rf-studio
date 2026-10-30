@@ -17,12 +17,34 @@ vi.mock('../../../components/ReservationRow', () => ({
     onAction,
   }: {
     id: string;
-    onAction: (id: string, kind: 'confirm' | 'cancel') => void;
+    onAction: (id: string, kind: 'confirm' | 'cancel' | 'complete') => void;
   }) => (
     <div data-testid="reservation-row">
       {id}
       <button type="button" onClick={() => onAction(id, 'cancel')}>
         cancelar {id}
+      </button>
+      <button type="button" onClick={() => onAction(id, 'complete')}>
+        concluir {id}
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock('../../../components/CompleteReservationModal', () => ({
+  CompleteReservationModal: ({
+    scheduleId,
+    productOptions,
+    onClose,
+  }: {
+    scheduleId: string;
+    productOptions: readonly { id: string }[];
+    onClose: () => void;
+  }) => (
+    <div data-testid="complete-modal">
+      {scheduleId}:{productOptions.map((option) => option.id).join(',')}
+      <button type="button" onClick={onClose}>
+        voltar
       </button>
     </div>
   ),
@@ -59,6 +81,9 @@ function aViewModel(overrides: Record<string, unknown> = {}) {
     isLoading: false,
     isLoadingMore: false,
     loadError: null,
+    productOptions: [{ id: 'p1' }],
+    hasMoreProducts: false,
+    isLoadingProducts: false,
     ...overrides,
   };
 }
@@ -181,5 +206,35 @@ describe('SchedulesView — confirming a change of state', () => {
     await user.click(screen.getByRole('button', { name: 'fechar' }));
 
     expect(screen.queryByTestId('status-modal')).not.toBeInTheDocument();
+  });
+});
+
+describe('SchedulesView — completing a reservation', () => {
+  it('mounts the completion sheet for the row, with the page’s products', async () => {
+    renderPage();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'concluir s4' }));
+
+    expect(screen.getByTestId('complete-modal')).toHaveTextContent('s4:p1');
+    expect(screen.queryByTestId('status-modal')).not.toBeInTheDocument();
+  });
+
+  it('keeps the sheet away from a yes/no action', async () => {
+    renderPage();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'cancelar s4' }));
+
+    expect(screen.queryByTestId('complete-modal')).not.toBeInTheDocument();
+    expect(screen.getByTestId('status-modal')).toHaveTextContent('s4:cancel');
+  });
+
+  it('unmounts the sheet when it closes, which is what resets its form', async () => {
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'concluir s1' }));
+    await user.click(screen.getByRole('button', { name: 'voltar' }));
+
+    expect(screen.queryByTestId('complete-modal')).not.toBeInTheDocument();
   });
 });

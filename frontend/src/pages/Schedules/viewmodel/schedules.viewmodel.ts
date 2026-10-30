@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import type { ProductOption } from '../../../components/ProductPicker/types/productPicker.types';
+import type { ScheduleStatus } from '../../../graphql/generated/graphql';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
+import { isHexColour } from '../../../lib/colour';
 import { SCHEDULES_COPY, SCHEDULES_EMPTY } from '../../../utils/constants/scheduleMessages';
 import {
   SCHEDULE_STATUS_TABS,
@@ -8,7 +11,10 @@ import {
   type ScheduleStatusTab,
 } from '../../../utils/constants/scheduleStatuses';
 import { findScheduleStatusBySlug } from '../../../utils/helpers/scheduleStatuses';
-import { useSchedulesModel } from '../model/schedules.model';
+import { useReservationProductsModel, useSchedulesModel } from '../model/schedules.model';
+
+/** Only a confirmed reservation can be completed, so only its tab needs the products. */
+const COMPLETABLE_STATUS: ScheduleStatus = 'confirmed';
 
 export function useSchedulesViewModel() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,6 +26,27 @@ export function useSchedulesViewModel() {
 
   const { data, loading, error, isLoadingMore, canLoadMore, loadMore } = useSchedulesModel(
     status.value,
+  );
+
+  const {
+    products,
+    hasMoreProducts,
+    isLoading: isLoadingProducts,
+  } = useReservationProductsModel(status.value === COMPLETABLE_STATUS);
+
+  const productOptions = useMemo<readonly ProductOption[]>(
+    () =>
+      products
+        .filter((edge) => edge.node.isAvailable)
+        .map(({ node }) => ({
+          id: node.id,
+          name: node.name,
+          brand: node.brand,
+          category: node.category,
+          swatchColour: isHexColour(node.color) ? node.color : null,
+          tone: node.color && !isHexColour(node.color) ? node.color : null,
+        })),
+    [products],
   );
 
   const selectStatus = useCallback(
@@ -50,5 +77,8 @@ export function useSchedulesViewModel() {
     isLoading: loading,
     isLoadingMore,
     loadError,
+    productOptions,
+    hasMoreProducts,
+    isLoadingProducts,
   };
 }

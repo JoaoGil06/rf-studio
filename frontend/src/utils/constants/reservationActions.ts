@@ -1,20 +1,27 @@
 import type { ScheduleStatus } from '../../graphql/generated/graphql';
 
-export type ReservationActionKind = 'confirm' | 'cancel';
+export type ReservationActionKind = 'confirm' | 'cancel' | 'complete';
+
+/** The actions answered by a yes/no dialog. `complete` has a form instead. */
+export type ReservationStatusActionKind = Exclude<ReservationActionKind, 'complete'>;
 
 export type ConfirmTone = 'primary' | 'danger';
 
-export interface ReservationActionDescriptor {
+export interface ReservationActionPill {
   kind: ReservationActionKind;
   targetStatus: ScheduleStatus;
   pillLabel: string;
   accessibleVerb: string;
+  tone: ConfirmTone;
+}
+
+export interface ReservationActionDescriptor extends ReservationActionPill {
+  kind: ReservationStatusActionKind;
   title: string;
   verb: string;
   consequence: string;
   keepLabel: string;
   actLabel: string;
-  tone: ConfirmTone;
 }
 
 const CONFIRM: ReservationActionDescriptor = {
@@ -43,9 +50,24 @@ const CANCEL: ReservationActionDescriptor = {
   tone: 'danger',
 };
 
-export const RESERVATION_ACTIONS: Record<ReservationActionKind, ReservationActionDescriptor> = {
+const COMPLETE: ReservationActionPill = {
+  kind: 'complete',
+  targetStatus: 'completed',
+  pillLabel: 'CONCLUIR',
+  accessibleVerb: 'Concluir reserva de',
+  tone: 'primary',
+};
+
+export const RESERVATION_ACTIONS: Record<ReservationStatusActionKind, ReservationActionDescriptor> =
+  {
+    confirm: CONFIRM,
+    cancel: CANCEL,
+  };
+
+export const RESERVATION_ACTION_PILLS: Record<ReservationActionKind, ReservationActionPill> = {
   confirm: CONFIRM,
   cancel: CANCEL,
+  complete: COMPLETE,
 };
 
 export const RESERVATION_ACTIONS_BY_STATUS: Record<
@@ -53,7 +75,7 @@ export const RESERVATION_ACTIONS_BY_STATUS: Record<
   readonly ReservationActionKind[]
 > = {
   pending: ['confirm', 'cancel'],
-  confirmed: ['cancel'],
+  confirmed: ['complete', 'cancel'],
   completed: [],
   cancelled: [],
 };

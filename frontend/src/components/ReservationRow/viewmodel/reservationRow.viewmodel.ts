@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { toSlotKey } from '../../../lib/date/slots';
 import { formatDayMonth, formatSpokenDate } from '../../../lib/format/date';
 import { formatEuros } from '../../../lib/format/money';
+import { COMPLETE_COPY } from '../../../utils/constants/scheduleMessages';
 import { SERVICE_CATEGORIES } from '../../../utils/constants/serviceCategories';
 import { findReservationActions } from '../../../utils/helpers/reservationActions';
 import { findScheduleStatus } from '../../../utils/helpers/scheduleStatuses';
@@ -25,7 +26,12 @@ export function useReservationRowViewModel(id: string): ReservationRowViewModel 
 
     const price = status.value === 'completed' ? formatEuros(reservation.finalPrice) : null;
 
-    const title = [reservation.user.name, category?.title, price].filter(Boolean).join(' · ');
+    const tip =
+      status.value === 'completed' && reservation.tip ? formatEuros(reservation.tip) : null;
+
+    const amount = price && tip ? `${price} + ${tip} ${COMPLETE_COPY.tipSuffix}` : price;
+
+    const title = [reservation.user.name, category?.title, amount].filter(Boolean).join(' · ');
 
     const spokenWhen = `${formatSpokenDate(date)} às ${time}`;
 

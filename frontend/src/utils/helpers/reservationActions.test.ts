@@ -21,8 +21,11 @@ describe('findReservationActions', () => {
     expect(actions[1]).toBe(RESERVATION_ACTIONS.cancel);
   });
 
-  it('offers only cancel on a confirmed reservation — completing has its own mutation', () => {
-    expect(findReservationActions('confirmed').map((action) => action.kind)).toEqual(['cancel']);
+  it('offers complete then cancel on a confirmed reservation', () => {
+    expect(findReservationActions('confirmed').map((action) => action.kind)).toEqual([
+      'complete',
+      'cancel',
+    ]);
   });
 
   it.each(['completed', 'cancelled'])('offers nothing on a %s reservation', (status) => {

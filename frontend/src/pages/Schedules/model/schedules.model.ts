@@ -1,6 +1,6 @@
 import { NetworkStatus } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { graphql } from '../../../graphql/generated';
 import type { ScheduleStatus } from '../../../graphql/generated/graphql';
 
@@ -15,6 +15,7 @@ export const SCHEDULES_QUERY = graphql(`
           id
           ...ReservationRowFields
           ...ReservationStatusFields
+          ...CompleteReservationFields
         }
       }
       pageInfo {
@@ -24,6 +25,65 @@ export const SCHEDULES_QUERY = graphql(`
     }
   }
 `);
+
+export const PRODUCTS_PICKER_PAGE_SIZE = 100;
+
+export const RESERVATION_PRODUCTS_QUERY = graphql(`
+  query ReservationProducts($first: Int, $after: String) {
+    products(first: $first, after: $after) {
+      edges {
+        cursor
+        node {
+          id
+          name
+          brand
+          category
+          color
+          isAvailable
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`);
+
+export function useReservationProductsModel(isEnabled: boolean) {
+  const { data, networkStatus, fetchMore } = useQuery(RESERVATION_PRODUCTS_QUERY, {
+    variables: { first: PRODUCTS_PICKER_PAGE_SIZE },
+    fetchPolicy: 'cache-and-network',
+    skip: !isEnabled,
+    // Keeps the network status steady through `fetchMore`: a failed page then changes
+    // nothing the effect depends on, so it cannot retry in a loop.
+    notifyOnNetworkStatusChange: false,
+  });
+
+  const isReady = networkStatus === NetworkStatus.ready;
+  const hasNextPage = data?.products.pageInfo.hasNextPage ?? false;
+  const endCursor = data?.products.pageInfo.endCursor ?? null;
+
+  // `products` caps a page at 100, and a polish past the cap must still be pickable.
+  useEffect(() => {
+    if (!isReady || !hasNextPage || !endCursor) {
+      return;
+    }
+
+    void fetchMore({
+      variables: { first: PRODUCTS_PICKER_PAGE_SIZE, after: endCursor },
+    }).catch(() => undefined);
+  }, [isReady, hasNextPage, endCursor, fetchMore]);
+
+  const products = useMemo(() => data?.products.edges ?? [], [data]);
+
+  const isLoading = useMemo(
+    () => !data && networkStatus === NetworkStatus.loading,
+    [data, networkStatus],
+  );
+
+  return { products, hasMoreProducts: hasNextPage, isLoading };
+}
 
 export function useSchedulesModel(status: ScheduleStatus) {
   const filter = useMemo(() => ({ status }), [status]);

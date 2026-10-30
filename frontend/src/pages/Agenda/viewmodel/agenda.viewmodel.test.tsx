@@ -409,6 +409,23 @@ describe('useAgendaViewModel — the month stats', () => {
     );
   });
 
+  it('counts the tip of a completed reservation as revenue, and of nothing else', () => {
+    const { result } = renderViewModel('?mes=2026-09', [
+      aSchedule({ id: 'a', status: 'completed', finalPrice: 30, tip: 5 }),
+      aSchedule({ id: 'b', status: 'completed', finalPrice: 20.5, tip: null }),
+      aSchedule({ id: 'c', status: 'confirmed', finalPrice: 15, tip: 7 }),
+      aSchedule({ id: 'd', status: 'cancelled', finalPrice: 40, tip: 9 }),
+    ]);
+
+    expect(result.current.stats.revenue).toBe(
+      new Intl.NumberFormat('pt-PT', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+      }).format(55.5),
+    );
+  });
+
   it('reports an empty month as zeroes rather than as nothing', () => {
     const { result } = renderViewModel('?mes=2026-09');
 

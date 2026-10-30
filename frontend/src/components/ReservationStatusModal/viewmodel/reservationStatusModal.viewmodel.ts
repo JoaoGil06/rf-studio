@@ -4,7 +4,7 @@ import { toSlotKey } from '../../../lib/date/slots';
 import { formatDayMonth } from '../../../lib/format/date';
 import {
   RESERVATION_ACTIONS,
-  type ReservationActionKind,
+  type ReservationStatusActionKind,
 } from '../../../utils/constants/reservationActions';
 import { SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
 import { useReservationStatusModalModel } from '../model/reservationStatusModal.model';
@@ -12,7 +12,7 @@ import type { ReservationStatusModalViewModel } from '../types/reservationStatus
 
 export function useReservationStatusModalViewModel(
   scheduleId: string | null,
-  kind: ReservationActionKind | null,
+  kind: ReservationStatusActionKind | null,
 ): ReservationStatusModalViewModel {
   const { reservation, updateStatus, isUpdating } = useReservationStatusModalModel(scheduleId);
 

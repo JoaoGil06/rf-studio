@@ -3,6 +3,7 @@ export interface ScheduleEntry {
   time: string;
   status: string;
   finalPrice: number;
+  tip: number | null;
   durationMinutes: number;
 }
 
@@ -15,6 +16,7 @@ export interface ScheduleRecord {
   date: string;
   status: string;
   finalPrice: number;
+  tip?: number | null;
   service: { durationMinutes: number };
 }
 

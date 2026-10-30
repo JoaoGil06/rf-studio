@@ -1,11 +1,11 @@
 import type {
   ConfirmTone,
-  ReservationActionKind,
+  ReservationStatusActionKind,
 } from '../../../utils/constants/reservationActions';
 
 export interface ReservationStatusModalProps {
   scheduleId: string | null;
-  kind: ReservationActionKind | null;
+  kind: ReservationStatusActionKind | null;
   onClose: () => void;
 }
 
