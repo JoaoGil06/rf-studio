@@ -8,12 +8,18 @@ import { useSchedulesViewModel } from './schedules.viewmodel';
 const loadMoreMock = vi.fn();
 const modelStateMock = vi.fn();
 const statusArgMock = vi.fn();
+const productsEnabledMock = vi.fn();
+const productsStateMock = vi.fn();
 
 vi.mock('../model/schedules.model', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../model/schedules.model')>()),
   useSchedulesModel: (status: string) => {
     statusArgMock(status);
     return { ...modelStateMock(), loadMore: loadMoreMock };
+  },
+  useReservationProductsModel: (isEnabled: boolean) => {
+    productsEnabledMock(isEnabled);
+    return productsStateMock();
   },
 }));
 
@@ -43,6 +49,9 @@ function Harness() {
     isLoading,
     isLoadingMore,
     loadError,
+    productOptions,
+    hasMoreProducts,
+    isLoadingProducts,
   } = useSchedulesViewModel();
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,6 +65,9 @@ function Harness() {
       <span data-testid="is-loading">{String(isLoading)}</span>
       <span data-testid="is-loading-more">{String(isLoadingMore)}</span>
       <span data-testid="load-error">{loadError ?? ''}</span>
+      <span data-testid="product-options">{JSON.stringify(productOptions)}</span>
+      <span data-testid="has-more-products">{String(hasMoreProducts)}</span>
+      <span data-testid="is-loading-products">{String(isLoadingProducts)}</span>
       <div ref={sentinelRef} />
 
       {tabs.map((tab) => (
@@ -88,6 +100,62 @@ afterEach(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   modelStateMock.mockReturnValue(CONNECTION);
+  productsStateMock.mockReturnValue({ products: [], hasMoreProducts: false, isLoading: false });
+});
+
+describe('useSchedulesViewModel — the products for completing', () => {
+  function aProductEdge(id: string, color: string | null, isAvailable = true) {
+    return {
+      node: { id, name: `Produto ${id}`, brand: 'Andreia', category: 'nails', color, isAvailable },
+    };
+  }
+
+  it.each([
+    ['/schedules?estado=confirmadas', true],
+    ['/schedules?estado=pendentes', false],
+    ['/schedules?estado=concluidas', false],
+    ['/schedules?estado=canceladas', false],
+  ])('at %s, asks for the products: %j', (entry, expected) => {
+    renderAt([entry]);
+
+    expect(productsEnabledMock).toHaveBeenLastCalledWith(expected);
+  });
+
+  it('drops unavailable products and sorts a colour into a swatch or a tone', () => {
+    productsStateMock.mockReturnValue({
+      products: [
+        aProductEdge('hex', '#75D2D5'),
+        aProductEdge('tone', 'castanho médio'),
+        aProductEdge('none', null),
+        aProductEdge('gone', '#000000', false),
+      ],
+      hasMoreProducts: false,
+      isLoading: false,
+    });
+
+    renderAt(['/schedules?estado=confirmadas']);
+
+    const options = JSON.parse(screen.getByTestId('product-options').textContent) as {
+      id: string;
+      swatchColour: string | null;
+      tone: string | null;
+    }[];
+
+    expect(options.map(({ id, swatchColour, tone }) => [id, swatchColour, tone])).toEqual([
+      ['hex', '#75D2D5', null],
+      ['tone', null, 'castanho médio'],
+      ['none', null, null],
+    ]);
+  });
+
+  it('passes on whether the list is still loading or incomplete', () => {
+    productsStateMock.mockReturnValue({ products: [], hasMoreProducts: true, isLoading: true });
+
+    renderAt(['/schedules?estado=confirmadas']);
+
+    expect(screen.getByTestId('has-more-products')).toHaveTextContent('true');
+    expect(screen.getByTestId('is-loading-products')).toHaveTextContent('true');
+  });
 });
 
 describe('useSchedulesViewModel — the tab lives in the URL', () => {

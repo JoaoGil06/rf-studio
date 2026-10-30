@@ -8,7 +8,7 @@ export function toAgendaStats(byDay: Map<string, ScheduleEntry[]>): AgendaStats 
   const entries = [...byDay.values()].flat();
   const revenue = entries
     .filter((entry) => entry.status === 'completed')
-    .reduce((total, entry) => total + entry.finalPrice, 0);
+    .reduce((total, entry) => total + entry.finalPrice + (entry.tip ?? 0), 0);
 
   return {
     reservations: String(activeOf(entries).length),

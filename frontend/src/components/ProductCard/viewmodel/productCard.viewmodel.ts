@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
+import { isHexColour } from '../../../lib/colour';
 import { PRODUCT_CATEGORIES } from '../../../utils/constants/productCategories';
 import { useProductCardModel } from '../model/productCard.model';
 import type { ProductCardViewModel } from '../types/productCard.types';
-
-const HEX_COLOUR = /^#[0-9a-f]{6}$/i;
 
 export const AVAILABILITY_LABELS = {
   available: 'DISPONÍVEL',
@@ -29,7 +28,7 @@ export function useProductCardViewModel(id: string): ProductCardViewModel | null
       ? AVAILABILITY_LABELS.available
       : AVAILABILITY_LABELS.unavailable;
 
-    const swatchColour = product.color && HEX_COLOUR.test(product.color) ? product.color : null;
+    const swatchColour = isHexColour(product.color) ? product.color : null;
 
     return {
       name: product.name,

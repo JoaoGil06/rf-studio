@@ -1,0 +1,154 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.subject {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.note {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 160ms var(--ease);
+}
+
+.input:hover {
+  border-color: var(--accent-ink);
+}
+
+.fieldError {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.formError {
+  margin: 0;
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.totalLabel {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+.totalValue {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.keep {
+  padding: 7px 14px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted2);
+  cursor: pointer;
+  transition:
+    color 160ms var(--ease),
+    border-color 160ms var(--ease);
+}
+
+.keep:hover:not(:disabled) {
+  color: var(--accent-ink);
+  border-color: var(--accent-ink);
+}
+
+.submit {
+  padding: 12px 22px;
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--accent-ink);
+}
+
+.keep:disabled,
+.submit:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+@media (pointer: coarse) {
+  .input,
+  .keep,
+  .submit {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .keep,
+  .submit {
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+}

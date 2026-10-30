@@ -7,6 +7,7 @@ export const RESERVATION_ROW_FRAGMENT = graphql(`
     date
     status
     finalPrice
+    tip
     user {
       id
       name

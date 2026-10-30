@@ -11,6 +11,7 @@ export const AGENDA_QUERY = graphql(`
       date
       status
       finalPrice
+      tip
       service {
         id
         durationMinutes

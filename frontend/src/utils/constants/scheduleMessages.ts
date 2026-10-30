@@ -11,6 +11,8 @@ export const SCHEDULE_ERROR_MESSAGES = {
   notFound: 'Esta reserva já não existe.',
   statusChanged: 'Esta reserva já tinha mudado de estado. A lista foi atualizada.',
   statusFailed: 'Não foi possível mudar o estado da reserva. Tente novamente.',
+  productNotFound: 'Um dos produtos já não existe. Escolha novamente.',
+  completeFailed: 'Não foi possível concluir a reserva. Tente novamente.',
 } as const;
 
 export const AGENDA_COPY = {
@@ -52,6 +54,24 @@ export const BOOKING_COPY = {
   addAction: 'Nova reserva',
   addOn: 'Nova reserva em',
   clientsTruncated: 'A lista mostra as primeiras clientes. Procure a restante em Clientes.',
+} as const;
+
+export const COMPLETE_COPY = {
+  whisper: 'concluir reserva',
+  consequence: 'Depois de concluída, o estado da reserva já não pode mudar.',
+  productsLabel: 'Produtos (mín. 1 para concluir)',
+  addPlaceholder: '— adicionar produto —',
+  removeVerb: 'Remover',
+  noProducts: (category: string) =>
+    `Ainda não há produtos de ${category}. Adicione-os em Produtos.`,
+  partialProducts:
+    'Nem todos os produtos estão nesta lista. Feche e abra Confirmadas para tentar de novo.',
+  tipLabel: 'Gorjeta (€)',
+  totalLabel: 'TOTAL',
+  keep: 'VOLTAR',
+  submit: 'CONCLUIR',
+  busy: 'A CONCLUIR…',
+  tipSuffix: 'de gorjeta',
 } as const;
 
 export const SCHEDULES_COPY = {

@@ -2,7 +2,7 @@ import { CombinedGraphQLErrors } from '@apollo/client';
 import { renderHook } from '@testing-library/react';
 import {
   RESERVATION_ACTIONS,
-  type ReservationActionKind,
+  type ReservationStatusActionKind,
 } from '../../../utils/constants/reservationActions';
 import { SCHEDULE_ERROR_MESSAGES } from '../../../utils/constants/scheduleMessages';
 import { useReservationStatusModalViewModel } from './reservationStatusModal.viewmodel';
@@ -34,7 +34,7 @@ function aPayload(updateSchedule: Record<string, unknown>) {
 
 function renderViewModel(
   scheduleId: string | null = 's1',
-  kind: ReservationActionKind | null = 'confirm',
+  kind: ReservationStatusActionKind | null = 'confirm',
 ) {
   return renderHook(() => useReservationStatusModalViewModel(scheduleId, kind));
 }

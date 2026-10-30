@@ -11,6 +11,7 @@ export const REGISTER_SCHEDULE_MUTATION = graphql(`
           date
           status
           finalPrice
+          tip
           service {
             id
             durationMinutes
