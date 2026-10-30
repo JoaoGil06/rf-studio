@@ -33,6 +33,7 @@ export function toServiceGroups(services: readonly ServiceEdge[]): readonly Serv
         // apart, and Rita reads the sheet at arm's length.
         label: `${edge.node.name} · ${formatEuros(edge.node.price) ?? ''}`.trim(),
         durationMinutes: edge.node.durationMinutes,
+        price: edge.node.price,
       })),
   })).filter((group) => group.options.length > 0);
 }

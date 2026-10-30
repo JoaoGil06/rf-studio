@@ -37,6 +37,8 @@ export class ScheduleRepository implements IScheduleRepository {
     const conditions = [
       sql`${schedules.date} < ${end}`,
       sql`${schedules.date} + (${services.durationMinutes} * INTERVAL '1 minute') > ${start}`,
+      // A cancelled schedule stays on the books but no longer holds the chair.
+      ne(schedules.status, 'cancelled'),
     ];
 
     if (excludeId) {

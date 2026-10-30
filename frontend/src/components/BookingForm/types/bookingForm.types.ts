@@ -6,7 +6,7 @@ import type { TimeSpan } from '../../../lib/date/slots';
 export const bookingSchema = z.object({
   time: z.string().min(1, 'Escolha a hora.'),
   userId: z.string().min(1, 'Escolha a cliente.'),
-  serviceId: z.string().min(1, 'Escolha o serviço.'),
+  serviceIds: z.array(z.string()).min(1, 'Escolha pelo menos um serviço.'),
 });
 
 export type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -14,7 +14,7 @@ export type BookingFormValues = z.infer<typeof bookingSchema>;
 export const bookingFormDefaults: DefaultValues<BookingFormValues> = {
   time: '',
   userId: '',
-  serviceId: '',
+  serviceIds: [],
 };
 
 export interface ClientOption {
@@ -26,6 +26,7 @@ export interface ServiceOption {
   id: string;
   label: string;
   durationMinutes: number;
+  price: number;
 }
 
 export interface ServiceOptionGroup {
@@ -55,7 +56,12 @@ export interface BookingFormProps {
   slots: readonly BookingSlot[];
   isTimeLocked: boolean;
   clients: readonly ClientOption[];
+  /** What can still be added: chosen services have already left these groups. */
   serviceGroups: readonly ServiceOptionGroup[];
+  chosenServices: readonly ServiceOption[];
+  serviceSummary: string | null;
+  onAddService: (id: string) => void;
+  onRemoveService: (id: string) => void;
   truncatedNote: string | null;
   submitLabel: string;
   busyLabel: string;

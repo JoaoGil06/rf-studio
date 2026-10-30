@@ -33,10 +33,10 @@ export const REGISTER_SCHEDULE_MUTATION = graphql(`
 `);
 
 export function useNewReservationModalModel() {
-  const [registerSchedule, { loading }] = useMutation(REGISTER_SCHEDULE_MUTATION, {
+  const [registerSchedule] = useMutation(REGISTER_SCHEDULE_MUTATION, {
     refetchQueries: ['Agenda'],
     awaitRefetchQueries: true,
   });
 
-  return { registerSchedule, isSaving: loading };
+  return { registerSchedule };
 }

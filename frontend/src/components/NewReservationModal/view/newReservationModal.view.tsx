@@ -22,6 +22,12 @@ export function NewReservationModal({
     isSaving,
     slots,
     isTimeLocked,
+    availableGroups,
+    chosenServices,
+    serviceSummary,
+    submitLabel,
+    addService,
+    removeService,
   } = useNewReservationModalViewModel(day, serviceGroups);
 
   const close = useCallback(() => {
@@ -56,9 +62,13 @@ export function NewReservationModal({
           slots={slots}
           isTimeLocked={isTimeLocked}
           clients={clients}
-          serviceGroups={serviceGroups}
+          serviceGroups={availableGroups}
+          chosenServices={chosenServices}
+          serviceSummary={serviceSummary}
+          onAddService={addService}
+          onRemoveService={removeService}
           truncatedNote={truncatedNote}
-          submitLabel={BOOKING_COPY.submit}
+          submitLabel={submitLabel}
           busyLabel={BOOKING_COPY.busy}
         />
       )}
