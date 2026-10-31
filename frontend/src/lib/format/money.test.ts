@@ -1,4 +1,4 @@
-import { formatEuros } from './money';
+import { formatEuros, formatWholeEuros } from './money';
 
 /** The pt-PT separator, spelt as an escape. A pasted U+00A0 is indistinguishable
  *  from a space on screen, which is exactly how this bug hides. */
@@ -30,5 +30,19 @@ describe('formatEuros', () => {
   it('returns null rather than "NaN €" for a non-finite amount', () => {
     expect(formatEuros(Number.NaN)).toBeNull();
     expect(formatEuros(Number.POSITIVE_INFINITY)).toBeNull();
+  });
+});
+
+describe('formatWholeEuros', () => {
+  it('drops the cents and rounds', () => {
+    expect(normalise(formatWholeEuros(1234.5))).toBe('1235 €');
+  });
+
+  it('shows zero as an amount', () => {
+    expect(normalise(formatWholeEuros(0))).toBe('0 €');
+  });
+
+  it('returns null for a non-finite amount', () => {
+    expect(formatWholeEuros(Number.NaN)).toBeNull();
   });
 });

@@ -11,6 +11,7 @@ const SPOKEN = new Intl.DateTimeFormat('pt-PT', {
   year: 'numeric',
 });
 const DAY_MONTH = new Intl.DateTimeFormat('pt-PT', { day: 'numeric', month: 'long' });
+const MONTH_NAME = new Intl.DateTimeFormat('pt-PT', { month: 'long' });
 
 const capitalise = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -26,6 +27,10 @@ export function formatMonthLabel(date: Date): string {
   const year = parts.find((part) => part.type === 'year')?.value ?? '';
 
   return `${capitalise(month)} ${year}`;
+}
+
+export function formatMonthName(date: Date): string {
+  return capitalise(MONTH_NAME.format(date));
 }
 
 export function formatDayLabel(date: Date): string {
@@ -47,3 +52,19 @@ export function formatDayMonth(date: Date, referenceYear: number): string {
 }
 
 export const WEEKDAY_HEADS: readonly string[] = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+
+/** Spelt out because `Intl`'s short pt-PT month is not portable across engines. */
+export const MONTH_HEADS: readonly string[] = [
+  'JAN',
+  'FEV',
+  'MAR',
+  'ABR',
+  'MAI',
+  'JUN',
+  'JUL',
+  'AGO',
+  'SET',
+  'OUT',
+  'NOV',
+  'DEZ',
+];

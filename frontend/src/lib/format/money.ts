@@ -13,6 +13,13 @@ const EUROS = new Intl.NumberFormat('pt-PT', {
   maximumFractionDigits: 2,
 });
 
+const WHOLE_EUROS = new Intl.NumberFormat('pt-PT', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
 /** `15` → `15,00 €`. Non-finite input yields `null` — the caller decides what to show. */
 export function formatEuros(amount: number): string | null {
   if (!Number.isFinite(amount)) {
@@ -20,4 +27,13 @@ export function formatEuros(amount: number): string | null {
   }
 
   return EUROS.format(amount);
+}
+
+/** `1234.5` → `1235 €`, for a space too narrow to hold the cents. */
+export function formatWholeEuros(amount: number): string | null {
+  if (!Number.isFinite(amount)) {
+    return null;
+  }
+
+  return WHOLE_EUROS.format(amount);
 }
