@@ -1,12 +1,28 @@
 import {
+  MONTH_HEADS,
   WEEKDAY_HEADS,
   formatDayLabel,
   formatDayMonth,
   formatMonthLabel,
+  formatMonthName,
   formatSpokenDate,
 } from './date';
 
 const SEPTEMBER_12 = new Date(2026, 8, 12);
+
+describe('formatMonthName', () => {
+  it('is the capitalised month with no year', () => {
+    expect(formatMonthName(SEPTEMBER_12)).toBe('Setembro');
+  });
+});
+
+describe('MONTH_HEADS', () => {
+  it('has the twelve months, January first', () => {
+    expect(MONTH_HEADS).toHaveLength(12);
+    expect(MONTH_HEADS[0]).toBe('JAN');
+    expect(MONTH_HEADS[11]).toBe('DEZ');
+  });
+});
 
 describe('formatMonthLabel', () => {
   it('reads as the prototype headline: capital month, no “de”', () => {

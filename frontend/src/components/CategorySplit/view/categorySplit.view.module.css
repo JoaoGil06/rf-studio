@@ -1,0 +1,71 @@
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+.track {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+}
+
+/*
+ * Foil and Ink, not the prototype's Foil and Sage (sage means done) and not Wash
+ * (DESIGN.md gives Wash to the empty half of a progress track, so brows would read
+ * as nothing earned). Ink adds no status colour, and it is the neutral that stays
+ * clearly apart from Foil in both themes. Stone and Stone Deep do not on lacquer.
+ */
+.nails {
+  background: var(--accent);
+}
+
+.brows {
+  background: var(--ink);
+}
+
+.track > .brows:not(:first-child) {
+  border-left: 2px solid var(--panel);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted2);
+}

@@ -1,0 +1,219 @@
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 22px;
+  padding: 26px 36px 40px;
+  box-sizing: border-box;
+}
+
+.monthPicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.monthPickerLabel {
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+.monthPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+}
+
+.month {
+  min-width: 110px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  text-align: center;
+  color: var(--ink);
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: color 160ms var(--ease);
+}
+
+.arrow:hover {
+  color: var(--ink);
+}
+
+.arrowIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.loadError {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 18px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.kpiValue {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.kpiLabel {
+  font-size: 9px;
+  line-height: 1.4;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding: 22px 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.panelTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.panelAside {
+  font-size: 16px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+@media (pointer: coarse) {
+  .arrow {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 22px 18px 32px;
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding: 18px 14px 28px;
+    gap: 18px;
+  }
+
+  .kpis {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .kpi {
+    padding: 14px;
+  }
+
+  .kpiValue {
+    font-size: 28px;
+  }
+
+  .panel {
+    padding: 18px 16px;
+  }
+}
+
+/* A phone on its side: everything that only names something gives its height back. */
+@media (max-width: 1023px) and (max-height: 540px) {
+  .page {
+    padding-top: 14px;
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+    gap: 14px;
+  }
+
+  .kpi {
+    padding: 10px 14px;
+  }
+
+  .kpiValue {
+    font-size: 28px;
+  }
+
+  .panel {
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 359px) {
+  .page {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+}

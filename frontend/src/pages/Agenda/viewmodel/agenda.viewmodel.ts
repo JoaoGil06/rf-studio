@@ -10,6 +10,7 @@ import {
   type MonthRef,
 } from '../../../lib/date/calendar';
 import { formatDayLabel, formatMonthLabel } from '../../../lib/format/date';
+import { MONTH_PARAM } from '../../../utils/constants/monthParam';
 import { SCHEDULE_STATUSES } from '../../../utils/constants/scheduleStatuses';
 import {
   AGENDA_COPY,
@@ -28,7 +29,6 @@ import { describeDayCount, toDaySlots } from './helpers/dayShapes';
 import { toAgendaStats } from './helpers/monthStats';
 import { groupSchedulesByDay } from './helpers/scheduleEntries';
 
-export const MONTH_PARAM = 'mes';
 export const DAY_PARAM = 'dia';
 
 export function useAgendaViewModel() {

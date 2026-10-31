@@ -70,7 +70,7 @@ describe('AppLayout', () => {
 
   it.each([
     [PATHS.agenda, THIS_MONTH_LABEL],
-    [PATHS.dashboard, 'Dashboard'],
+    [PATHS.dashboard, 'Negócio'],
     [PATHS.schedules, 'Reservas'],
     [PATHS.products, 'Produtos'],
     [PATHS.services, 'Serviços'],
